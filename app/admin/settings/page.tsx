@@ -8,6 +8,7 @@ import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Toggle from "@/components/admin/ui/Toggle";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
+import WorkingHoursEditor from "@/components/admin/WorkingHoursEditor";
 import { adminApi } from "@/lib/api/admin";
 import { cn } from "@/lib/admin/cn";
 
@@ -262,14 +263,10 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Çalışma Saatleri (JSON)</h3>
-          <p className="text-xs text-[#52525B] mb-4">
-            Örnek: [{"{"}"day":"Pazartesi","open":"09:00","close":"22:00"{"}"}]
-          </p>
-          <textarea
-            className="w-full min-h-[180px] bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 py-3 text-sm font-mono text-[#F8F8F8]"
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Salon Çalışma Saatleri</h3>
+          <WorkingHoursEditor
             value={settings.working_hours || ""}
-            onChange={(e) => set("working_hours", e.target.value)}
+            onChange={(json) => set("working_hours", json)}
           />
         </Card>
 

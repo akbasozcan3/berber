@@ -42,9 +42,11 @@ export default function AvailabilityPage() {
   const [toast, setToast] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    startDate: "",
-    endDate: "",
+  const [form, setForm] = useState(() => {
+    const today = new Date().toISOString().split("T")[0];
+    return {
+    startDate: today,
+    endDate: today,
     reason: "Tatil",
     barberId: "",
     ruleType: "close_day",
@@ -52,6 +54,7 @@ export default function AvailabilityPage() {
     customClose: "20:00",
     earlyClose: "16:00",
     lateOpen: "13:00",
+  };
   });
 
   const load = useCallback(async () => {
@@ -190,7 +193,16 @@ export default function AvailabilityPage() {
         </Card>
 
         <Card>
-          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-4 flex items-center gap-2"><Clock className="w-4 h-4 text-[#D4AF37]" /> Saat Ayarları</h3>
+          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-2 flex items-center gap-2"><Clock className="w-4 h-4 text-[#D4AF37]" /> Saat Ayarları</h3>
+          <p className="text-xs text-[#71717A] mb-4">
+            Önce takvimden bir gün seçin (varsayılan: bugün). Genel salon saatleri için{" "}
+            <strong className="text-[#A1A1AA]">Ayarlar → Salon Çalışma Saatleri</strong> kullanın.
+            {form.startDate ? (
+              <span className="block mt-1 text-[#D4AF37]">Seçili gün: {formatDate(form.startDate)}</span>
+            ) : (
+              <span className="block mt-1 text-red-400">Saat uygulamak için takvimden gün seçin.</span>
+            )}
+          </p>
           <div className="space-y-4">
             <div>
               <p className="text-xs text-[#71717A] mb-2">Çalışma Saati Değişikliği (seçili gün)</p>
