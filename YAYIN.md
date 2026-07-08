@@ -9,7 +9,7 @@ Bu rehber siteyi canlıya almak için gereken her şeyi adım adım anlatır.
 ```bash
 npm install
 cp .env.example .env.local
-npm run db:seed
+npm run db:setup
 npm run dev
 ```
 
@@ -95,7 +95,7 @@ BLOB_READ_WRITE_TOKEN=<otomatik veya token>
 ```
 
 4. Deploy
-5. İlk deploy sonrası terminalde veya Vercel shell'de: `npm run db:seed` (bir kez)
+5. İlk deploy sonrası terminalde veya Vercel shell'de: `npm run db:setup` (bir kez)
 6. Admin panele gir → Ayarlar → Test Bağlantısı
 
 > Vercel'de DB olarak Postgres kullanıyoruz (`DATABASE_URL`). Görseller de Vercel Blob ile saklanır.
@@ -111,8 +111,8 @@ cp .env.example .env
 # Başlat
 docker compose up -d
 
-# Veritabanını seed et (ilk kez)
-docker compose exec app npm run db:seed
+# Veritabanını migrate+seed et (ilk kez)
+docker compose exec app npm run db:setup
 ```
 
 `docker-compose.yml` zaten tüm env değişkenlerini okur.

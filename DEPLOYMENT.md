@@ -6,7 +6,7 @@
 npm install
 docker compose up -d
 cp .env.example .env.local
-npm run db:seed
+npm run db:setup
 npm run dev
 ```
 
