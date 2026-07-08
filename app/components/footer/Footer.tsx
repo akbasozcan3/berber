@@ -3,17 +3,19 @@
 import Link from "next/link";
 import { ArrowUp } from "lucide-react";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { instagramUrl } from "@/lib/utils/format";
+import { instagramUrl, formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
 
 export default function Footer() {
   const settings = usePublicSettings();
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
   const insta = instagramUrl(settings.instagram);
+  const phoneDisplay = formatPhoneDisplay(settings.phone);
+  const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
 
   return (
     <footer className="bg-[#050505] pt-24 pb-12 border-t border-white/[0.06] relative z-10">
       <div className="container mx-auto px-6 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-20">
 
           {/* Brand */}
           <div>
@@ -85,6 +87,29 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h4 className="text-white text-[9px] font-bold uppercase tracking-[0.28em] mb-6">
+              İletişim
+            </h4>
+            <ul className="space-y-4 text-sm font-light text-white/40">
+              {settings.phone ? (
+                <li>
+                  <a href={toTelHref(settings.phone)} className="hover:text-white transition-colors">
+                    {phoneDisplay}
+                  </a>
+                </li>
+              ) : null}
+              {settings.address ? (
+                <li className="leading-relaxed">{settings.address}</li>
+              ) : null}
+              <li>{hoursDisplay}</li>
+              {settings.locationShort ? (
+                <li className="text-white/30">{settings.locationShort}</li>
+              ) : null}
             </ul>
           </div>
 

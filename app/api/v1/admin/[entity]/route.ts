@@ -15,6 +15,8 @@ import {
 import { eq, desc } from "drizzle-orm";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 import { getSettings } from "@/lib/services/booking";
+import { normalizePhoneStorage } from "@/lib/utils/format";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 type Entity = "barbers" | "services" | "customers" | "reviews" | "gallery" | "settings";
@@ -123,13 +125,21 @@ export async function PATCH(
 
     if (entity === "settings") {
       for (const [key, value] of Object.entries(body)) {
+        const stored =
+          key === "phone" ? normalizePhoneStorage(String(value)) : String(value);
         const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
         if (existing[0]) {
-          await db.update(settings).set({ value: String(value) }).where(eq(settings.key, key));
+          await db.update(settings).set({ value: stored }).where(eq(settings.key, key));
         } else {
-          await db.insert(settings).values({ key, value: String(value) });
+          await db.insert(settings).values({ key, value: stored });
         }
       }
+
+      revalidatePath("/", "layout");
+      ["/", "/iletisim", "/randevu", "/hakkimizda", "/hizmetler", "/galeri", "/yorumlar"].forEach(
+        (path) => revalidatePath(path)
+      );
+
       return jsonResponse({ success: true });
     }
 

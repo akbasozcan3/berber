@@ -34,12 +34,26 @@ export function PublicSettingsProvider({
   const stickyLogo = useRef(seed.logoUrl);
 
   useEffect(() => {
-    api
-      .getPublicSettings()
-      .then((next) => {
-        setSettings((prev) => mergePublicSettings(prev, next));
-      })
-      .catch(() => {});
+    const refresh = () => {
+      api
+        .getPublicSettings()
+        .then((next) => {
+          setSettings((prev) => mergePublicSettings(prev, next));
+        })
+        .catch(() => {});
+    };
+
+    refresh();
+
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refresh();
+    });
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   useEffect(() => {

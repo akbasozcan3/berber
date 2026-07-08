@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { reviews, services, galleryImages } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { getSettings } from "@/lib/services/booking";
+import { parseWorkingHoursJson } from "@/lib/data/working-hours";
 
 export async function getApprovedReviews(limit = 50) {
   try {
@@ -110,7 +111,7 @@ export async function getPublicSettingsSnapshot() {
       contactPageBanner:
         all.contact_page_banner ||
         "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=1200&auto=format&fit=crop",
-      workingHours: JSON.parse(all.working_hours || "[]"),
+      workingHours: parseWorkingHoursJson(all.working_hours),
       googleRating: all.google_rating || "4.87",
       googleReviewCount: all.google_review_count || "30",
     };

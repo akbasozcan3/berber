@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api, type PageContent } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 
 export default function About() {
   const [page, setPage] = useState<PageContent | null>(null);
+  const { businessName, locationShort } = usePublicSettings();
 
   useEffect(() => {
     api.getPageContent("about").then(setPage).catch(() => {});
@@ -28,8 +30,10 @@ export default function About() {
               style={{ backgroundImage: `url('${page?.heroImage || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000&auto=format&fit=crop"}')` }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-10 left-10 z-10">
-              <p className="text-2xl font-serif font-light text-white">New Life Salon</p>
-              <p className="text-white/60 font-bold tracking-[0.28em] uppercase text-[9px] mt-1.5">Taşdelen, Çekmeköy</p>
+              <p className="text-2xl font-serif font-light text-white">{businessName || "New Life Salon"}</p>
+              {locationShort ? (
+                <p className="text-white/60 font-bold tracking-[0.28em] uppercase text-[9px] mt-1.5">{locationShort}</p>
+              ) : null}
             </div>
           </motion.div>
 

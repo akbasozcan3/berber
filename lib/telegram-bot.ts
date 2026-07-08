@@ -1,5 +1,21 @@
 import { sendTelegramMessage } from "@/lib/telegram";
 import { getSetting, setSetting } from "@/lib/services/booking";
+import { formatPhoneDisplay } from "@/lib/utils/format";
+
+async function welcomeMessage(): Promise<string> {
+  const phone = await getSetting("phone");
+  const phoneLine = phone ? `Telefon: ${formatPhoneDisplay(phone)}` : "";
+  return `Merhaba!
+
+New Life Erkek Kuaförü bildirim botuna hoş geldiniz.
+
+Kaydınız tamamlandı — yeni randevu bildirimleri bu sohbete gelecek.
+
+Randevu almak için: newlifeberber.com/randevu
+${phoneLine}
+
+Sorularınız için doğrudan arayabilirsiniz.`.replace(/\n\n\n/g, "\n\n");
+}
 
 export interface TelegramUpdate {
   update_id: number;
@@ -17,17 +33,6 @@ interface GetUpdatesResponse {
   result?: TelegramUpdate[];
 }
 
-const WELCOME_MESSAGE = `Merhaba!
-
-New Life Erkek Kuaförü bildirim botuna hoş geldiniz.
-
-Kaydınız tamamlandı — yeni randevu bildirimleri bu sohbete gelecek.
-
-Randevu almak için: newlifeberber.com/randevu
-Telefon: 0532 710 43 55
-
-Sorularınız için doğrudan arayabilirsiniz.`;
-
 function shouldReplyToMessage(text: string): boolean {
   const normalized = text.trim().toLowerCase();
   if (normalized === "/start" || normalized.startsWith("/start ")) return true;
@@ -41,10 +46,11 @@ export async function handleTelegramUpdate(update: TelegramUpdate): Promise<bool
 
   const chatId = String(message.chat.id);
   const firstName = message.from?.first_name?.trim();
-  const greeting = firstName ? `Merhaba ${firstName}!` : WELCOME_MESSAGE.split("\n\n")[0];
+  const welcome = await welcomeMessage();
+  const greeting = firstName ? `Merhaba ${firstName}!` : welcome.split("\n\n")[0];
   const body = firstName
-    ? `${greeting}\n\n${WELCOME_MESSAGE.split("\n\n").slice(1).join("\n\n")}`
-    : WELCOME_MESSAGE;
+    ? `${greeting}\n\n${welcome.split("\n\n").slice(1).join("\n\n")}`
+    : welcome;
 
   await sendTelegramMessage(chatId, body);
   return true;

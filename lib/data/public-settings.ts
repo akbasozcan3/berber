@@ -2,6 +2,7 @@ import { ensureDb } from "@/lib/db/ensure";
 import { getSettings } from "@/lib/services/booking";
 import type { PublicSettings } from "@/lib/api/client";
 import { publicSettingsDefaults } from "./public-settings-defaults";
+import { parseWorkingHoursJson } from "./working-hours";
 
 export function mapSettingsToPublic(all: Record<string, string>): PublicSettings {
   return {
@@ -37,7 +38,7 @@ export function mapSettingsToPublic(all: Record<string, string>): PublicSettings
     reviewsPageBanner: all.reviews_page_banner || publicSettingsDefaults.reviewsPageBanner,
     aboutPageBanner: all.about_page_banner || publicSettingsDefaults.aboutPageBanner,
     contactPageBanner: all.contact_page_banner || publicSettingsDefaults.contactPageBanner,
-    workingHours: JSON.parse(all.working_hours || "[]"),
+    workingHours: parseWorkingHoursJson(all.working_hours),
     googleRating: all.google_rating || publicSettingsDefaults.googleRating,
     googleReviewCount: all.google_review_count || publicSettingsDefaults.googleReviewCount,
     locationShort: all.location_short || publicSettingsDefaults.locationShort,

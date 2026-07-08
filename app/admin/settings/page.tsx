@@ -10,6 +10,8 @@ import Toggle from "@/components/admin/ui/Toggle";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 import WorkingHoursEditor from "@/components/admin/WorkingHoursEditor";
 import { adminApi } from "@/lib/api/admin";
+import { getPrimaryWorkingHours, parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
+import { normalizePhoneStorage } from "@/lib/utils/format";
 import { cn } from "@/lib/admin/cn";
 
 interface TelegramLog {
@@ -49,6 +51,7 @@ export default function SettingsPage() {
   const [logs, setLogs] = useState<TelegramLog[]>([]);
   const [status, setStatus] = useState<TelegramStatus | null>(null);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [syncingBarbers, setSyncingBarbers] = useState(false);
 
   const loadTelegram = useCallback(() => {
     fetch("/api/v1/admin/telegram", { credentials: "include" })
@@ -65,16 +68,47 @@ export default function SettingsPage() {
     loadTelegram();
   }, [loadTelegram]);
 
+  const showToast = (ok: boolean, text: string) => {
+    setToast({ ok, text });
+    setTimeout(() => setToast(null), 4000);
+  };
+
   const handleSave = async () => {
-    await adminApi.saveSettings(settings);
+    const payload = { ...settings };
+    if (payload.phone) payload.phone = normalizePhoneStorage(payload.phone);
+    if (!payload.working_hours?.trim()) {
+      payload.working_hours = serializeWorkingHours(parseWorkingHoursJson(""));
+    }
+    await adminApi.saveSettings(payload);
+    setSettings(payload);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     loadTelegram();
   };
 
-  const showToast = (ok: boolean, text: string) => {
-    setToast({ ok, text });
-    setTimeout(() => setToast(null), 4000);
+  const syncBarberHours = async () => {
+    const hours = getPrimaryWorkingHours(parseWorkingHoursJson(settings.working_hours || ""));
+    if (!hours) {
+      showToast(false, "Önce geçerli çalışma saatleri girin.");
+      return;
+    }
+    setSyncingBarbers(true);
+    try {
+      const barberList = await adminApi.getBarbers();
+      await Promise.all(
+        barberList.map((barber) =>
+          adminApi.updateBarber(barber.id, {
+            workingStart: hours.open,
+            workingEnd: hours.close,
+          })
+        )
+      );
+      showToast(true, "Berber randevu saatleri güncellendi.");
+    } catch {
+      showToast(false, "Berber saatleri güncellenemedi.");
+    } finally {
+      setSyncingBarbers(false);
+    }
   };
 
   const sendTest = async () => {
@@ -130,11 +164,22 @@ export default function SettingsPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Üst Şerit & İletişim</h3>
+          <p className="text-xs text-[#71717A] mb-4">
+            Telefon, kısa konum ve çalışma saatleri sitenin üst şeridinde, footer&apos;da ve iletişim sayfasında görünür.
+          </p>
+          <div className="space-y-4">
+            <Input label="Telefon" value={settings.phone || ""} onChange={(e) => set("phone", e.target.value)} placeholder="0532 710 43 55" />
+            <Input label="Kısa Konum (üst şerit)" value={settings.location_short || ""} onChange={(e) => set("location_short", e.target.value)} placeholder="Taşdelen, Çekmeköy / İstanbul" />
+            <Input label="Tam Adres (iletişim / harita)" value={settings.address || ""} onChange={(e) => set("address", e.target.value)} />
+            <Input label="Google Maps Linki" value={settings.google_maps || ""} onChange={(e) => set("google_maps", e.target.value)} />
+          </div>
+        </Card>
+
+        <Card>
           <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">İşletme Bilgileri</h3>
           <div className="space-y-4">
             <Input label="İşletme Adı" value={settings.business_name || ""} onChange={(e) => set("business_name", e.target.value)} />
-            <Input label="Adres" value={settings.address || ""} onChange={(e) => set("address", e.target.value)} />
-            <Input label="Telefon" value={settings.phone || ""} onChange={(e) => set("phone", e.target.value)} />
             <Input label="E-posta" value={settings.contact_email || ""} onChange={(e) => set("contact_email", e.target.value)} />
             <Input label="Instagram" value={settings.instagram || ""} onChange={(e) => set("instagram", e.target.value)} />
             <Input label="İletişim Metni" value={settings.contact_intro || ""} onChange={(e) => set("contact_intro", e.target.value)} placeholder="Bize Ulaşın açıklaması" />
@@ -244,10 +289,8 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
-          <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Konum ve Google</h3>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Google Değerlendirme</h3>
           <div className="space-y-4">
-            <Input label="Kısa Konum (Navbar)" value={settings.location_short || ""} onChange={(e) => set("location_short", e.target.value)} placeholder="Taşdelen, Çekmeköy / İstanbul" />
-            <Input label="Google Maps Linki" value={settings.google_maps || ""} onChange={(e) => set("google_maps", e.target.value)} />
             <Input label="Google Puanı" value={settings.google_rating || ""} onChange={(e) => set("google_rating", e.target.value)} placeholder="4.87" />
             <Input label="Google Yorum Sayısı" value={settings.google_review_count || ""} onChange={(e) => set("google_review_count", e.target.value)} placeholder="30" />
           </div>
@@ -267,6 +310,8 @@ export default function SettingsPage() {
           <WorkingHoursEditor
             value={settings.working_hours || ""}
             onChange={(json) => set("working_hours", json)}
+            onSyncBarbers={syncBarberHours}
+            syncingBarbers={syncingBarbers}
           />
         </Card>
 

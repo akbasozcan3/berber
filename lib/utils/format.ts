@@ -27,6 +27,21 @@ export function toTelHref(phone?: string | null): string {
   return `tel:+${digits.startsWith("90") ? digits : `90${digits.replace(/^0/, "")}`}`;
 }
 
+/** Store phones as +90XXXXXXXXXX for consistent display across the site. */
+export function normalizePhoneStorage(phone?: string | null): string {
+  const digits = digitsOnly(phone);
+  if (!digits) return "";
+  if (digits.length === 12 && digits.startsWith("90")) return `+${digits}`;
+  if (digits.length === 11 && digits.startsWith("0")) return `+90${digits.slice(1)}`;
+  if (digits.length === 10) return `+90${digits}`;
+  return phone?.trim() ?? "";
+}
+
+export function googleMapsEmbedUrl(mapsUrl?: string | null, address?: string | null): string {
+  const query = mapsUrl?.trim() || address?.trim() || "New Life Erkek Kuaförü Taşdelen Çekmeköy";
+  return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+}
+
 export function formatWorkingHoursSummary(hours: WorkingHour[]): string {
   const openDays = hours.filter((h) => !h.closed && h.open && h.close);
   if (openDays.length === 0) return "Kapalı";

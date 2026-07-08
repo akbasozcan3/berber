@@ -12,12 +12,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import {
-  formatPhoneDisplay,
-  formatWorkingHoursSummary,
-  instagramUrl,
-  toTelHref,
-} from "@/lib/utils/format";
+import { formatPhoneDisplay, formatWorkingHoursSummary, googleMapsEmbedUrl, instagramUrl, toTelHref } from "@/lib/utils/format";
 
 interface ContactProps {
   showHeading?: boolean;
@@ -33,6 +28,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
   const phoneDisplay = formatPhoneDisplay(settings.phone);
   const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
   const email = settings.contactEmail || "info@newlifeerkekkuaforu.com";
+  const mapEmbed = googleMapsEmbedUrl(settings.googleMaps, settings.address);
 
   const contactItems = [
     {
@@ -164,7 +160,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
             <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden border border-white/[0.08] relative">
               <iframe
                 title="New Life Konum"
-                src="https://maps.google.com/maps?q=New+Life+Erkek+Kuaförü+Taşdelen+Çekmeköy&output=embed"
+                src={mapEmbed}
                 className="absolute inset-0 w-full h-full border-0 grayscale-[30%] contrast-[1.05]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"

@@ -63,24 +63,25 @@ export default function Navbar() {
         <div className="w-full bg-[#050505] border-b border-white/[0.04] h-9 flex items-center">
           <div className="w-full max-w-7xl mx-auto px-4 lg:px-10 flex items-center justify-between text-white/50 text-[10px] font-semibold tracking-[0.12em] sm:tracking-[0.18em] uppercase">
             {/* Left side info */}
-            <div className="flex items-center gap-3 sm:gap-6 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <a
                 href={toTelHref(settings.phone)}
-                className="flex items-center gap-1.5 hover:text-white transition-colors duration-300"
+                className="flex items-center gap-1.5 hover:text-white transition-colors duration-300 min-w-0"
               >
-                <Phone size={10} className="text-white/60" />
+                <Phone size={10} className="text-white/60 shrink-0" />
                 <span className="truncate">{phoneDisplay}</span>
               </a>
-              <span className="hidden md:inline-flex items-center gap-1.5 border-l border-white/10 pl-6">
-                <MapPin size={10} className="text-white/60" />
-                <span>{settings.locationShort || "Taşdelen, Çekmeköy / İstanbul"}</span>
-              </span>
+              {settings.locationShort ? (
+                <span className="hidden sm:inline-flex items-center gap-1.5 border-l border-white/10 pl-3 min-w-0">
+                  <MapPin size={10} className="text-white/60 shrink-0" />
+                  <span className="truncate">{settings.locationShort}</span>
+                </span>
+              ) : null}
             </div>
 
-            {/* Right side info */}
-            <div className="hidden sm:flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0 ml-2">
               <Clock size={10} className="text-white/60" />
-              <span>{hoursDisplay}</span>
+              <span className="truncate max-w-[42vw] sm:max-w-none">{hoursDisplay}</span>
             </div>
           </div>
         </div>

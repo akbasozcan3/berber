@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { MapPin, Navigation } from "lucide-react";
+import { googleMapsEmbedUrl } from "@/lib/utils/format";
 
 export default function LocationSection() {
-  const { address, googleMaps, businessName } = usePublicSettings();
+  const { address, googleMaps, businessName, locationShort } = usePublicSettings();
+  const mapEmbed = googleMapsEmbedUrl(googleMaps, address);
 
   return (
     <section className="relative py-0 bg-black overflow-hidden">
@@ -27,7 +29,8 @@ export default function LocationSection() {
             Bizi Ziyaret Edin
           </h2>
           <p className="text-white/45 font-light leading-relaxed mb-8 max-w-md">
-            {businessName}, Taşdelen&apos;in kalbinde modern berberlik deneyimi sunuyor. Kolay ulaşım, ücretsiz danışmanlık.
+            {businessName}
+            {locationShort ? `, ${locationShort}` : ""} bölgesinde modern berberlik deneyimi sunuyor. Kolay ulaşım, ücretsiz danışmanlık.
           </p>
 
           <div className="flex items-start gap-4 p-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] mb-8">
@@ -55,7 +58,7 @@ export default function LocationSection() {
         >
           <iframe
             title="New Life Erkek Kuaförü Konum"
-            src="https://maps.google.com/maps?q=New+Life+Erkek+Kuaförü+Taşdelen+Çekmeköy&output=embed"
+            src={mapEmbed}
             className="absolute inset-0 w-full h-full border-0 grayscale contrast-[1.1] opacity-80 hover:opacity-100 transition-opacity duration-500"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

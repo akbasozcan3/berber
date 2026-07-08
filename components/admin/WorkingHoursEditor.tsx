@@ -3,61 +3,28 @@
 import Toggle from "@/components/admin/ui/Toggle";
 import Input from "@/components/admin/ui/Input";
 import Button from "@/components/admin/ui/Button";
+import {
+  parseWorkingHoursJson,
+  serializeWorkingHours,
+  type WorkingHourRow,
+} from "@/lib/data/working-hours";
 
 const DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"] as const;
 
-export type WorkingHourRow = {
-  day: string;
-  open: string;
-  close: string;
-  closed?: boolean;
-};
+export type { WorkingHourRow };
 
-function defaultRows(): WorkingHourRow[] {
-  return DAYS.map((day) => ({
-    day,
-    open: "09:00",
-    close: "22:00",
-    closed: day === "Pazar",
-  }));
-}
-
-export function parseWorkingHoursJson(raw: string): WorkingHourRow[] {
-  try {
-    const parsed = JSON.parse(raw || "[]") as WorkingHourRow[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return defaultRows();
-    return DAYS.map((day) => {
-      const row = parsed.find((r) => r.day === day);
-      if (!row) return { day, open: "09:00", close: "22:00", closed: day === "Pazar" };
-      return {
-        day,
-        open: row.open || "09:00",
-        close: row.close || "22:00",
-        closed: Boolean(row.closed),
-      };
-    });
-  } catch {
-    return defaultRows();
-  }
-}
-
-export function serializeWorkingHours(rows: WorkingHourRow[]): string {
-  return JSON.stringify(
-    rows.map((row) => ({
-      day: row.day,
-      open: row.closed ? "" : row.open,
-      close: row.closed ? "" : row.close,
-      ...(row.closed ? { closed: true } : {}),
-    }))
-  );
-}
+export { parseWorkingHoursJson, serializeWorkingHours };
 
 export default function WorkingHoursEditor({
   value,
   onChange,
+  onSyncBarbers,
+  syncingBarbers = false,
 }: {
   value: string;
   onChange: (json: string) => void;
+  onSyncBarbers?: () => void | Promise<void>;
+  syncingBarbers?: boolean;
 }) {
   const rows = parseWorkingHoursJson(value);
 
@@ -79,8 +46,8 @@ export default function WorkingHoursEditor({
   return (
     <div className="space-y-4">
       <p className="text-sm text-[#71717A]">
-        Salonun genel açılış/kapanış saatleri. Navbar üst şeridinde ve sitede görünür.
-        Randevu saatleri için <strong className="text-[#A1A1AA]">Berberler</strong> sayfasındaki çalışma saatleri de kullanılır.
+        Üst şeritteki saatler ve iletişim bölümleri buradan güncellenir. Randevu slotları için
+        aşağıdaki butonla berber saatlerini de eşitleyebilirsiniz.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl border border-white/[0.06] bg-[#0A0A0A]">
@@ -137,6 +104,18 @@ export default function WorkingHoursEditor({
           </div>
         ))}
       </div>
+
+      {onSyncBarbers ? (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          disabled={syncingBarbers}
+          onClick={() => void onSyncBarbers()}
+        >
+          {syncingBarbers ? "Uygulanıyor..." : "Bu saatleri tüm berberlere uygula (randevu)"}
+        </Button>
+      ) : null}
     </div>
   );
 }
