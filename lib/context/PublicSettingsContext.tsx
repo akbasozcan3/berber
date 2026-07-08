@@ -1,11 +1,26 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { api } from "@/lib/api/client";
 import type { PublicSettings } from "@/lib/api/client";
 import { publicSettingsDefaults } from "@/lib/data/public-settings-defaults";
 
-const PublicSettingsContext = createContext<PublicSettings>(publicSettingsDefaults);
+type PublicSettingsContextValue = PublicSettings & {
+  brandLogoUrl: string;
+};
+
+const PublicSettingsContext = createContext<PublicSettingsContextValue>({
+  ...publicSettingsDefaults,
+  brandLogoUrl: "",
+});
+
+function mergePublicSettings(prev: PublicSettings, next: PublicSettings): PublicSettings {
+  return {
+    ...next,
+    logoUrl: next.logoUrl || prev.logoUrl,
+    faviconUrl: next.faviconUrl || prev.faviconUrl,
+  };
+}
 
 export function PublicSettingsProvider({
   children,
@@ -14,15 +29,32 @@ export function PublicSettingsProvider({
   children: React.ReactNode;
   initialSettings?: PublicSettings;
 }) {
-  const [settings, setSettings] = useState<PublicSettings>(initialSettings ?? publicSettingsDefaults);
+  const seed = initialSettings ?? publicSettingsDefaults;
+  const [settings, setSettings] = useState<PublicSettings>(seed);
+  const stickyLogo = useRef(seed.logoUrl);
 
   useEffect(() => {
-    api.getPublicSettings().then(setSettings).catch(() => {});
+    api
+      .getPublicSettings()
+      .then((next) => {
+        setSettings((prev) => mergePublicSettings(prev, next));
+      })
+      .catch(() => {});
   }, []);
 
-  return (
-    <PublicSettingsContext.Provider value={settings}>{children}</PublicSettingsContext.Provider>
+  useEffect(() => {
+    if (settings.logoUrl) stickyLogo.current = settings.logoUrl;
+  }, [settings.logoUrl]);
+
+  const value = useMemo<PublicSettingsContextValue>(
+    () => ({
+      ...settings,
+      brandLogoUrl: settings.logoUrl || stickyLogo.current,
+    }),
+    [settings]
   );
+
+  return <PublicSettingsContext.Provider value={value}>{children}</PublicSettingsContext.Provider>;
 }
 
 export function usePublicSettings() {

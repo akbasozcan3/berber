@@ -13,6 +13,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const settings = usePublicSettings();
+  const logoUrl = settings.brandLogoUrl;
   const navLinks = [
     { name: settings.navServicesLabel, href: "/hizmetler" },
     { name: settings.navGalleryLabel, href: "/galeri" },
@@ -31,10 +32,10 @@ export default function Navbar() {
 
   const isActive = (href: string) => pathname === href;
 
-  const brandLogo = settings.logoUrl ? (
+  const brandLogo = logoUrl ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={settings.logoUrl}
+      src={logoUrl}
       alt={settings.businessName || "New Life"}
       className="h-10 w-auto max-w-[160px] object-contain"
       width={160}

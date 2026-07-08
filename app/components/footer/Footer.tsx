@@ -18,10 +18,10 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="inline-block mb-6">
-              {settings.logoUrl ? (
+              {settings.brandLogoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={settings.logoUrl}
+                  src={settings.brandLogoUrl}
                   alt={settings.businessName || "New Life"}
                   className="h-10 w-auto object-contain"
                 />
