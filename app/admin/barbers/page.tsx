@@ -61,8 +61,15 @@ export default function BarbersPage() {
   };
 
   const removeBarber = async (id: number) => {
-    await adminApi.deleteBarber(id);
-    adminApi.getBarbers().then(setBarbers);
+    const ok = window.confirm("Bu berberi silmek istediğinizden emin misiniz?");
+    if (!ok) return;
+    try {
+      await adminApi.deleteBarber(id);
+      const list = await adminApi.getBarbers();
+      setBarbers(list);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Berber silinemedi.");
+    }
   };
 
   return (

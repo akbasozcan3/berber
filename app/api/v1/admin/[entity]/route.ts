@@ -2,7 +2,15 @@ import { ensureDb } from "@/lib/db/ensure";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
-  barbers, services, customers, reviews, galleryImages, settings,
+  barbers,
+  services,
+  customers,
+  reviews,
+  galleryImages,
+  settings,
+  barberServices,
+  appointments,
+  availabilityBlocks,
 } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
@@ -169,6 +177,11 @@ export async function DELETE(
     if (!id) return errorResponse("ID gerekli", 400);
 
     if (entity === "barbers") {
+      // FK kısıtları yüzünden önce ilişkili kayıtları temizlemeliyiz.
+      // (barber_services -> barbers), (appointments -> barbers) ve (availability_blocks -> barbers)
+      await db.delete(barberServices).where(eq(barberServices.barberId, id));
+      await db.update(appointments).set({ barberId: null }).where(eq(appointments.barberId, id));
+      await db.delete(availabilityBlocks).where(eq(availabilityBlocks.barberId, id));
       await db.delete(barbers).where(eq(barbers.id, id));
       return jsonResponse({ success: true });
     }
