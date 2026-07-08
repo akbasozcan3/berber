@@ -5,11 +5,12 @@ export interface WorkingHour {
   closed?: boolean;
 }
 
-export function digitsOnly(phone: string): string {
-  return phone.replace(/\D/g, "");
+export function digitsOnly(phone?: string | null): string {
+  return (phone ?? "").replace(/\D/g, "");
 }
 
-export function formatPhoneDisplay(phone: string): string {
+export function formatPhoneDisplay(phone?: string | null): string {
+  const safe = phone ?? "";
   const digits = digitsOnly(phone);
   if (digits.length === 12 && digits.startsWith("90")) {
     return `0${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8, 10)} ${digits.slice(10)}`;
@@ -17,11 +18,12 @@ export function formatPhoneDisplay(phone: string): string {
   if (digits.length === 11 && digits.startsWith("0")) {
     return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 9)} ${digits.slice(9)}`;
   }
-  return phone;
+  return safe;
 }
 
-export function toTelHref(phone: string): string {
+export function toTelHref(phone?: string | null): string {
   const digits = digitsOnly(phone);
+  if (!digits) return "tel:";
   return `tel:+${digits.startsWith("90") ? digits : `90${digits.replace(/^0/, "")}`}`;
 }
 
