@@ -1,6 +1,18 @@
 version: "3.8"
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=newlife
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   app:
     build: .
     ports:
@@ -9,6 +21,7 @@ services:
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
       - ADMIN_EMAIL=${ADMIN_EMAIL:-ozcanakbas38@gmail.com}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Ozcan2009ak}
+      - DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/newlife}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
       - ADMIN_URL=${ADMIN_URL:-http://localhost:3000/admin/appointments}
@@ -17,4 +30,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres-data:
   app-data:

@@ -103,7 +103,7 @@ export default function GalleryPage() {
                 alt={img.title}
                 fill
                 className="object-cover"
-                unoptimized={(drafts[img.id]?.url || img.url).startsWith("/uploads")}
+                unoptimized={true}
               />
             </div>
             <div className="p-4 space-y-3">

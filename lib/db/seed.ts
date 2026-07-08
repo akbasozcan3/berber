@@ -111,7 +111,7 @@ export async function ensureCMS() {
 }
 
 export async function seedDatabase() {
-  initDatabase();
+  await initDatabase();
   await ensureAdminUser();
   await ensureTelegramSettings();
 

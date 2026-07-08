@@ -7,7 +7,7 @@ import { db } from "./index";
 import { appointments, customers, notifications, telegramLogs } from "./schema";
 
 async function main() {
-  initDatabase();
+  await initDatabase();
 
   const before = await db.select().from(appointments);
   const count = before.length;

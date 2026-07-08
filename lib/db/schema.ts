@@ -1,7 +1,15 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  doublePrecision,
+  primaryKey,
+} from "drizzle-orm/pg-core";
 
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
@@ -9,8 +17,8 @@ export const users = sqliteTable("users", {
   createdAt: text("created_at").notNull(),
 });
 
-export const barbers = sqliteTable("barbers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const barbers = pgTable("barbers", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   position: text("position").notNull(),
@@ -19,99 +27,105 @@ export const barbers = sqliteTable("barbers", {
   workingDays: text("working_days").notNull().default("1,2,3,4,5,6"),
   workingStart: text("working_start").notNull().default("09:00"),
   workingEnd: text("working_end").notNull().default("22:00"),
-  onVacation: integer("on_vacation", { mode: "boolean" }).notNull().default(false),
-  available: integer("available", { mode: "boolean" }).notNull().default(true),
+  onVacation: boolean("on_vacation").notNull().default(false),
+  available: boolean("available").notNull().default(true),
   performance: integer("performance").notNull().default(95),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: text("created_at").notNull(),
 });
 
-export const services = sqliteTable("services", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const services = pgTable("services", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull(),
   duration: integer("duration").notNull(),
-  price: real("price").notNull(),
+  price: doublePrecision("price").notNull(),
   image: text("image"),
-  popular: integer("popular", { mode: "boolean" }).notNull().default(false),
-  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  popular: boolean("popular").notNull().default(false),
+  enabled: boolean("enabled").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: text("created_at").notNull(),
 });
 
-export const barberServices = sqliteTable("barber_services", {
-  barberId: integer("barber_id").notNull().references(() => barbers.id),
-  serviceId: integer("service_id").notNull().references(() => services.id),
-});
+export const barberServices = pgTable(
+  "barber_services",
+  {
+    barberId: integer("barber_id").notNull().references(() => barbers.id),
+    serviceId: integer("service_id").notNull().references(() => services.id),
+  },
+  (t) => ({
+    pk: primaryKey(t.barberId, t.serviceId),
+  })
+);
 
-export const customers = sqliteTable("customers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const customers = pgTable("customers", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   phone: text("phone").notNull(),
   email: text("email"),
   visitCount: integer("visit_count").notNull().default(0),
-  totalSpent: real("total_spent").notNull().default(0),
+  totalSpent: doublePrecision("total_spent").notNull().default(0),
   lastVisit: text("last_visit"),
   favoriteBarberId: integer("favorite_barber_id"),
   notes: text("notes"),
   createdAt: text("created_at").notNull(),
 });
 
-export const appointments = sqliteTable("appointments", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const appointments = pgTable("appointments", {
+  id: serial("id").primaryKey(),
   customerId: integer("customer_id").notNull().references(() => customers.id),
   serviceId: integer("service_id").notNull().references(() => services.id),
   barberId: integer("barber_id").references(() => barbers.id),
   date: text("date").notNull(),
   time: text("time").notNull(),
   duration: integer("duration").notNull(),
-  price: real("price").notNull(),
+  price: doublePrecision("price").notNull(),
   status: text("status").notNull().default("pending"),
   notes: text("notes"),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
 
-export const reviews = sqliteTable("reviews", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email"),
   rating: integer("rating").notNull(),
   review: text("review").notNull(),
   source: text("source").notNull().default("website"),
-  featured: integer("featured", { mode: "boolean" }).notNull().default(false),
-  approved: integer("approved", { mode: "boolean" }).notNull().default(false),
-  replied: integer("replied", { mode: "boolean" }).notNull().default(false),
+  featured: boolean("featured").notNull().default(false),
+  approved: boolean("approved").notNull().default(false),
+  replied: boolean("replied").notNull().default(false),
   reply: text("reply"),
   createdAt: text("created_at").notNull(),
 });
 
-export const galleryImages = sqliteTable("gallery_images", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const galleryImages = pgTable("gallery_images", {
+  id: serial("id").primaryKey(),
   url: text("url").notNull(),
   title: text("title").notNull(),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: text("created_at").notNull(),
 });
 
-export const settings = sqliteTable("settings", {
+export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
 });
 
-export const notifications = sqliteTable("notifications", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
   type: text("type").notNull(),
   title: text("title").notNull(),
   message: text("message").notNull(),
   data: text("data"),
-  read: integer("read", { mode: "boolean" }).notNull().default(false),
+  read: boolean("read").notNull().default(false),
   createdAt: text("created_at").notNull(),
 });
 
-export const telegramLogs = sqliteTable("telegram_logs", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const telegramLogs = pgTable("telegram_logs", {
+  id: serial("id").primaryKey(),
   appointmentId: integer("appointment_id"),
   chatId: text("chat_id").notNull(),
   message: text("message").notNull(),
@@ -121,17 +135,17 @@ export const telegramLogs = sqliteTable("telegram_logs", {
   createdAt: text("created_at").notNull(),
 });
 
-export const contactMessages = sqliteTable("contact_messages", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull(),
   message: text("message").notNull(),
-  read: integer("read", { mode: "boolean" }).notNull().default(false),
+  read: boolean("read").notNull().default(false),
   createdAt: text("created_at").notNull(),
 });
 
-export const availabilityBlocks = sqliteTable("availability_blocks", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const availabilityBlocks = pgTable("availability_blocks", {
+  id: serial("id").primaryKey(),
   date: text("date").notNull(),
   endDate: text("end_date"),
   startTime: text("start_time").notNull(),
@@ -142,13 +156,13 @@ export const availabilityBlocks = sqliteTable("availability_blocks", {
   scope: text("scope"),
   reason: text("reason").notNull().default("Müsait değil"),
   barberId: integer("barber_id"),
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  active: boolean("active").notNull().default(true),
   createdBy: text("created_by"),
   createdAt: text("created_at").notNull(),
 });
 
-export const availabilityAuditLog = sqliteTable("availability_audit_log", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const availabilityAuditLog = pgTable("availability_audit_log", {
+  id: serial("id").primaryKey(),
   adminName: text("admin_name").notNull(),
   action: text("action").notNull(),
   previousState: text("previous_state"),
@@ -157,8 +171,8 @@ export const availabilityAuditLog = sqliteTable("availability_audit_log", {
   createdAt: text("created_at").notNull(),
 });
 
-export const heroSlides = sqliteTable("hero_slides", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+export const heroSlides = pgTable("hero_slides", {
+  id: serial("id").primaryKey(),
   title: text("title").notNull(),
   subtitle: text("subtitle").notNull(),
   description: text("description").notNull(),
@@ -167,11 +181,11 @@ export const heroSlides = sqliteTable("hero_slides", {
   ctaText: text("cta_text").notNull().default("Hemen Randevu Al"),
   ctaLink: text("cta_link").notNull().default("/randevu"),
   sortOrder: integer("sort_order").notNull().default(0),
-  enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+  enabled: boolean("enabled").notNull().default(true),
   createdAt: text("created_at").notNull(),
 });
 
-export const pageContent = sqliteTable("page_content", {
+export const pageContent = pgTable("page_content", {
   slug: text("slug").primaryKey(),
   title: text("title").notNull(),
   subtitle: text("subtitle"),

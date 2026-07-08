@@ -5,7 +5,7 @@ let seeding: Promise<void> | null = null;
 
 /** Ensures SQLite is initialized and seeded once per process. */
 export async function ensureDb() {
-  initDatabase();
+  await initDatabase();
   if (process.env.NEXT_PHASE === "phase-production-build") return;
   if (!seeding) {
     seeding = seedDatabase();

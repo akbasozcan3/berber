@@ -26,9 +26,11 @@ npm run dev
 | `ADMIN_EMAIL` | **Evet** | `.env.local` / Vercel | Admin giriş e-postası |
 | `ADMIN_PASSWORD` | **Evet** | `.env.local` / Vercel | Admin şifresi |
 | `JWT_SECRET` | **Evet** | `.env.local` / Vercel | Güvenlik anahtarı (rastgele uzun string) |
+| `DATABASE_URL` | **Evet** | `.env.local` / Vercel | Vercel Postgres bağlantısı |
 | `TELEGRAM_BOT_TOKEN` | **Evet** (bildirim için) | `.env.local` / Vercel | BotFather token — **sadece sunucuda** |
 | `TELEGRAM_CHAT_ID` | **Evet** (bildirim için) | `.env.local` veya Admin → Ayarlar | Mesajların gideceği chat |
 | `ADMIN_URL` | Önerilen | `.env.local` veya Admin → Ayarlar | Telegram'daki admin panel linki |
+| `BLOB_READ_WRITE_TOKEN` | Opsiyonel | Vercel Blob / (local için) | Vercel Blob token (Vercel genelde otomatik ekler) |
 | İşletme telefonu, adres, saatler | Opsiyonel | Admin → Ayarlar | Panelden düzenlenir |
 | Hero slider, makale, galeri | Opsiyonel | Admin paneli | Panelden düzenlenir |
 
@@ -85,16 +87,18 @@ Durum göstergesi **"Hazır"** yeşil olmalı:
 ADMIN_EMAIL=ozcanakbas38@gmail.com
 ADMIN_PASSWORD=Ozcan2009ak
 JWT_SECRET=<rastgele-uzun-anahtar>
+DATABASE_URL=<vercel-postgres-url>
 TELEGRAM_BOT_TOKEN=<botfather-token>
 TELEGRAM_CHAT_ID=<chat-id>
 ADMIN_URL=https://siteniz.vercel.app/admin/appointments
+BLOB_READ_WRITE_TOKEN=<otomatik veya token>
 ```
 
 4. Deploy
 5. İlk deploy sonrası terminalde veya Vercel shell'de: `npm run db:seed` (bir kez)
 6. Admin panele gir → Ayarlar → Test Bağlantısı
 
-> Vercel'de SQLite dosyası geçicidir. Kalıcı veri için VPS/Docker önerilir.
+> Vercel'de DB olarak Postgres kullanıyoruz (`DATABASE_URL`). Görseller de Vercel Blob ile saklanır.
 
 ---
 

@@ -238,7 +238,7 @@ export default function ServicesPage() {
                     alt={service.name}
                     fill
                     className="object-cover"
-                    unoptimized={service.image.startsWith("/uploads")}
+                    unoptimized={true}
                   />
                   {service.popular && (
                     <div className="absolute top-3 left-3">

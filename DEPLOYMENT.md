@@ -4,6 +4,7 @@
 
 ```bash
 npm install
+docker compose up -d
 cp .env.example .env.local
 npm run db:seed
 npm run dev
@@ -18,12 +19,14 @@ npm run dev
 Create `.env.local`:
 
 ```env
+DATABASE_URL=postgres://user:password@localhost:5432/newlife
 JWT_SECRET=your-super-secret-jwt-key-change-this
 ADMIN_EMAIL=ozcanakbas38@gmail.com
 ADMIN_PASSWORD=Ozcan2009ak
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 TELEGRAM_CHAT_ID=your-telegram-chat-id
 ADMIN_URL=https://yourdomain.com/admin/appointments
+BLOB_READ_WRITE_TOKEN= (local ise gerekebilir)
 ```
 
 > **Security:** `TELEGRAM_BOT_TOKEN` must only be set server-side. Never expose it to the client.
@@ -56,7 +59,7 @@ ADMIN_URL=https://yourdomain.com/admin/appointments
 3. Set environment variables
 4. Deploy
 
-> Note: SQLite works for single-instance deployments. For multi-instance, migrate to PostgreSQL.
+> Postgres + Vercel Blob kullanıyoruz. `DATABASE_URL` olmadan DB çalışmaz.
 
 ### VPS with Docker
 
