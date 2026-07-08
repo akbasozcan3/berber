@@ -1,0 +1,118 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Save } from "lucide-react";
+import PageHeader from "@/components/admin/ui/PageHeader";
+import Card from "@/components/admin/ui/Card";
+import Button from "@/components/admin/ui/Button";
+import Input from "@/components/admin/ui/Input";
+import Textarea from "@/components/admin/ui/Textarea";
+import ImageUpload from "@/components/admin/ui/ImageUpload";
+
+const PAGES = [
+  { slug: "about", label: "Hakkımızda Sayfası" },
+  { slug: "home_about", label: "Ana Sayfa Hakkımızda Banner" },
+  { slug: "home_quote", label: "Ana Sayfa Felsefe Banner" },
+];
+
+export default function ContentAdminPage() {
+  const [activeSlug, setActiveSlug] = useState("about");
+  const [form, setForm] = useState({ title: "", subtitle: "", heroImage: "", content: "" });
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/v1/admin/content?slug=${activeSlug}`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data) {
+          setForm({
+            title: data.title || "",
+            subtitle: data.subtitle || "",
+            heroImage: data.heroImage || "",
+            content: data.content || "",
+          });
+        } else {
+          setForm({ title: "", subtitle: "", heroImage: "", content: "" });
+        }
+      });
+  }, [activeSlug]);
+
+  const save = async () => {
+    await fetch("/api/v1/admin/content", {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: activeSlug, ...form }),
+    });
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div>
+      <PageHeader
+        title="İçerik Yönetimi"
+        description="Sayfa metinleri ve görseller"
+        actions={
+          <Button onClick={save}>
+            <Save className="w-4 h-4" />
+            {saved ? "Kaydedildi!" : "Kaydet"}
+          </Button>
+        }
+      />
+
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {PAGES.map((p) => (
+          <button
+            key={p.slug}
+            onClick={() => setActiveSlug(p.slug)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              activeSlug === p.slug
+                ? "bg-[#D4AF37] text-black"
+                : "bg-white/[0.04] text-[#71717A] hover:text-white"
+            }`}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      <Card>
+        <div className="space-y-4">
+          <Input
+            label="Başlık"
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+          />
+          <Input
+            label="Alt Başlık"
+            value={form.subtitle}
+            onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+          />
+          <ImageUpload
+            label="Banner Görseli"
+            folder="content"
+            value={form.heroImage}
+            onChange={(heroImage) => setForm({ ...form, heroImage })}
+            previewHeightClass="h-48"
+          />
+          <div>
+            <label className="text-xs text-[#71717A] mb-2 block">İçerik (HTML destekli)</label>
+            <Textarea
+              rows={20}
+              value={form.content}
+              onChange={(e) => setForm({ ...form, content: e.target.value })}
+              className="font-mono text-sm"
+              placeholder="<p>Makale içeriği...</p>"
+            />
+          </div>
+          {activeSlug === "about" && (
+            <p className="text-xs text-[#52525B]">
+              HTML etiketleri kullanabilirsiniz: &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;
+            </p>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}

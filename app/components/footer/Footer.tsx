@@ -1,0 +1,119 @@
+﻿"use client";
+
+import Link from "next/link";
+import { ArrowUp } from "lucide-react";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { instagramUrl } from "@/lib/utils/format";
+
+export default function Footer() {
+  const settings = usePublicSettings();
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const insta = instagramUrl(settings.instagram);
+
+  return (
+    <footer className="bg-[#050505] pt-24 pb-12 border-t border-white/[0.06] relative z-10">
+      <div className="container mx-auto px-6 md:px-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
+
+          {/* Brand */}
+          <div>
+            <Link href="/" className="inline-block mb-6">
+              <span className="text-2xl font-serif font-bold tracking-[0.15em] uppercase text-white hover:text-white/80 transition-colors duration-300">
+                NEW LIFE
+              </span>
+              <span className="block text-xs font-serif italic font-light tracking-[0.1em] uppercase text-white/50 mt-1">
+                ERKEK KUAFÖRÜ
+              </span>
+            </Link>
+            <p className="text-white/40 font-light text-sm max-w-xs leading-relaxed">
+              İstanbul Çekmeköy Taşdelen&apos;de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.
+            </p>
+          </div>
+
+          {/* Nav */}
+          <div>
+            <h4 className="text-white text-[9px] font-bold uppercase tracking-[0.28em] mb-6">
+              Hızlı Menü
+            </h4>
+            <ul className="space-y-4">
+              {[
+                { label: "Hizmetler", href: "/hizmetler" },
+                { label: "Galeri", href: "/galeri" },
+                { label: "Hakkımızda", href: "/hakkimizda" },
+                { label: "Yorumlar", href: "/yorumlar" },
+                { label: "Randevu", href: "/randevu" },
+                { label: "İletişim", href: "/iletisim" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="text-white/40 hover:text-white transition-colors text-sm font-light"
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="text-white text-[9px] font-bold uppercase tracking-[0.28em] mb-6">
+              Yasal
+            </h4>
+            <ul className="space-y-4">
+              {[
+                { label: "Gizlilik Politikası", href: "/gizlilik" },
+                { label: "Kullanım Koşulları", href: "/kullanim-kosullari" },
+                { label: "Çerez Politikası", href: "/cerez-politikasi" },
+                { label: "KVKK Metni", href: "/kvkk" },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link href={item.href} className="text-white/40 hover:text-white transition-colors text-sm font-light">
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Social */}
+          <div>
+            <h4 className="text-white text-[9px] font-bold uppercase tracking-[0.28em] mb-6">
+              Sosyal Medya
+            </h4>
+            <div className="flex space-x-3">
+              <a
+                href={insta}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:bg-white/90 hover:text-black hover:border-white/50 transition-all duration-300"
+                aria-label="Instagram"
+              >
+                <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                </svg>
+              </a>
+            </div>
+            <p className="text-white/30 text-xs mt-4">{settings.instagram}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10">
+          <p className="text-white/30 text-xs mb-4 md:mb-0">
+            &copy; {new Date().getFullYear()} New Life Erkek Kuaförü. Tüm hakları saklıdır.
+          </p>
+          <button
+            onClick={scrollToTop}
+            className="flex items-center gap-2.5 text-white/35 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-[0.25em] group"
+          >
+            Başa Dön
+            <ArrowUp size={12} className="group-hover:-translate-y-1 transition-transform duration-300" />
+          </button>
+        </div>
+      </div>
+    </footer>
+  );
+}

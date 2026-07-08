@@ -1,0 +1,77 @@
+import { z } from "zod";
+import { ensureDb } from "@/lib/db/ensure";
+import { createBooking } from "@/lib/services/booking";
+import { sendTelegramNotification } from "@/lib/telegram";
+import { createNotification } from "@/lib/services/notifications";
+import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
+
+const bookingSchema = z.object({
+  customerName: z.string().min(2, "Ad soyad en az 2 karakter olmalıdır."),
+  phone: z.string().min(10, "Geçerli telefon numarası girin."),
+  email: z.string().email().optional().or(z.literal("")),
+  serviceId: z.number(),
+  barberId: z.number().nullable().optional(),
+  date: z.string(),
+  time: z.string(),
+  notes: z.string().optional(),
+  agreed: z.boolean(),
+});
+
+export async function POST(request: Request) {
+  try {
+    await ensureDb();
+    const body = await parseBody<unknown>(request);
+    const data = bookingSchema.parse(body);
+
+    const result = await createBooking({
+      ...data,
+      email: data.email || undefined,
+      barberId: data.barberId ?? null,
+    });
+
+    void createNotification({
+      type: "appointment",
+      title: "Yeni Randevu",
+      message: `${data.customerName} - ${result.service.name} (${data.date} ${data.time})`,
+      meta: { appointmentId: result.appointment.id },
+    }).catch((err) => {
+      console.error("[Notification] Failed to create notification:", err);
+    });
+
+    void sendTelegramNotification(
+      {
+        customerName: data.customerName,
+        phone: data.phone,
+        service: result.service.name,
+        barber: result.barber?.name || "Not assigned",
+        date: data.date,
+        time: data.time,
+        notes: data.notes,
+      },
+      result.appointment.id
+    ).catch((err) => {
+      console.error("[Telegram] Failed to send notification:", err);
+    });
+
+    return jsonResponse(
+      {
+        success: true,
+        appointment: {
+          id: result.appointment.id,
+          date: result.appointment.date,
+          time: result.appointment.time,
+          status: result.appointment.status,
+          service: result.service.name,
+          barber: result.barber?.name,
+          price: result.appointment.price,
+        },
+      },
+      201
+    );
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return errorResponse(error.issues[0]?.message || "Geçersiz veri.");
+    }
+    return errorResponse(error instanceof Error ? error.message : "Randevu oluşturulamadı.", 500);
+  }
+}

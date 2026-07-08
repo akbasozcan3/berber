@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-ozcanakbas38@gmail.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-Ozcan2009ak}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - ADMIN_URL=${ADMIN_URL:-http://localhost:3000/admin/appointments}
+    volumes:
+      - app-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  app-data:

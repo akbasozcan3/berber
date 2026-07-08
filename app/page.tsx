@@ -1,65 +1,73 @@
-import Image from "next/image";
+import type { Metadata } from "next";
+import dynamic from "next/dynamic";
+import HeroSlider from "./components/hero/HeroSlider";
+import ServicesPreview from "./components/home/ServicesPreview";
+import AboutBanner from "./components/home/AboutBanner";
+import QuoteBanner from "./components/home/QuoteBanner";
+import Contact from "./components/contact/Contact";
+import StatsStrip from "./components/home/StatsStrip";
+import BookingCTA from "./components/home/BookingCTA";
+import GalleryPreview from "./components/home/GalleryPreview";
+import { getGalleryImages, getPopularServices } from "@/lib/data/public-server";
+import type { GalleryImage, Service } from "@/lib/api/client";
 
-export default function Home() {
+const TeamPreview = dynamic(() => import("./components/home/TeamPreview"));
+const HowItWorks = dynamic(() => import("./components/home/HowItWorks"));
+const ExperienceHighlights = dynamic(() => import("./components/home/ExperienceHighlights"));
+const TestimonialsSlider = dynamic(() => import("./components/home/TestimonialsSlider"));
+
+export const metadata: Metadata = {
+  title: "New Life Erkek Kuaförü — Çekmeköy Taşdelen",
+  description:
+    "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı, cilt bakımı ve erkek bakım hizmetleri.",
+};
+
+function mapServices(rows: Awaited<ReturnType<typeof getPopularServices>>): Service[] {
+  return rows.map((s) => ({
+    id: s.id,
+    name: s.name,
+    slug: s.slug,
+    description: s.description,
+    duration: s.duration,
+    price: s.price,
+    image: s.image,
+    popular: s.popular,
+  }));
+}
+
+function mapGallery(rows: Awaited<ReturnType<typeof getGalleryImages>>): GalleryImage[] {
+  return rows.map((g) => ({
+    id: g.id,
+    url: g.url,
+    title: g.title,
+    sortOrder: g.sortOrder,
+    createdAt: g.createdAt,
+  }));
+}
+
+export default async function HomePage() {
+  const [serviceRows, galleryRows] = await Promise.all([
+    getPopularServices(4),
+    getGalleryImages(),
+  ]);
+
+  const services = mapServices(serviceRows);
+  const gallery = mapGallery(galleryRows);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main>
+      <HeroSlider />
+      <StatsStrip />
+      <ServicesPreview initialServices={services} />
+      <AboutBanner />
+      <TeamPreview />
+      <HowItWorks />
+      <GalleryPreview initialImages={gallery} />
+      <ExperienceHighlights />
+      <QuoteBanner />
+      <TestimonialsSlider />
+      <BookingCTA initialServices={services} />
+      <Contact />
+    </main>
   );
 }
