@@ -44,8 +44,10 @@ export function formatWorkingHoursSummary(hours: WorkingHour[]): string {
   return openDays.map((h) => `${h.day}: ${h.open}–${h.close}`).join(" · ");
 }
 
-export function instagramUrl(handle: string): string {
-  const clean = handle.replace(/^@/, "");
+export function instagramUrl(handle?: string | null): string {
+  const safe = handle ?? "";
+  if (!safe) return "https://instagram.com/";
+  const clean = safe.replace(/^@/, "");
   return `https://instagram.com/${clean}`;
 }
 
