@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ArrowRight, Star } from "lucide-react";
 import { api, type Barber } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 
 export default function TeamPreview() {
+  const settings = usePublicSettings();
   const [barbers, setBarbers] = useState<Barber[]>([]);
 
   useEffect(() => {
@@ -31,18 +33,18 @@ export default function TeamPreview() {
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-px bg-white" />
               <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-white/60">
-                Uzman Kadro
+                {settings.homeTeamEyebrow}
               </span>
             </div>
             <h2 className="text-4xl md:text-6xl font-serif font-light text-white tracking-tight leading-tight">
-              Berberlerimiz
+              {settings.homeTeamTitle}
             </h2>
           </motion.div>
           <Link
             href="/randevu"
             className="group inline-flex items-center gap-2 text-[10px] font-bold tracking-[0.28em] uppercase text-white/40 hover:text-white transition-colors"
           >
-            Randevu Al
+            {settings.navCtaLabel || "Randevu Al"}
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

@@ -386,6 +386,42 @@ export async function seedDatabase() {
       "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.",
     footer_copyright: "",
     nav_cta_label: "Randevu Al",
+    seo_default_description:
+      "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı, cilt bakımı ve erkek bakım hizmetleri.",
+    seo_keywords:
+      "erkek kuaförü, barber, kuaför, saç kesimi, sakal tıraşı, Çekmeköy, Taşdelen, İstanbul",
+    site_url: "",
+    booking_page_title: "Online Randevu",
+    booking_page_subtitle:
+      "Zamanınız değerlidir. Sıra beklemeden, dilediğiniz gün ve saatte yerinizi rezerve edin.",
+    booking_page_banner:
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1200&auto=format&fit=crop",
+    home_team_eyebrow: "Uzman Kadro",
+    home_team_title: "Berberlerimiz",
+    home_gallery_eyebrow: "Galeri",
+    home_gallery_title: "Koleksiyonu",
+    home_testimonials_eyebrow: "Müşteri Yorumları",
+    home_testimonials_title: "Deneyimleyenlerin\\nGözünden",
+    home_booking_cta_eyebrow: "Online Rezervasyon",
+    home_booking_cta_title: "Randevunuzu\\nHemen Oluşturun",
+    home_booking_cta_subtitle:
+      "Sıra beklemeden, size uygun tarih ve saati seçin. Güncel hizmet ve fiyat listesini inceleyip randevunuzu oluşturun.",
+    home_booking_cta_banner:
+      "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2560&auto=format&fit=crop",
+    experience_eyebrow: "Rakamlarla",
+    experience_title: "Güvenin Sayılarla Kanıtı",
+    experience_years: "10+",
+    experience_hygiene: "100%",
+    reviews_section_intro:
+      "Bölgenizde güvenilir erkek kuaförü deneyimi. Gerçek müşteri geri bildirimleri.",
+    reviews_featured_quote: "Kaliteli hizmet, temiz salon ve profesyonel ekip.",
+    home_stats_json: JSON.stringify([
+      { title: "Randevulu Hizmet", desc: "Beklemeden tam saatinde hizmet." },
+      { title: "Uzman Berberler", desc: "Kişiye özel modern kesimler." },
+      { title: "Premium Bakım", desc: "Profesyonel saç ve sakal bakımı." },
+      { title: "Konforlu Salon", desc: "Rahat ve modern atmosfer." },
+      { title: "Kaliteli Ürünler", desc: "Dünya markalarıyla bakım." },
+    ]),
   };
 
   // Settings: key yoksa ekle, varsa ama boşsa değerini tamamla.

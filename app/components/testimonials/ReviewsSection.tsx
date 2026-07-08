@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star, Send, CheckCircle, Quote, Mail } from "lucide-react";
 import { api, type Review } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { getInitials } from "@/lib/utils/format";
 
 interface ReviewsSectionProps {
@@ -16,6 +17,7 @@ export default function ReviewsSection({
   googleRating,
   googleReviewCount,
 }: ReviewsSectionProps) {
+  const { reviewsSectionIntro, reviewsFeaturedQuote } = usePublicSettings();
   const [reviews] = useState<Review[]>(initialReviews);
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -66,14 +68,14 @@ export default function ReviewsSection({
               </div>
             </div>
             <p className="text-black/50 font-light leading-relaxed max-w-xl">
-              Taşdelen bölgesinde güvenilir erkek kuaförü deneyimi. Gerçek müşteri geri bildirimleri.
+              {reviewsSectionIntro}
             </p>
           </div>
 
           <div className="lg:col-span-5 rounded-2xl border border-black/10 bg-black/[0.03] p-8 md:p-10 flex flex-col justify-center">
             <Quote size={28} className="text-black/40 mb-4" strokeWidth={1.5} />
             <p className="text-black font-serif text-xl font-light italic leading-relaxed mb-6">
-              &ldquo;Kaliteli hizmet, temiz salon ve profesyonel ekip.&rdquo;
+              &ldquo;{reviewsFeaturedQuote}&rdquo;
             </p>
             {!showForm && (
               <button

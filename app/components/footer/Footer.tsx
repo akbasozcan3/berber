@@ -30,10 +30,10 @@ export default function Footer() {
               ) : (
                 <>
                   <span className="text-2xl font-serif font-bold tracking-[0.15em] uppercase text-white hover:text-white/80 transition-colors duration-300">
-                    NEW LIFE
+                    {(settings.businessName || "SALON").split(" ")[0]}
                   </span>
                   <span className="block text-xs font-serif italic font-light tracking-[0.1em] uppercase text-white/50 mt-1">
-                    ERKEK KUAFÖRÜ
+                    {(settings.businessName || "").split(" ").slice(1).join(" ") || "KUAFÖR"}
                   </span>
                 </>
               )}

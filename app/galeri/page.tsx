@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
-
-export const dynamic = "force-dynamic";
 import Gallery from "../components/gallery/Gallery";
 import { getGalleryImages, getPublicSettingsSnapshot } from "@/lib/data/public-server";
+import { buildPageMetadata } from "@/lib/data/seo";
 
-export const metadata: Metadata = {
-  title: "Galeri",
-  description: "New Life Erkek Kuaförü çalışmalarımızdan saç tasarımı, sakal tıraşı ve salon atmosferimizi görsel koleksiyonumuzda keşfedin.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const settings = await getPublicSettingsSnapshot();
+  return buildPageMetadata(settings, settings.galleryPageTitle, settings.galleryPageSubtitle);
+}
 
 export default async function GaleriPage() {
   const [settings, galleryRows] = await Promise.all([

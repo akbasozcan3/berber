@@ -320,6 +320,66 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <Input label="Randevu Aralığı (dk)" type="number" value={settings.appointment_interval || "30"} onChange={(e) => set("appointment_interval", e.target.value)} />
             <Input label="Max İleri Tarih (gün)" type="number" value={settings.max_future_booking || "30"} onChange={(e) => set("max_future_booking", e.target.value)} />
+            <Input label="Slot Başına Max Randevu" type="number" value={settings.max_bookings_per_slot || "1"} onChange={(e) => set("max_bookings_per_slot", e.target.value)} />
+            <div>
+              <label className="text-xs text-[#71717A] mb-2 block">Öğle Arası (JSON)</label>
+              <textarea
+                className="w-full min-h-[80px] bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 py-3 text-sm font-mono text-[#F8F8F8]"
+                value={settings.break_times || ""}
+                onChange={(e) => set("break_times", e.target.value)}
+                placeholder='[{"start":"13:00","end":"14:00"}]'
+              />
+            </div>
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">SEO & Site</h3>
+          <div className="space-y-4">
+            <Input label="Site URL (https://...)" value={settings.site_url || ""} onChange={(e) => set("site_url", e.target.value)} placeholder="https://siteniz.com" />
+            <Input label="Ana Sayfa SEO Başlık (boş = otomatik)" value={settings.seo_home_title || ""} onChange={(e) => set("seo_home_title", e.target.value)} />
+            <Input label="SEO Açıklama" value={settings.seo_default_description || ""} onChange={(e) => set("seo_default_description", e.target.value)} />
+            <Input label="SEO Anahtar Kelimeler (virgülle)" value={settings.seo_keywords || ""} onChange={(e) => set("seo_keywords", e.target.value)} />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Randevu Sayfası</h3>
+          <div className="space-y-4">
+            <Input label="Başlık" value={settings.booking_page_title || ""} onChange={(e) => set("booking_page_title", e.target.value)} />
+            <Input label="Alt Başlık" value={settings.booking_page_subtitle || ""} onChange={(e) => set("booking_page_subtitle", e.target.value)} />
+            <ImageUpload label="Banner" folder="banners" value={settings.booking_page_banner || ""} onChange={(url) => set("booking_page_banner", url)} />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Ana Sayfa Bölümleri</h3>
+          <div className="space-y-4">
+            <Input label="Berberler Üst Metin" value={settings.home_team_eyebrow || ""} onChange={(e) => set("home_team_eyebrow", e.target.value)} />
+            <Input label="Berberler Başlık" value={settings.home_team_title || ""} onChange={(e) => set("home_team_title", e.target.value)} />
+            <Input label="Galeri Üst Metin" value={settings.home_gallery_eyebrow || ""} onChange={(e) => set("home_gallery_eyebrow", e.target.value)} />
+            <Input label="Galeri Başlık (\\n ile satır)" value={settings.home_gallery_title || ""} onChange={(e) => set("home_gallery_title", e.target.value)} />
+            <Input label="Yorumlar Üst Metin" value={settings.home_testimonials_eyebrow || ""} onChange={(e) => set("home_testimonials_eyebrow", e.target.value)} />
+            <Input label="Yorumlar Başlık (\\n ile satır)" value={settings.home_testimonials_title || ""} onChange={(e) => set("home_testimonials_title", e.target.value)} />
+            <Input label="Randevu CTA Üst Metin" value={settings.home_booking_cta_eyebrow || ""} onChange={(e) => set("home_booking_cta_eyebrow", e.target.value)} />
+            <Input label="Randevu CTA Başlık (\\n ile satır)" value={settings.home_booking_cta_title || ""} onChange={(e) => set("home_booking_cta_title", e.target.value)} />
+            <Input label="Randevu CTA Açıklama" value={settings.home_booking_cta_subtitle || ""} onChange={(e) => set("home_booking_cta_subtitle", e.target.value)} />
+            <ImageUpload label="Randevu CTA Arkaplan" folder="banners" value={settings.home_booking_cta_banner || ""} onChange={(url) => set("home_booking_cta_banner", url)} />
+            <Input label="Deneyim Üst Metin" value={settings.experience_eyebrow || ""} onChange={(e) => set("experience_eyebrow", e.target.value)} />
+            <Input label="Deneyim Başlık" value={settings.experience_title || ""} onChange={(e) => set("experience_title", e.target.value)} />
+            <Input label="Yıllık Deneyim" value={settings.experience_years || ""} onChange={(e) => set("experience_years", e.target.value)} />
+            <Input label="Hijyen %" value={settings.experience_hygiene || ""} onChange={(e) => set("experience_hygiene", e.target.value)} />
+            <Input label="Yorumlar Giriş Metni" value={settings.reviews_section_intro || ""} onChange={(e) => set("reviews_section_intro", e.target.value)} />
+            <Input label="Öne Çıkan Yorum Alıntısı" value={settings.reviews_featured_quote || ""} onChange={(e) => set("reviews_featured_quote", e.target.value)} />
+            <div>
+              <label className="text-xs text-[#71717A] mb-2 block">Ana Sayfa Özellik Şeridi (JSON)</label>
+              <textarea
+                className="w-full min-h-[120px] bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 py-3 text-sm font-mono text-[#F8F8F8]"
+                value={settings.home_stats_json || ""}
+                onChange={(e) => set("home_stats_json", e.target.value)}
+                placeholder='[{"title":"Randevulu Hizmet","desc":"..."}]'
+              />
+            </div>
           </div>
         </Card>
 

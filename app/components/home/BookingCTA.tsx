@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Phone, Scissors } from "lucide-react";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, toTelHref } from "@/lib/utils/format";
+import { splitTitleLines } from "@/lib/data/home-content";
 import { api, type Service } from "@/lib/api/client";
 
 interface BookingCTAProps {
@@ -13,8 +14,13 @@ interface BookingCTAProps {
 }
 
 export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
-  const { phone } = usePublicSettings();
+  const settings = usePublicSettings();
   const [services, setServices] = useState<Service[]>(initialServices);
+  const [titleLine1, titleLine2] = splitTitleLines(
+    settings.homeBookingCtaTitle,
+    "Randevunuzu",
+    "Hemen Oluşturun"
+  );
 
   useEffect(() => {
     if (initialServices.length > 0) return;
@@ -30,8 +36,7 @@ export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-15"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2560&auto=format&fit=crop')",
+          backgroundImage: `url('${settings.homeBookingCtaBanner}')`,
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/90 to-black/60" />
@@ -47,16 +52,15 @@ export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
             <div className="flex items-center gap-3 mb-8">
               <span className="w-8 h-px bg-white" />
               <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-white/60">
-                Online Rezervasyon
+                {settings.homeBookingCtaEyebrow}
               </span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-serif font-light text-white tracking-tight leading-[1.05] mb-8">
-              Randevunuzu <br />
-              <span className="italic text-white/25">Hemen Oluşturun</span>
+            <h2 className="text-5xl md:text-7xl font-serif font-light text-white tracking-tight leading-[1.05] mb-8 whitespace-pre-line">
+              {titleLine1} <br />
+              <span className="italic text-white/25">{titleLine2}</span>
             </h2>
             <p className="text-white/40 text-lg font-light leading-relaxed max-w-md">
-              Sıra beklemeden, size uygun tarih ve saati seçin. Güncel hizmet ve fiyat listesini
-              aşağıdan inceleyip randevunuzu oluşturun.
+              {settings.homeBookingCtaSubtitle}
             </p>
           </motion.div>
 
@@ -96,15 +100,15 @@ export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
                 href="/randevu"
                 className="group flex-1 flex items-center justify-center gap-3 bg-white text-black hover:bg-white/90 px-8 py-5 rounded-full text-[10px] font-bold tracking-[0.28em] uppercase transition-all duration-300"
               >
-                Online Randevu Al
+                {settings.bookingPageTitle || settings.navCtaLabel || "Randevu Al"}
                 <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
               </Link>
               <a
-                href={toTelHref(phone)}
+                href={toTelHref(settings.phone)}
                 className="flex items-center justify-center gap-2 border border-white/15 text-white hover:border-white/40 px-8 py-5 rounded-full text-[10px] font-bold tracking-[0.28em] uppercase transition-all duration-300"
               >
                 <Phone size={13} />
-                {formatPhoneDisplay(phone)}
+                {formatPhoneDisplay(settings.phone)}
               </a>
             </div>
           </motion.div>

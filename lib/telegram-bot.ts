@@ -4,6 +4,8 @@ import { formatPhoneDisplay } from "@/lib/utils/format";
 
 async function welcomeMessage(): Promise<string> {
   const phone = await getSetting("phone");
+  const siteUrl = (await getSetting("site_url"))?.replace(/\/$/, "");
+  const bookingUrl = siteUrl ? `${siteUrl}/randevu` : "/randevu";
   const phoneLine = phone ? `Telefon: ${formatPhoneDisplay(phone)}` : "";
   return `Merhaba!
 
@@ -11,7 +13,7 @@ New Life Erkek Kuaförü bildirim botuna hoş geldiniz.
 
 Kaydınız tamamlandı — yeni randevu bildirimleri bu sohbete gelecek.
 
-Randevu almak için: newlifeberber.com/randevu
+Randevu almak için: ${bookingUrl}
 ${phoneLine}
 
 Sorularınız için doğrudan arayabilirsiniz.`.replace(/\n\n\n/g, "\n\n");

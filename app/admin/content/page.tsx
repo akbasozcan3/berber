@@ -156,6 +156,18 @@ export default function ContentAdminPage() {
               </div>
             </>
           )}
+          {(activeSlug === "about" || activeSlug === "home_about" || activeSlug === "home_quote") && (
+            <div>
+              <label className="text-xs text-[#71717A] mb-2 block">Ek Bölümler (JSON)</label>
+              <Textarea
+                rows={8}
+                value={form.sectionsJson}
+                onChange={(e) => setForm({ ...form, sectionsJson: e.target.value })}
+                className="font-mono text-sm"
+                placeholder='[{"title":"Zanaat","desc":"Özenli İşçilik"}]'
+              />
+            </div>
+          )}
           {(activeSlug === "about" || activeSlug.startsWith("legal_")) && (
             <p className="text-xs text-[#52525B]">
               HTML etiketleri kullanabilirsiniz: &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;

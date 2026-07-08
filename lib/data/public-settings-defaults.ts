@@ -53,4 +53,43 @@ export const publicSettingsDefaults: PublicSettings = {
   navCtaLabel: "Randevu Al",
   appointmentInterval: 30,
   maxFutureBooking: 30,
+  maxBookingsPerSlot: 1,
+  siteUrl: "",
+  seoHomeTitle: "",
+  seoDefaultDescription:
+    "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı, cilt bakımı ve erkek bakım hizmetleri.",
+  seoKeywords:
+    "erkek kuaförü, barber, kuaför, saç kesimi, sakal tıraşı, Çekmeköy, Taşdelen, İstanbul",
+  bookingPageTitle: "Online Randevu",
+  bookingPageSubtitle:
+    "Zamanınız değerlidir. Sıra beklemeden, dilediğiniz gün ve saatte yerinizi rezerve edin.",
+  bookingPageBanner:
+    "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=1200&auto=format&fit=crop",
+  homeTeamEyebrow: "Uzman Kadro",
+  homeTeamTitle: "Berberlerimiz",
+  homeGalleryEyebrow: "Galeri",
+  homeGalleryTitle: "Koleksiyonu",
+  homeTestimonialsEyebrow: "Müşteri Yorumları",
+  homeTestimonialsTitle: "Deneyimleyenlerin\nGözünden",
+  homeBookingCtaEyebrow: "Online Rezervasyon",
+  homeBookingCtaTitle: "Randevunuzu\nHemen Oluşturun",
+  homeBookingCtaSubtitle:
+    "Sıra beklemeden, size uygun tarih ve saati seçin. Güncel hizmet ve fiyat listesini inceleyip randevunuzu oluşturun.",
+  homeBookingCtaBanner:
+    "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2560&auto=format&fit=crop",
+  experienceEyebrow: "Rakamlarla",
+  experienceTitle: "Güvenin Sayılarla Kanıtı",
+  experienceYears: "10+",
+  experienceHygiene: "100%",
+  reviewsSectionIntro:
+    "Bölgenizde güvenilir erkek kuaförü deneyimi. Gerçek müşteri geri bildirimleri.",
+  reviewsFeaturedQuote: "Kaliteli hizmet, temiz salon ve profesyonel ekip.",
+  homeStatsJson: JSON.stringify([
+    { title: "Randevulu Hizmet", desc: "Beklemeden tam saatinde hizmet." },
+    { title: "Uzman Berberler", desc: "Kişiye özel modern kesimler." },
+    { title: "Premium Bakım", desc: "Profesyonel saç ve sakal bakımı." },
+    { title: "Konforlu Salon", desc: "Rahat ve modern atmosfer." },
+    { title: "Kaliteli Ürünler", desc: "Dünya markalarıyla bakım." },
+  ]),
+  breakTimes: JSON.stringify([{ start: "13:00", end: "14:00" }]),
 };

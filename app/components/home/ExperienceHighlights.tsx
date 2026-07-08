@@ -2,15 +2,25 @@
 
 import { motion } from "framer-motion";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { splitTitleLines } from "@/lib/data/home-content";
 
 export default function ExperienceHighlights() {
-  const { googleRating, googleReviewCount } = usePublicSettings();
+  const {
+    businessName,
+    googleRating,
+    googleReviewCount,
+    experienceEyebrow,
+    experienceTitle,
+    experienceYears,
+    experienceHygiene,
+  } = usePublicSettings();
+  const [titleLine1, titleLine2] = splitTitleLines(experienceTitle, "Güvenin", "Sayılarla Kanıtı");
 
   const highlights = [
     { value: `${googleRating}`, label: "Google Puanı", suffix: "/ 5" },
     { value: googleReviewCount, label: "Mutlu Müşteri", suffix: "+" },
-    { value: "10+", label: "Yıllık Deneyim", suffix: "" },
-    { value: "100%", label: "Hijyen Standardı", suffix: "" },
+    { value: experienceYears, label: "Yıllık Deneyim", suffix: "" },
+    { value: experienceHygiene, label: "Hijyen Standardı", suffix: "" },
   ];
 
   return (
@@ -25,12 +35,13 @@ export default function ExperienceHighlights() {
           <div className="flex items-center justify-center gap-3 mb-5">
             <span className="w-8 h-px bg-black/25" />
             <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-black/45">
-              Rakamlarla New Life
+              {experienceEyebrow} {businessName}
             </span>
             <span className="w-8 h-px bg-black/25" />
           </div>
           <h2 className="text-3xl md:text-4xl font-serif font-light text-black tracking-tight">
-            Güvenin <span className="italic text-black/40">Sayılarla Kanıtı</span>
+            {titleLine1}{" "}
+            <span className="italic text-black/40">{titleLine2}</span>
           </h2>
         </motion.div>
 

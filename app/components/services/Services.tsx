@@ -211,7 +211,7 @@ export default function Services({
                 : "bg-white text-black hover:bg-white/90 shadow-[0_4px_24px_rgba(255,255,255,0.12)]"
             }`}
           >
-            Randevu Al
+            {settings.navCtaLabel || "Randevu Al"}
           </Link>
         </div>
       </div>

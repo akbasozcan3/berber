@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
-
-export const dynamic = "force-dynamic";
 import About from "../components/about/About";
 import { getPublicSettingsSnapshot } from "@/lib/data/public-server";
+import { buildPageMetadata } from "@/lib/data/seo";
 
-export const metadata: Metadata = {
-  title: "Hakkımızda",
-  description: "New Life Erkek Kuaförü'nün hikayesi, felsefesi ve kaliteli hizmet anlayışı. Çekmeköy Taşdelen'de profesyonel erkek kuaförü deneyimi.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const settings = await getPublicSettingsSnapshot();
+  return buildPageMetadata(settings, settings.aboutPageTitle, settings.aboutPageSubtitle);
+}
 
 export default async function HakkimizdaPage() {
   const settings = await getPublicSettingsSnapshot();

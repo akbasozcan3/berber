@@ -118,6 +118,32 @@ export interface PublicSettings {
   navCtaLabel: string;
   appointmentInterval: number;
   maxFutureBooking: number;
+  maxBookingsPerSlot: number;
+  siteUrl: string;
+  seoHomeTitle: string;
+  seoDefaultDescription: string;
+  seoKeywords: string;
+  bookingPageTitle: string;
+  bookingPageSubtitle: string;
+  bookingPageBanner: string;
+  homeTeamEyebrow: string;
+  homeTeamTitle: string;
+  homeGalleryEyebrow: string;
+  homeGalleryTitle: string;
+  homeTestimonialsEyebrow: string;
+  homeTestimonialsTitle: string;
+  homeBookingCtaEyebrow: string;
+  homeBookingCtaTitle: string;
+  homeBookingCtaSubtitle: string;
+  homeBookingCtaBanner: string;
+  experienceEyebrow: string;
+  experienceTitle: string;
+  experienceYears: string;
+  experienceHygiene: string;
+  reviewsSectionIntro: string;
+  reviewsFeaturedQuote: string;
+  homeStatsJson: string;
+  breakTimes: string;
 }
 
 export interface HeroSlide {

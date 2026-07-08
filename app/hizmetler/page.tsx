@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
-
-export const dynamic = "force-dynamic";
 import Services from "../components/services/Services";
 import { getEnabledServices, getPublicSettingsSnapshot } from "@/lib/data/public-server";
+import { buildPageMetadata } from "@/lib/data/seo";
 
-export const metadata: Metadata = {
-  title: "Hizmetlerimiz",
-  description: "Saç kesimi, sakal tasarımı, cilt bakımı ve VIP deneyim paketleri. Profesyonel usta kadromuzla hizmetinizdeyiz.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const settings = await getPublicSettingsSnapshot();
+  return buildPageMetadata(settings, settings.servicesPageTitle, settings.servicesPageSubtitle);
+}
 
 export default async function HizmetlerPage() {
   const [settings, servicesList] = await Promise.all([

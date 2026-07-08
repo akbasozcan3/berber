@@ -7,11 +7,17 @@ import Link from "next/link";
 import { api, type Review } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { getInitials } from "@/lib/utils/format";
+import { splitTitleLines } from "@/lib/data/home-content";
 
 export default function TestimonialsSlider() {
   const settings = usePublicSettings();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [current, setCurrent] = useState(0);
+  const [titleLine1, titleLine2] = splitTitleLines(
+    settings.homeTestimonialsTitle,
+    "Deneyimleyenlerin",
+    "Gözünden"
+  );
 
   useEffect(() => {
     api.getReviews(true).then((data) => {
@@ -52,12 +58,12 @@ export default function TestimonialsSlider() {
             <div className="flex items-center gap-3 mb-5">
               <span className="w-8 h-px bg-black/25" />
               <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-black/45">
-                Müşteri Yorumları
+                {settings.homeTestimonialsEyebrow || settings.reviewsPageTitle}
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-light tracking-tight text-black leading-[1.05]">
-              Deneyimleyenlerin <br />
-              <span className="italic text-black/35">Gözünden</span>
+              {titleLine1} <br />
+              <span className="italic text-black/35">{titleLine2}</span>
             </h2>
           </div>
           <Link

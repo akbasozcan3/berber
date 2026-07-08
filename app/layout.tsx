@@ -3,6 +3,7 @@ import { Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "./components/SiteChrome";
 import { getPublicSettingsServer } from "@/lib/data/public-settings";
+import { buildRootMetadata } from "@/lib/data/seo";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -14,20 +15,10 @@ const playfair = Playfair_Display({
   variable: "--font-serif",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "New Life Erkek Kuaförü — Çekmeköy Taşdelen",
-    template: "%s | New Life Erkek Kuaförü",
-  },
-  description:
-    "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı ve kaliteli erkek bakım hizmetleri.",
-  keywords: ["erkek kuaförü", "barber", "kuaför", "saç kesimi", "sakal tıraşı", "Çekmeköy", "Taşdelen", "İstanbul"],
-  openGraph: {
-    siteName: "New Life Erkek Kuaförü",
-    locale: "tr_TR",
-    type: "website",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getPublicSettingsServer();
+  return buildRootMetadata(settings);
+}
 
 export default async function RootLayout({
   children,

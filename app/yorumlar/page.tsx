@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
-
-export const dynamic = "force-dynamic";
 import ReviewsSection from "../components/testimonials/ReviewsSection";
 import { getApprovedReviews, getPublicSettingsSnapshot } from "@/lib/data/public-server";
+import { buildPageMetadata } from "@/lib/data/seo";
 
-export const metadata: Metadata = {
-  title: "Müşteri Yorumları",
-  description:
-    "New Life Erkek Kuaförü müşterilerinin deneyimleri ve yorumları. Google puanımızla hizmetinizdeyiz.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const settings = await getPublicSettingsSnapshot();
+  return buildPageMetadata(settings, settings.reviewsPageTitle, settings.reviewsPageSubtitle);
+}
 
 export default async function YorumlarPage() {
   const [reviews, settings] = await Promise.all([

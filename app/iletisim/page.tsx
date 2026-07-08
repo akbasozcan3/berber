@@ -1,15 +1,14 @@
-import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
-
-export const dynamic = "force-dynamic";
 import Contact from "../components/contact/Contact";
 import { getPublicSettingsSnapshot } from "@/lib/data/public-server";
+import { buildPageMetadata } from "@/lib/data/seo";
 
-export const metadata: Metadata = {
-  title: "İletişim",
-  description:
-    "New Life Erkek Kuaförü ile iletişime geçin. Telefon, e-posta veya form aracılığıyla bize ulaşın. Taşdelen, Çekmeköy / İstanbul.",
-};
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  const settings = await getPublicSettingsSnapshot();
+  return buildPageMetadata(settings, settings.contactPageTitle, settings.contactPageSubtitle);
+}
 
 export default async function IletisimPage() {
   const settings = await getPublicSettingsSnapshot();

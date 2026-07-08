@@ -5,6 +5,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Scissors, Sparkles, Droplets, Crown, ArrowRight, Calendar } from "lucide-react";
 import { api, type Service } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { splitTitleLines } from "@/lib/data/home-content";
 
 const ICONS = [Scissors, Sparkles, Droplets, Crown];
 
@@ -13,7 +15,13 @@ interface ServicesPreviewProps {
 }
 
 export default function ServicesPreview({ initialServices = [] }: ServicesPreviewProps) {
+  const settings = usePublicSettings();
   const [services, setServices] = useState<Service[]>(initialServices);
+  const [titleLine1, titleLine2] = splitTitleLines(
+    settings.servicesSectionTitle,
+    "Özenle Tasarlanmış",
+    "Bakım Ritüelleri"
+  );
 
   useEffect(() => {
     if (initialServices.length > 0) return;
@@ -30,12 +38,12 @@ export default function ServicesPreview({ initialServices = [] }: ServicesPrevie
             <div className="flex items-center gap-3 mb-4">
               <span className="w-8 h-px bg-black/25" />
               <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-black/45">
-                Hizmetlerimiz
+                {settings.servicesSectionEyebrow || settings.navServicesLabel}
               </span>
             </div>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-light text-black tracking-tight leading-[1.1]">
-              Özenle Tasarlanmış <br />
-              <span className="italic text-black/35 font-light">Bakım Ritüelleri</span>
+              {titleLine1} <br />
+              <span className="italic text-black/35 font-light">{titleLine2}</span>
             </h2>
           </div>
           <Link
@@ -101,7 +109,7 @@ export default function ServicesPreview({ initialServices = [] }: ServicesPrevie
             className="group flex items-center gap-2.5 bg-black hover:bg-black/85 text-white px-10 py-4.5 rounded-full text-[10px] font-bold tracking-[0.22em] uppercase transition-all duration-300"
           >
             <Calendar size={14} />
-            Hemen Rezervasyon Al
+            {settings.navCtaLabel || "Randevu Al"}
           </Link>
         </div>
       </div>

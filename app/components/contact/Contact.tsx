@@ -27,7 +27,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
 
   const phoneDisplay = formatPhoneDisplay(settings.phone);
   const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
-  const email = settings.contactEmail || "info@newlifeerkekkuaforu.com";
+  const email = settings.contactEmail;
   const mapEmbed = googleMapsEmbedUrl(settings.googleMaps, settings.address);
 
   const contactItems = [
@@ -87,11 +87,11 @@ export default function Contact({ showHeading = true }: ContactProps) {
             <div className="flex items-center gap-3 mb-6">
               <span className="w-8 h-px bg-white" />
               <p className="text-[10px] font-bold tracking-[0.35em] text-white/60 uppercase">
-                İletişim Bilgileri
+                {settings.contactPageTitle}
               </p>
             </div>
             <h2 className="text-4xl md:text-6xl font-serif font-light tracking-tight text-white leading-[1.05] mb-5">
-              Bize <span className="italic text-white/30">Ulaşın</span>
+              {settings.contactPageTitle}
             </h2>
             <p className="text-white/45 text-lg font-light leading-relaxed">
               {settings.contactIntro}
@@ -159,7 +159,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
           <div className="xl:col-span-7 space-y-6">
             <div className="w-full h-64 md:h-80 rounded-2xl overflow-hidden border border-white/[0.08] relative">
               <iframe
-                title="New Life Konum"
+                title={`${settings.businessName} Konum`}
                 src={mapEmbed}
                 className="absolute inset-0 w-full h-full border-0 grayscale-[30%] contrast-[1.05]"
                 loading="lazy"

@@ -5,13 +5,21 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { api, type GalleryImage } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { splitTitleLines } from "@/lib/data/home-content";
 
 interface GalleryPreviewProps {
   initialImages?: GalleryImage[];
 }
 
 export default function GalleryPreview({ initialImages = [] }: GalleryPreviewProps) {
+  const settings = usePublicSettings();
   const [images, setImages] = useState<GalleryImage[]>(initialImages.slice(0, 6));
+  const [titleLine1, titleLine2] = splitTitleLines(
+    settings.homeGalleryTitle,
+    settings.businessName,
+    "Koleksiyonu"
+  );
 
   useEffect(() => {
     if (initialImages.length > 0) return;
@@ -27,12 +35,12 @@ export default function GalleryPreview({ initialImages = [] }: GalleryPreviewPro
             <div className="flex items-center gap-3 mb-5">
               <span className="w-8 h-px bg-white" />
               <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-white/60">
-                Galeri
+                {settings.homeGalleryEyebrow || settings.navGalleryLabel}
               </span>
             </div>
             <h2 className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white leading-[1.05]">
-              New Life <br />
-              <span className="italic text-white/25">Koleksiyonu</span>
+              {titleLine1} <br />
+              <span className="italic text-white/25">{titleLine2}</span>
             </h2>
           </div>
           <Link

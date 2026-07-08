@@ -4,13 +4,21 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { api, type GalleryImage } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { splitTitleLines } from "@/lib/data/home-content";
 
 interface GalleryProps {
   initialImages?: GalleryImage[];
 }
 
 export default function Gallery({ initialImages = [] }: GalleryProps) {
+  const settings = usePublicSettings();
   const [images, setImages] = useState<GalleryImage[]>(initialImages);
+  const [titleLine1, titleLine2] = splitTitleLines(
+    settings.homeGalleryTitle,
+    settings.businessName,
+    "Koleksiyonu"
+  );
   const [activeCategory, setActiveCategory] = useState("Tümü");
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
 
@@ -48,17 +56,16 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
           <div className="flex items-center justify-center gap-4 mb-6">
             <span className="w-8 h-[1px] bg-white" />
             <p className="text-[10px] font-bold tracking-[0.35em] text-white/60 uppercase">
-              Görsel Kataloğumuz
+              {settings.homeGalleryEyebrow || settings.galleryPageTitle}
             </p>
             <span className="w-8 h-[1px] bg-white" />
           </div>
           <h2 className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white mb-6 leading-[1.05]">
-            New Life{" "}
-            <span className="italic text-white/40 font-light">Koleksiyonu</span>
+            {titleLine1}{" "}
+            <span className="italic text-white/40 font-light">{titleLine2}</span>
           </h2>
           <p className="text-white/50 text-lg max-w-xl mx-auto font-light leading-relaxed">
-            Salonumuzun atmosferini, zanaatımızın detaylarını ve imza saç-sakal
-            tasarımlarımızı keşfedin.
+            {settings.galleryPageSubtitle}
           </p>
         </div>
 

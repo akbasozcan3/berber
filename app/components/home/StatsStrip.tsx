@@ -8,46 +8,25 @@ import {
   Coffee,
   ShieldCheck,
 } from "lucide-react";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { parseHomeStatsJson } from "@/lib/data/home-content";
 
-const features = [
-  {
-    icon: CalendarClock,
-    title: "Randevulu Hizmet",
-    desc: "Beklemeden tam saatinde hizmet.",
-  },
-  {
-    icon: Scissors,
-    title: "Uzman Berberler",
-    desc: "Kişiye özel modern kesimler.",
-  },
-  {
-    icon: Sparkles,
-    title: "Premium Bakım",
-    desc: "Profesyonel saç ve sakal bakımı.",
-  },
-  {
-    icon: Coffee,
-    title: "Konforlu Salon",
-    desc: "Rahat ve modern atmosfer.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Kaliteli Ürünler",
-    desc: "Dünya markalarıyla bakım.",
-  },
-];
+const ICONS = [CalendarClock, Scissors, Sparkles, Coffee, ShieldCheck];
 
 export default function StatsStrip() {
+  const { homeStatsJson } = usePublicSettings();
+  const features = parseHomeStatsJson(homeStatsJson);
+
   return (
     <section className="bg-black border-y border-white/10">
       <div className="container mx-auto px-6 lg:px-14">
         <div className="grid grid-cols-2 lg:grid-cols-5 divide-x divide-white/10">
           {features.map((item, i) => {
-            const Icon = item.icon;
+            const Icon = ICONS[i % ICONS.length];
 
             return (
               <motion.div
-                key={i}
+                key={`${item.title}-${i}`}
                 initial={{ opacity: 0, y: 25 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

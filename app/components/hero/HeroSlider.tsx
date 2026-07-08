@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, CalendarCheck } from "lucide-react";
 import { api, type HeroSlide } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 
 const FALLBACK: HeroSlide[] = [
   { id: 1, title: "Saçınız Sizin\nİmzanızdır", subtitle: "Premium Berberlik", description: "Profesyonel kadromuzla kaliteli saç & sakal bakımı.", image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=85&w=2560&auto=format&fit=crop", badge: "Saç Kesimi", ctaText: "Hemen Randevu Al", ctaLink: "/randevu", sortOrder: 1, enabled: true },
 ];
 
 export default function HeroSlider() {
+  const { navServicesLabel, navCtaLabel } = usePublicSettings();
   const [slides, setSlides] = useState<HeroSlide[]>(FALLBACK);
   const [cur, setCur] = useState(0);
   const [auto, setAuto] = useState(true);
@@ -49,9 +51,9 @@ export default function HeroSlider() {
             <p className="text-white/70 text-base md:text-lg font-light leading-relaxed max-w-lg mb-8">{s.description}</p>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
               <Link href={s.ctaLink || "/randevu"} className="group flex items-center justify-center gap-1.5 bg-white hover:bg-white/90 text-black px-7 sm:px-12 py-4 sm:py-6 rounded-full text-[13px] sm:text-[14px] font-semibold tracking-wide transition-all duration-500 shadow-[0_4px_20px_rgba(255,255,255,0.2)]">
-                <CalendarCheck size={15} />{s.ctaText || "Hemen Randevu Al"}<ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
+                <CalendarCheck size={15} />{s.ctaText || navCtaLabel || "Randevu Al"}<ArrowRight size={13} className="group-hover:translate-x-0.5 transition-transform" />
               </Link>
-              <Link href="/hizmetler" className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-7 sm:px-12 py-4 sm:py-6 rounded-full text-[11px] sm:text-[12px] font-semibold tracking-wide transition-colors">Hizmetlerimiz</Link>
+              <Link href="/hizmetler" className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-7 sm:px-12 py-4 sm:py-6 rounded-full text-[11px] sm:text-[12px] font-semibold tracking-wide transition-colors">{navServicesLabel}</Link>
             </div>
           </motion.div>
         </AnimatePresence>

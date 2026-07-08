@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import nextDynamic from "next/dynamic";
 import HeroSlider from "./components/hero/HeroSlider";
 import ServicesPreview from "./components/home/ServicesPreview";
@@ -9,20 +8,19 @@ import StatsStrip from "./components/home/StatsStrip";
 import BookingCTA from "./components/home/BookingCTA";
 import GalleryPreview from "./components/home/GalleryPreview";
 import { getGalleryImages, getPopularServices } from "@/lib/data/public-server";
+import { getPageMetadata } from "@/lib/data/seo";
 import type { GalleryImage, Service } from "@/lib/api/client";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata() {
+  return getPageMetadata("Ana Sayfa");
+}
 
 const TeamPreview = nextDynamic(() => import("./components/home/TeamPreview"));
 const HowItWorks = nextDynamic(() => import("./components/home/HowItWorks"));
 const ExperienceHighlights = nextDynamic(() => import("./components/home/ExperienceHighlights"));
 const TestimonialsSlider = nextDynamic(() => import("./components/home/TestimonialsSlider"));
-
-export const metadata: Metadata = {
-  title: "New Life Erkek Kuaförü — Çekmeköy Taşdelen",
-  description:
-    "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı, cilt bakımı ve erkek bakım hizmetleri.",
-};
 
 function mapServices(rows: Awaited<ReturnType<typeof getPopularServices>>): Service[] {
   return rows.map((s) => ({

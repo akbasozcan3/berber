@@ -57,7 +57,7 @@ export default function LocationSection() {
           className="relative min-h-[320px] lg:min-h-full"
         >
           <iframe
-            title="New Life Erkek Kuaförü Konum"
+            title={`${businessName || "Salon"} Konum`}
             src={mapEmbed}
             className="absolute inset-0 w-full h-full border-0 grayscale contrast-[1.1] opacity-80 hover:opacity-100 transition-opacity duration-500"
             loading="lazy"

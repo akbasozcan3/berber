@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -24,6 +25,7 @@ import {
 import { cn } from "@/lib/admin/cn";
 import Avatar from "../ui/Avatar";
 import { api } from "@/lib/api/client";
+import { adminApi } from "@/lib/api/admin";
 import { useAdminSession } from "@/lib/context/AdminSessionContext";
 
 const menuItems = [
@@ -55,6 +57,13 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
   const router = useRouter();
   const user = useAdminSession();
   const displayName = user?.name ?? "Admin";
+  const [businessName, setBusinessName] = useState("Salon");
+
+  useEffect(() => {
+    adminApi.getSettings().then((s) => {
+      if (s.business_name) setBusinessName(s.business_name);
+    }).catch(() => {});
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -70,12 +79,14 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
       <div className={cn("p-5 border-b border-white/[0.06]", collapsed && "px-3")}>
         <Link href="/admin" className="flex items-center gap-3" onClick={onMobileClose}>
           <div className="w-10 h-10 rounded-2xl bg-[#D4AF37] flex items-center justify-center flex-shrink-0">
-            <span className="text-[#090909] font-bold text-sm">NL</span>
+            <span className="text-[#090909] font-bold text-sm">
+              {businessName.slice(0, 2).toUpperCase()}
+            </span>
           </div>
           {!collapsed && (
             <div>
-              <p className="text-[#F8F8F8] font-semibold text-sm tracking-wide">NEW LIFE</p>
-              <p className="text-[#71717A] text-[10px] tracking-widest uppercase">Erkek Kuaförü</p>
+              <p className="text-[#F8F8F8] font-semibold text-sm tracking-wide line-clamp-1">{businessName}</p>
+              <p className="text-[#71717A] text-[10px] tracking-widest uppercase">Yönetim Paneli</p>
             </div>
           )}
         </Link>

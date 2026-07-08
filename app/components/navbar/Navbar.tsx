@@ -46,10 +46,10 @@ export default function Navbar() {
   ) : (
     <>
       <span className="text-base font-bold tracking-[0.25em] text-white uppercase group-hover:text-white/80 transition-colors duration-300 leading-none">
-        NEW LIFE
+        {(settings.businessName || "SALON").split(" ")[0]?.toUpperCase()}
       </span>
       <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
-        ERKEK KUAFÖRÜ
+        {(settings.businessName || "").split(" ").slice(1).join(" ") || "KUAFÖR"}
       </span>
     </>
   );
