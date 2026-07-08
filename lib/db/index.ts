@@ -1,6 +1,24 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
+import fs from "fs";
+import path from "path";
+
+function loadLocalEnv() {
+  const envPath = path.join(process.cwd(), ".env.local");
+  if (!fs.existsSync(envPath)) return;
+  const content = fs.readFileSync(envPath, "utf8");
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+    if (!match) continue;
+    const key = match[1];
+    let value = match[2].trim();
+    value = value.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
 
 let pool: Pool | null = null;
 let dbInstance: NodePgDatabase<typeof schema> | null = null;
@@ -10,6 +28,7 @@ let initPromise: Promise<void> | null = null;
 
 function getPool() {
   if (!pool) {
+    if (!process.env.DATABASE_URL) loadLocalEnv();
     const connectionString =
       process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_CONNECTION_STRING;
     if (!connectionString) {
