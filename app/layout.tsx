@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "./components/SiteChrome";
+import { getPublicSettingsServer } from "@/lib/data/public-settings";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -28,15 +29,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const initialSettings = await getPublicSettingsServer();
+
   return (
     <html lang="tr" className={`${outfit.variable} ${playfair.variable} scroll-smooth antialiased`}>
+      <head>
+        {initialSettings.logoUrl ? (
+          <link rel="preload" as="image" href={initialSettings.logoUrl} />
+        ) : null}
+        {initialSettings.faviconUrl ? (
+          <link rel="icon" href={initialSettings.faviconUrl} />
+        ) : null}
+      </head>
       <body className="min-h-screen text-white flex flex-col font-sans selection:bg-[#D4AF37] selection:text-black">
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome initialSettings={initialSettings}>{children}</SiteChrome>
       </body>
     </html>
   );

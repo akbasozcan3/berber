@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import HeroSlider from "./components/hero/HeroSlider";
 import ServicesPreview from "./components/home/ServicesPreview";
 import AboutBanner from "./components/home/AboutBanner";
@@ -11,10 +11,12 @@ import GalleryPreview from "./components/home/GalleryPreview";
 import { getGalleryImages, getPopularServices } from "@/lib/data/public-server";
 import type { GalleryImage, Service } from "@/lib/api/client";
 
-const TeamPreview = dynamic(() => import("./components/home/TeamPreview"));
-const HowItWorks = dynamic(() => import("./components/home/HowItWorks"));
-const ExperienceHighlights = dynamic(() => import("./components/home/ExperienceHighlights"));
-const TestimonialsSlider = dynamic(() => import("./components/home/TestimonialsSlider"));
+export const dynamic = "force-dynamic";
+
+const TeamPreview = nextDynamic(() => import("./components/home/TeamPreview"));
+const HowItWorks = nextDynamic(() => import("./components/home/HowItWorks"));
+const ExperienceHighlights = nextDynamic(() => import("./components/home/ExperienceHighlights"));
+const TestimonialsSlider = nextDynamic(() => import("./components/home/TestimonialsSlider"));
 
 export const metadata: Metadata = {
   title: "New Life Erkek Kuaförü — Çekmeköy Taşdelen",

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
+
+export const dynamic = "force-dynamic";
 import ReviewsSection from "../components/testimonials/ReviewsSection";
 import { getApprovedReviews, getPublicSettingsSnapshot } from "@/lib/data/public-server";
 

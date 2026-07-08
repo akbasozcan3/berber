@@ -31,6 +31,28 @@ export default function Navbar() {
 
   const isActive = (href: string) => pathname === href;
 
+  const brandLogo = settings.logoUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={settings.logoUrl}
+      alt={settings.businessName || "New Life"}
+      className="h-10 w-auto max-w-[160px] object-contain"
+      width={160}
+      height={40}
+      fetchPriority="high"
+      decoding="async"
+    />
+  ) : (
+    <>
+      <span className="text-base font-bold tracking-[0.25em] text-white uppercase group-hover:text-white/80 transition-colors duration-300 leading-none">
+        NEW LIFE
+      </span>
+      <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
+        ERKEK KUAFÖRÜ
+      </span>
+    </>
+  );
+
   return (
     <>
       {/* ─── HEADER CONTAINER ─── */}
@@ -73,24 +95,8 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6">
             
             {/* Logo - Minimal & Editorial */}
-            <Link href="/" className="flex flex-col items-start group">
-              {settings.logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={settings.logoUrl}
-                  alt={settings.businessName || "New Life"}
-                  className="h-10 w-auto object-contain"
-                />
-              ) : (
-                <>
-                  <span className="text-base font-bold tracking-[0.25em] text-white uppercase group-hover:text-white/80 transition-colors duration-300 leading-none">
-                    NEW LIFE
-                  </span>
-                  <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
-                    ERKEK KUAFÖRÜ
-                  </span>
-                </>
-              )}
+            <Link href="/" className="flex flex-col items-start group min-h-10 justify-center">
+              {brandLogo}
             </Link>
 
             {/* Links - Centered */}
@@ -150,10 +156,7 @@ export default function Navbar() {
               {/* Top area */}
               <div className="space-y-12">
                 <div className="flex justify-between items-center">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold tracking-[0.25em] text-white uppercase">NEW LIFE</span>
-                    <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-0.5">ERKEK KUAFÖRÜ</span>
-                  </div>
+                  <div className="flex flex-col min-h-10 justify-center">{brandLogo}</div>
                   <button onClick={() => setMobileOpen(false)} className="text-white/60 hover:text-white p-1">
                     <X size={20} />
                   </button>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
+
+export const dynamic = "force-dynamic";
 import Gallery from "../components/gallery/Gallery";
 import { getGalleryImages, getPublicSettingsSnapshot } from "@/lib/data/public-server";
 

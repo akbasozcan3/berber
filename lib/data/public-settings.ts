@@ -1,0 +1,60 @@
+import { ensureDb } from "@/lib/db/ensure";
+import { getSettings } from "@/lib/services/booking";
+import type { PublicSettings } from "@/lib/api/client";
+import { publicSettingsDefaults } from "./public-settings-defaults";
+
+export function mapSettingsToPublic(all: Record<string, string>): PublicSettings {
+  return {
+    businessName: all.business_name || publicSettingsDefaults.businessName,
+    logoUrl: all.logo_url || "",
+    faviconUrl: all.favicon_url || "",
+    address: all.address || publicSettingsDefaults.address,
+    phone: all.phone || publicSettingsDefaults.phone,
+    instagram: all.instagram || publicSettingsDefaults.instagram,
+    googleMaps: all.google_maps || publicSettingsDefaults.googleMaps,
+    contactEmail: all.contact_email || publicSettingsDefaults.contactEmail,
+    contactIntro: all.contact_intro || publicSettingsDefaults.contactIntro,
+    navServicesLabel: all.nav_services_label || publicSettingsDefaults.navServicesLabel,
+    navGalleryLabel: all.nav_gallery_label || publicSettingsDefaults.navGalleryLabel,
+    navReviewsLabel: all.nav_reviews_label || publicSettingsDefaults.navReviewsLabel,
+    navAboutLabel: all.nav_about_label || publicSettingsDefaults.navAboutLabel,
+    navContactLabel: all.nav_contact_label || publicSettingsDefaults.navContactLabel,
+    servicesPageTitle: all.services_page_title || publicSettingsDefaults.servicesPageTitle,
+    servicesPageSubtitle: all.services_page_subtitle || publicSettingsDefaults.servicesPageSubtitle,
+    servicesSectionEyebrow: all.services_section_eyebrow || publicSettingsDefaults.servicesSectionEyebrow,
+    servicesSectionTitle: all.services_section_title || publicSettingsDefaults.servicesSectionTitle,
+    servicesSectionSubtitle: all.services_section_subtitle || publicSettingsDefaults.servicesSectionSubtitle,
+    galleryPageTitle: all.gallery_page_title || publicSettingsDefaults.galleryPageTitle,
+    galleryPageSubtitle: all.gallery_page_subtitle || publicSettingsDefaults.galleryPageSubtitle,
+    reviewsPageTitle: all.reviews_page_title || publicSettingsDefaults.reviewsPageTitle,
+    reviewsPageSubtitle: all.reviews_page_subtitle || publicSettingsDefaults.reviewsPageSubtitle,
+    aboutPageTitle: all.about_page_title || publicSettingsDefaults.aboutPageTitle,
+    aboutPageSubtitle: all.about_page_subtitle || publicSettingsDefaults.aboutPageSubtitle,
+    contactPageTitle: all.contact_page_title || publicSettingsDefaults.contactPageTitle,
+    contactPageSubtitle: all.contact_page_subtitle || publicSettingsDefaults.contactPageSubtitle,
+    servicesPageBanner: all.services_page_banner || publicSettingsDefaults.servicesPageBanner,
+    galleryPageBanner: all.gallery_page_banner || publicSettingsDefaults.galleryPageBanner,
+    reviewsPageBanner: all.reviews_page_banner || publicSettingsDefaults.reviewsPageBanner,
+    aboutPageBanner: all.about_page_banner || publicSettingsDefaults.aboutPageBanner,
+    contactPageBanner: all.contact_page_banner || publicSettingsDefaults.contactPageBanner,
+    workingHours: JSON.parse(all.working_hours || "[]"),
+    googleRating: all.google_rating || publicSettingsDefaults.googleRating,
+    googleReviewCount: all.google_review_count || publicSettingsDefaults.googleReviewCount,
+    locationShort: all.location_short || publicSettingsDefaults.locationShort,
+    footerIntro: all.footer_intro || publicSettingsDefaults.footerIntro,
+    footerCopyright: all.footer_copyright || "",
+    navCtaLabel: all.nav_cta_label || publicSettingsDefaults.navCtaLabel,
+    appointmentInterval: Number(all.appointment_interval || publicSettingsDefaults.appointmentInterval),
+    maxFutureBooking: Number(all.max_future_booking || publicSettingsDefaults.maxFutureBooking),
+  };
+}
+
+export async function getPublicSettingsServer(): Promise<PublicSettings> {
+  try {
+    await ensureDb();
+    const all = await getSettings();
+    return mapSettingsToPublic(all);
+  } catch {
+    return publicSettingsDefaults;
+  }
+}

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import PageHeader from "../components/ui/PageHeader";
+
+export const dynamic = "force-dynamic";
 import Contact from "../components/contact/Contact";
 import { getPublicSettingsSnapshot } from "@/lib/data/public-server";
 

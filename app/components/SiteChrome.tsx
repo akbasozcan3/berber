@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/footer/Footer";
 import { PublicSettingsProvider, usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import type { PublicSettings } from "@/lib/api/client";
 
 function FaviconManager() {
   const settings = usePublicSettings();
@@ -30,7 +31,13 @@ function FaviconManager() {
   return null;
 }
 
-export default function SiteChrome({ children }: { children: React.ReactNode }) {
+export default function SiteChrome({
+  children,
+  initialSettings,
+}: {
+  children: React.ReactNode;
+  initialSettings: PublicSettings;
+}) {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
 
@@ -39,7 +46,7 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <PublicSettingsProvider>
+    <PublicSettingsProvider initialSettings={initialSettings}>
       <FaviconManager />
       <Navbar />
       <div className="flex-1">{children}</div>
