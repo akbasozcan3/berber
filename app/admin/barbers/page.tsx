@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Clock, Plus, Star, Trash2 } from "lucide-react";
+import { Clock, Plus, Save, Star, Trash2 } from "lucide-react";
+import Input from "@/components/admin/ui/Input";
 import PageHeader from "@/components/admin/ui/PageHeader";
 import Card from "@/components/admin/ui/Card";
 import Avatar from "@/components/admin/ui/Avatar";
@@ -15,6 +16,7 @@ import { adminApi, type AdminBarber } from "@/lib/api/admin";
 export default function BarbersPage() {
   const [barbers, setBarbers] = useState<AdminBarber[]>([]);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [edits, setEdits] = useState<Record<number, Partial<AdminBarber>>>({});
   const [newBarber, setNewBarber] = useState({
     name: "",
     slug: "",
@@ -26,7 +28,24 @@ export default function BarbersPage() {
   });
 
   useEffect(() => {
-    adminApi.getBarbers().then(setBarbers);
+    adminApi.getBarbers().then((list) => {
+      setBarbers(list);
+      setEdits(
+        Object.fromEntries(
+          list.map((b) => [
+            b.id,
+            {
+              name: b.name,
+              position: b.position,
+              specialty: b.specialty || "",
+              workingStart: b.workingStart,
+              workingEnd: b.workingEnd,
+              performance: b.performance,
+            },
+          ])
+        )
+      );
+    });
   }, []);
 
   const toggle = async (id: number, field: "available" | "onVacation", value: boolean) => {
@@ -58,6 +77,26 @@ export default function BarbersPage() {
       performance: "95",
     });
     adminApi.getBarbers().then(setBarbers);
+  };
+
+  const saveBarber = async (id: number) => {
+    const draft = edits[id];
+    if (!draft?.name?.trim()) return;
+    setSavingId(id);
+    try {
+      await adminApi.updateBarber(id, {
+        name: draft.name.trim(),
+        position: draft.position,
+        specialty: draft.specialty || null,
+        workingStart: draft.workingStart,
+        workingEnd: draft.workingEnd,
+        performance: Number(draft.performance || 95),
+      });
+      const list = await adminApi.getBarbers();
+      setBarbers(list);
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const removeBarber = async (id: number) => {
@@ -147,6 +186,60 @@ export default function BarbersPage() {
               </div>
               {barber.specialty && <p className="text-xs text-[#71717A] mt-2">{barber.specialty}</p>}
               <div className="mt-6 pt-5 border-t border-white/[0.06] space-y-4">
+                <div className="grid grid-cols-1 gap-3">
+                  <Input
+                    label="Ad"
+                    value={edits[barber.id]?.name ?? barber.name}
+                    onChange={(e) =>
+                      setEdits((p) => ({ ...p, [barber.id]: { ...p[barber.id], name: e.target.value } }))
+                    }
+                  />
+                  <Input
+                    label="Pozisyon"
+                    value={edits[barber.id]?.position ?? barber.position}
+                    onChange={(e) =>
+                      setEdits((p) => ({ ...p, [barber.id]: { ...p[barber.id], position: e.target.value } }))
+                    }
+                  />
+                  <Input
+                    label="Uzmanlık"
+                    value={edits[barber.id]?.specialty ?? barber.specialty ?? ""}
+                    onChange={(e) =>
+                      setEdits((p) => ({ ...p, [barber.id]: { ...p[barber.id], specialty: e.target.value } }))
+                    }
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      label="Başlangıç"
+                      value={edits[barber.id]?.workingStart ?? barber.workingStart}
+                      onChange={(e) =>
+                        setEdits((p) => ({ ...p, [barber.id]: { ...p[barber.id], workingStart: e.target.value } }))
+                      }
+                    />
+                    <Input
+                      label="Bitiş"
+                      value={edits[barber.id]?.workingEnd ?? barber.workingEnd}
+                      onChange={(e) =>
+                        setEdits((p) => ({ ...p, [barber.id]: { ...p[barber.id], workingEnd: e.target.value } }))
+                      }
+                    />
+                  </div>
+                  <Input
+                    label="Performans (%)"
+                    type="number"
+                    value={String(edits[barber.id]?.performance ?? barber.performance)}
+                    onChange={(e) =>
+                      setEdits((p) => ({
+                        ...p,
+                        [barber.id]: { ...p[barber.id], performance: Number(e.target.value) },
+                      }))
+                    }
+                  />
+                  <Button onClick={() => saveBarber(barber.id)} disabled={savingId === barber.id}>
+                    <Save className="w-4 h-4" />
+                    {savingId === barber.id ? "Kaydediliyor..." : "Bilgileri Kaydet"}
+                  </Button>
+                </div>
                 <Toggle label="Müsait" checked={barber.available} onChange={(v) => toggle(barber.id, "available", v)} disabled={barber.onVacation} />
                 <Toggle label="Tatil Modu" checked={barber.onVacation} onChange={(v) => toggle(barber.id, "onVacation", v)} />
                 <ImageUpload

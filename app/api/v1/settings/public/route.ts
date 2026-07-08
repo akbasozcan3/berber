@@ -7,6 +7,8 @@ export async function GET() {
   const all = await getSettings();
   return jsonResponse({
     businessName: all.business_name,
+    logoUrl: all.logo_url || "",
+    faviconUrl: all.favicon_url || "",
     address: all.address,
     phone: all.phone,
     instagram: all.instagram,
@@ -47,6 +49,12 @@ export async function GET() {
     workingHours: JSON.parse(all.working_hours || "[]"),
     googleRating: all.google_rating,
     googleReviewCount: all.google_review_count,
+    locationShort: all.location_short || "Taşdelen, Çekmeköy / İstanbul",
+    footerIntro:
+      all.footer_intro ||
+      "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.",
+    footerCopyright: all.footer_copyright || "",
+    navCtaLabel: all.nav_cta_label || "Randevu Al",
     appointmentInterval: Number(all.appointment_interval || 30),
     maxFutureBooking: Number(all.max_future_booking || 30),
   });

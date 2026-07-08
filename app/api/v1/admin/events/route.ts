@@ -1,10 +1,17 @@
 import { ensureDb } from "@/lib/db/ensure";
+import { requireAuth } from "@/lib/auth";
 import { addNotificationListener } from "@/lib/services/notifications";
+import { errorResponse } from "@/lib/api/helpers";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  await ensureDb();
+  try {
+    await ensureDb();
+    await requireAuth();
+  } catch {
+    return errorResponse("Unauthorized", 401);
+  }
 
   const stream = new ReadableStream({
     start(controller) {

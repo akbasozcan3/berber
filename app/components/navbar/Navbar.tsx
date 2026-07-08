@@ -50,7 +50,7 @@ export default function Navbar() {
               </a>
               <span className="hidden md:inline-flex items-center gap-1.5 border-l border-white/10 pl-6">
                 <MapPin size={10} className="text-white/60" />
-                <span>Taşdelen, Çekmeköy / İstanbul</span>
+                <span>{settings.locationShort || "Taşdelen, Çekmeköy / İstanbul"}</span>
               </span>
             </div>
 
@@ -74,12 +74,23 @@ export default function Navbar() {
             
             {/* Logo - Minimal & Editorial */}
             <Link href="/" className="flex flex-col items-start group">
-              <span className="text-base font-bold tracking-[0.25em] text-white uppercase group-hover:text-white/80 transition-colors duration-300 leading-none">
-                NEW LIFE
-              </span>
-              <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
-                ERKEK KUAFÖRÜ
-              </span>
+              {settings.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.businessName || "New Life"}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <>
+                  <span className="text-base font-bold tracking-[0.25em] text-white uppercase group-hover:text-white/80 transition-colors duration-300 leading-none">
+                    NEW LIFE
+                  </span>
+                  <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
+                    ERKEK KUAFÖRÜ
+                  </span>
+                </>
+              )}
             </Link>
 
             {/* Links - Centered */}
@@ -108,7 +119,7 @@ export default function Navbar() {
                 href="/randevu"
                 className="hidden md:inline-flex items-center justify-center px-6 py-2.5 border border-white/40 text-white hover:bg-white hover:text-black rounded-sm text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300"
               >
-                Randevu Al
+                {settings.navCtaLabel || "Randevu Al"}
               </Link>
 
               {/* Mobile Burger Toggle */}
@@ -169,7 +180,7 @@ export default function Navbar() {
                   href="/randevu"
                   className="w-full bg-white text-black text-center py-4 rounded-sm text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-white/90 transition-all block"
                 >
-                  Randevu Al
+                  {settings.navCtaLabel || "Randevu Al"}
                 </Link>
                 <div className="space-y-3 text-[11px] font-semibold text-white/40 tracking-wider uppercase">
                   <a href={toTelHref(settings.phone)} className="flex items-center gap-2 hover:text-white transition-colors">

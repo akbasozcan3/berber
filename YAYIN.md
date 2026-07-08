@@ -15,7 +15,7 @@ npm run dev
 
 - Site: http://localhost:3000
 - Admin: http://localhost:3000/admin
-- Giriş: `ozcanakbas38@gmail.com` / `Ozcan2009ak`
+- Giriş: `.env.local` içindeki `ADMIN_EMAIL` / `ADMIN_PASSWORD`
 
 ---
 
@@ -84,8 +84,8 @@ Durum göstergesi **"Hazır"** yeşil olmalı:
 3. **Environment Variables** ekle:
 
 ```
-ADMIN_EMAIL=ozcanakbas38@gmail.com
-ADMIN_PASSWORD=Ozcan2009ak
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=change-me-strong-password
 JWT_SECRET=<rastgele-uzun-anahtar>
 DATABASE_URL=<vercel-postgres-url>
 TELEGRAM_BOT_TOKEN=<botfather-token>
@@ -138,7 +138,7 @@ docker compose exec app npm run db:setup
 | Telegram mesajı gelmiyor | Ayarlar → durum kontrol et. Token ve Chat ID dolu mu? |
 | "Bot token yapılandırılmamış" | `TELEGRAM_BOT_TOKEN` env'e ekle, sunucuyu yeniden başlat |
 | "Chat ID yapılandırılmamış" | Admin → Ayarlar → Chat ID gir veya `TELEGRAM_CHAT_ID` env |
-| "Unauthorized" admin | Sadece `ozcanakbas38@gmail.com` giriş yapabilir |
+| "Unauthorized" admin | `ADMIN_EMAIL` env ile eşleşen hesap giriş yapabilir |
 | Randevu alınamıyor | Admin → Müsaitlik → gün kapalı mı kontrol et |
 
 ---

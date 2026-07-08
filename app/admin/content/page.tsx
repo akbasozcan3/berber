@@ -13,11 +13,16 @@ const PAGES = [
   { slug: "about", label: "Hakkımızda Sayfası" },
   { slug: "home_about", label: "Ana Sayfa Hakkımızda Banner" },
   { slug: "home_quote", label: "Ana Sayfa Felsefe Banner" },
+  { slug: "home_how_it_works", label: "Ana Sayfa Nasıl Çalışır" },
+  { slug: "legal_privacy", label: "Gizlilik Politikası" },
+  { slug: "legal_kvkk", label: "KVKK Metni" },
+  { slug: "legal_cookies", label: "Çerez Politikası" },
+  { slug: "legal_terms", label: "Kullanım Koşulları" },
 ];
 
 export default function ContentAdminPage() {
   const [activeSlug, setActiveSlug] = useState("about");
-  const [form, setForm] = useState({ title: "", subtitle: "", heroImage: "", content: "" });
+  const [form, setForm] = useState({ title: "", subtitle: "", heroImage: "", content: "", sectionsJson: "", metaJson: "" });
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -30,19 +35,40 @@ export default function ContentAdminPage() {
             subtitle: data.subtitle || "",
             heroImage: data.heroImage || "",
             content: data.content || "",
+            sectionsJson: data.sections || "",
+            metaJson: data.meta || "",
           });
         } else {
-          setForm({ title: "", subtitle: "", heroImage: "", content: "" });
+          setForm({ title: "", subtitle: "", heroImage: "", content: "", sectionsJson: "", metaJson: "" });
         }
       });
   }, [activeSlug]);
 
   const save = async () => {
+    const payload: Record<string, unknown> = { slug: activeSlug, ...form };
+    delete payload.sectionsJson;
+    delete payload.metaJson;
+    if (form.sectionsJson.trim()) {
+      try {
+        payload.sections = JSON.parse(form.sectionsJson);
+      } catch {
+        alert("Sections JSON geçersiz.");
+        return;
+      }
+    }
+    if (form.metaJson.trim()) {
+      try {
+        payload.meta = JSON.parse(form.metaJson);
+      } catch {
+        alert("Meta JSON geçersiz.");
+        return;
+      }
+    }
     await fetch("/api/v1/admin/content", {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug: activeSlug, ...form }),
+      body: JSON.stringify(payload),
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -106,7 +132,31 @@ export default function ContentAdminPage() {
               placeholder="<p>Makale içeriği...</p>"
             />
           </div>
-          {activeSlug === "about" && (
+          {activeSlug === "home_how_it_works" && (
+            <>
+              <div>
+                <label className="text-xs text-[#71717A] mb-2 block">Adımlar (JSON)</label>
+                <Textarea
+                  rows={8}
+                  value={form.sectionsJson}
+                  onChange={(e) => setForm({ ...form, sectionsJson: e.target.value })}
+                  className="font-mono text-sm"
+                  placeholder='[{"step":"01","title":"...","desc":"..."}]'
+                />
+              </div>
+              <div>
+                <label className="text-xs text-[#71717A] mb-2 block">CTA (JSON)</label>
+                <Textarea
+                  rows={3}
+                  value={form.metaJson}
+                  onChange={(e) => setForm({ ...form, metaJson: e.target.value })}
+                  className="font-mono text-sm"
+                  placeholder='{"ctaLabel":"Hemen Randevu Al"}'
+                />
+              </div>
+            </>
+          )}
+          {(activeSlug === "about" || activeSlug.startsWith("legal_")) && (
             <p className="text-xs text-[#52525B]">
               HTML etiketleri kullanabilirsiniz: &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;
             </p>

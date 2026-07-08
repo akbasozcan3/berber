@@ -5,6 +5,7 @@ import {
   heroSlides, pageContent,
 } from "./schema";
 import { eq } from "drizzle-orm";
+import { LEGAL_DEFAULTS } from "../data/legal";
 
 const now = () => new Date().toISOString();
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "ozcanakbas38@gmail.com";
@@ -164,6 +165,44 @@ export async function ensureCMS() {
       updatedAt: now(),
     });
   }
+
+  for (const [slug, data] of Object.entries(LEGAL_DEFAULTS)) {
+    const exists = await db.select().from(pageContent).where(eq(pageContent.slug, slug)).limit(1);
+    if (exists.length === 0) {
+      await db.insert(pageContent).values({
+        slug,
+        title: data.title,
+        subtitle: "",
+        heroImage: null,
+        content: data.content,
+        sections: null,
+        meta: null,
+        updatedAt: now(),
+      });
+    }
+  }
+
+  const howExists = await db
+    .select()
+    .from(pageContent)
+    .where(eq(pageContent.slug, "home_how_it_works"))
+    .limit(1);
+  if (howExists.length === 0) {
+    await db.insert(pageContent).values({
+      slug: "home_how_it_works",
+      title: "3 Adımda Randevu",
+      subtitle: "Nasıl Çalışır?",
+      heroImage: null,
+      content: "New Life deneyimi basit, hızlı ve konforlu. Randevunuzu alın, gerisini bize bırakın.",
+      sections: JSON.stringify([
+        { step: "01", title: "Randevu Seçin", desc: "Hizmet, berber, tarih ve saati online olarak birkaç tıkla belirleyin." },
+        { step: "02", title: "Salona Gelin", desc: "Sıra beklemeden, seçtiğiniz saatte profesyonel ekibimiz sizi karşılasın." },
+        { step: "03", title: "Tarzınızı Yenileyin", desc: "Kişiye özel kesim ve bakımla salonumuzdan özgüvenle ayrılın." },
+      ]),
+      meta: JSON.stringify({ ctaLabel: "Hemen Randevu Al" }),
+      updatedAt: now(),
+    });
+  }
 }
 
 export async function seedDatabase() {
@@ -288,6 +327,8 @@ export async function seedDatabase() {
 
   const settingsData: Record<string, string> = {
     business_name: "New Life Erkek Kuaförü",
+    logo_url: "",
+    favicon_url: "",
     address: "Taşdelen Mah. Dekor Sok. No:26B, 34788 Çekmeköy / İstanbul",
     phone: "+905327104355",
     instagram: "@newlifekuaforr",
@@ -340,6 +381,11 @@ export async function seedDatabase() {
     admin_url: "http://localhost:3000/admin/appointments",
     google_rating: "4.87",
     google_review_count: "30",
+    location_short: "Taşdelen, Çekmeköy / İstanbul",
+    footer_intro:
+      "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.",
+    footer_copyright: "",
+    nav_cta_label: "Randevu Al",
   };
 
   // Settings: key yoksa ekle, varsa ama boşsa değerini tamamla.

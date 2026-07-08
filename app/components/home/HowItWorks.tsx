@@ -1,31 +1,59 @@
 ﻿"use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { CalendarDays, Scissors, Sparkles } from "lucide-react";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 
-const steps = [
+const ICONS = [CalendarDays, Scissors, Sparkles];
+
+const DEFAULT_STEPS = [
   {
-    icon: CalendarDays,
     step: "01",
     title: "Randevu Seçin",
     desc: "Hizmet, berber, tarih ve saati online olarak birkaç tıkla belirleyin.",
   },
   {
-    icon: Scissors,
     step: "02",
     title: "Salona Gelin",
     desc: "Sıra beklemeden, seçtiğiniz saatte profesyonel ekibimiz sizi karşılasın.",
   },
   {
-    icon: Sparkles,
     step: "03",
     title: "Tarzınızı Yenileyin",
     desc: "Kişiye özel kesim ve bakımla salonumuzdan özgüvenle ayrılın.",
   },
 ];
 
+type Step = { step: string; title: string; desc: string };
+
 export default function HowItWorks() {
+  const settings = usePublicSettings();
+  const [eyebrow, setEyebrow] = useState("Nasıl Çalışır?");
+  const [title, setTitle] = useState("3 Adımda Randevu");
+  const [intro, setIntro] = useState(
+    "New Life deneyimi basit, hızlı ve konforlu. Randevunuzu alın, gerisini bize bırakın."
+  );
+  const [steps, setSteps] = useState<Step[]>(DEFAULT_STEPS);
+  const [ctaLabel, setCtaLabel] = useState("Hemen Randevu Al");
+
+  useEffect(() => {
+    fetch("/api/v1/content?slug=home_how_it_works")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (data.subtitle) setEyebrow(data.subtitle);
+        if (data.title) setTitle(data.title);
+        if (data.content) setIntro(data.content);
+        if (Array.isArray(data.sections) && data.sections.length > 0) {
+          setSteps(data.sections);
+        }
+        if (data.meta?.ctaLabel) setCtaLabel(data.meta.ctaLabel);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section className="section-light py-28 relative border-y border-black/[0.06]">
       <div className="container mx-auto px-6 lg:px-14">
@@ -38,21 +66,19 @@ export default function HowItWorks() {
           <div className="flex items-center justify-center gap-3 mb-6">
             <span className="w-8 h-px bg-black/25" />
             <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-black/45">
-              Nasıl Çalışır?
+              {eyebrow}
             </span>
             <span className="w-8 h-px bg-black/25" />
           </div>
           <h2 className="text-4xl md:text-5xl font-serif font-light text-black tracking-tight">
-            3 Adımda Randevu
+            {title}
           </h2>
-          <p className="mt-5 text-black/45 font-light leading-relaxed">
-            New Life deneyimi basit, hızlı ve konforlu. Randevunuzu alın, gerisini bize bırakın.
-          </p>
+          <p className="mt-5 text-black/45 font-light leading-relaxed">{intro}</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {steps.map((item, i) => {
-            const Icon = item.icon;
+            const Icon = ICONS[i] || CalendarDays;
             return (
               <motion.div
                 key={item.step}
@@ -90,7 +116,7 @@ export default function HowItWorks() {
             href="/randevu"
             className="inline-flex items-center gap-3 bg-black text-white hover:bg-black/85 px-10 py-4 rounded-full text-[10px] font-bold tracking-[0.28em] uppercase transition-all duration-300"
           >
-            Hemen Randevu Al
+            {settings.navCtaLabel || ctaLabel}
           </Link>
         </motion.div>
       </div>

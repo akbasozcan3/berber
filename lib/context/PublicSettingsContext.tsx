@@ -6,6 +6,8 @@ import type { PublicSettings } from "@/lib/api/client";
 
 const defaults: PublicSettings = {
   businessName: "New Life Erkek Kuaförü",
+  logoUrl: "",
+  faviconUrl: "",
   address: "Taşdelen Mah. Dekor Sok. No:26B, 34788 Çekmeköy / İstanbul",
   phone: "+905327104355",
   instagram: "@newlifekuaforr",
@@ -48,6 +50,11 @@ const defaults: PublicSettings = {
   ],
   googleRating: "4.87",
   googleReviewCount: "30",
+  locationShort: "Taşdelen, Çekmeköy / İstanbul",
+  footerIntro:
+    "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.",
+  footerCopyright: "",
+  navCtaLabel: "Randevu Al",
   appointmentInterval: 30,
   maxFutureBooking: 30,
 };

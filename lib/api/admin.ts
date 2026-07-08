@@ -39,10 +39,14 @@ export const adminApi = {
   createBarber: (data: Partial<AdminBarber> & { name: string; slug: string }) =>
     adminFetch("/admin/barbers", { method: "POST", body: JSON.stringify(data) }),
   deleteBarber: (id: number) => adminFetch(`/admin/barbers?id=${id}`, { method: "DELETE" }),
+  createService: (data: Partial<AdminService> & { name: string }) =>
+    adminFetch<AdminService>("/admin/services", { method: "POST", body: JSON.stringify(data) }),
+  deleteService: (id: number) => adminFetch(`/admin/services?id=${id}`, { method: "DELETE" }),
   updateService: (id: number, data: Partial<AdminService>) =>
     adminFetch("/admin/services", { method: "PATCH", body: JSON.stringify({ id, ...data }) }),
   updateReview: (id: number, data: Partial<AdminReview>) =>
     adminFetch("/admin/reviews", { method: "PATCH", body: JSON.stringify({ id, ...data }) }),
+  deleteReview: (id: number) => adminFetch(`/admin/reviews?id=${id}`, { method: "DELETE" }),
   getNotifications: () => adminFetch<{ items: Notification[]; unread: number }>("/admin/notifications"),
   markNotificationRead: (id: number) =>
     adminFetch("/admin/notifications", { method: "PATCH", body: JSON.stringify({ action: "read", id }) }),
@@ -113,6 +117,7 @@ export interface AdminService {
   image: string | null;
   popular: boolean;
   enabled: boolean;
+  sortOrder: number;
 }
 
 export interface AdminCustomer {

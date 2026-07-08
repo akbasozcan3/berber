@@ -141,6 +141,29 @@ export default function SettingsPage() {
         </Card>
 
         <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Marka Görselleri</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <ImageUpload
+              label="Logo"
+              folder="branding"
+              value={settings.logo_url || ""}
+              onChange={(url) => set("logo_url", url)}
+              previewHeightClass="h-28"
+            />
+            <ImageUpload
+              label="Favicon"
+              folder="branding"
+              value={settings.favicon_url || ""}
+              onChange={(url) => set("favicon_url", url)}
+              previewHeightClass="h-28"
+            />
+          </div>
+          <p className="text-xs text-[#52525B] mt-4">
+            Yükleme sonrası site otomatik güncellenir.
+          </p>
+        </Card>
+
+        <Card>
           <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Bildirimler</h3>
 
           <div className="space-y-6">
@@ -217,6 +240,37 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Konum ve Google</h3>
+          <div className="space-y-4">
+            <Input label="Kısa Konum (Navbar)" value={settings.location_short || ""} onChange={(e) => set("location_short", e.target.value)} placeholder="Taşdelen, Çekmeköy / İstanbul" />
+            <Input label="Google Maps Linki" value={settings.google_maps || ""} onChange={(e) => set("google_maps", e.target.value)} />
+            <Input label="Google Puanı" value={settings.google_rating || ""} onChange={(e) => set("google_rating", e.target.value)} placeholder="4.87" />
+            <Input label="Google Yorum Sayısı" value={settings.google_review_count || ""} onChange={(e) => set("google_review_count", e.target.value)} placeholder="30" />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Footer ve CTA</h3>
+          <div className="space-y-4">
+            <Input label="Footer Açıklama" value={settings.footer_intro || ""} onChange={(e) => set("footer_intro", e.target.value)} />
+            <Input label="Footer Telif (boş = otomatik)" value={settings.footer_copyright || ""} onChange={(e) => set("footer_copyright", e.target.value)} />
+            <Input label="Randevu Butonu Metni" value={settings.nav_cta_label || ""} onChange={(e) => set("nav_cta_label", e.target.value)} placeholder="Randevu Al" />
+          </div>
+        </Card>
+
+        <Card>
+          <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Çalışma Saatleri (JSON)</h3>
+          <p className="text-xs text-[#52525B] mb-4">
+            Örnek: [{"{"}"day":"Pazartesi","open":"09:00","close":"22:00"{"}"}]
+          </p>
+          <textarea
+            className="w-full min-h-[180px] bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 py-3 text-sm font-mono text-[#F8F8F8]"
+            value={settings.working_hours || ""}
+            onChange={(e) => set("working_hours", e.target.value)}
+          />
         </Card>
 
         <Card>

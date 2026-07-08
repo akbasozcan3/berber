@@ -18,15 +18,26 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <Link href="/" className="inline-block mb-6">
-              <span className="text-2xl font-serif font-bold tracking-[0.15em] uppercase text-white hover:text-white/80 transition-colors duration-300">
-                NEW LIFE
-              </span>
-              <span className="block text-xs font-serif italic font-light tracking-[0.1em] uppercase text-white/50 mt-1">
-                ERKEK KUAFÖRÜ
-              </span>
+              {settings.logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={settings.logoUrl}
+                  alt={settings.businessName || "New Life"}
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <>
+                  <span className="text-2xl font-serif font-bold tracking-[0.15em] uppercase text-white hover:text-white/80 transition-colors duration-300">
+                    NEW LIFE
+                  </span>
+                  <span className="block text-xs font-serif italic font-light tracking-[0.1em] uppercase text-white/50 mt-1">
+                    ERKEK KUAFÖRÜ
+                  </span>
+                </>
+              )}
             </Link>
             <p className="text-white/40 font-light text-sm max-w-xs leading-relaxed">
-              İstanbul Çekmeköy Taşdelen&apos;de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.
+              {settings.footerIntro}
             </p>
           </div>
 
@@ -37,12 +48,12 @@ export default function Footer() {
             </h4>
             <ul className="space-y-4">
               {[
-                { label: "Hizmetler", href: "/hizmetler" },
-                { label: "Galeri", href: "/galeri" },
-                { label: "Hakkımızda", href: "/hakkimizda" },
-                { label: "Yorumlar", href: "/yorumlar" },
-                { label: "Randevu", href: "/randevu" },
-                { label: "İletişim", href: "/iletisim" },
+                { label: settings.navServicesLabel, href: "/hizmetler" },
+                { label: settings.navGalleryLabel, href: "/galeri" },
+                { label: settings.navAboutLabel, href: "/hakkimizda" },
+                { label: settings.navReviewsLabel, href: "/yorumlar" },
+                { label: settings.navCtaLabel || "Randevu", href: "/randevu" },
+                { label: settings.navContactLabel, href: "/iletisim" },
               ].map((item) => (
                 <li key={item.label}>
                   <Link
@@ -103,7 +114,8 @@ export default function Footer() {
 
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10">
           <p className="text-white/30 text-xs mb-4 md:mb-0">
-            &copy; {new Date().getFullYear()} New Life Erkek Kuaförü. Tüm hakları saklıdır.
+            {settings.footerCopyright ||
+              `© ${new Date().getFullYear()} ${settings.businessName || "New Life Erkek Kuaförü"}. Tüm hakları saklıdır.`}
           </p>
           <button
             onClick={scrollToTop}

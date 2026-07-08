@@ -67,7 +67,7 @@ export default function AppointmentsPage() {
 
   const clearAllAppointments = async () => {
     const confirmed = window.confirm(
-      "Tüm randevular, müşteri kayıtları ve bildirimler kalıcı olarak silinecek. Emin misiniz?"
+      "Tüm randevu kayıtları kalıcı olarak silinecek. Müşteri ve bildirim kayıtları korunur. Emin misiniz?"
     );
     if (!confirmed) return;
     await adminApi.clearAppointments();

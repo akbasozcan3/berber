@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { CheckCircle, Clock, Save, XCircle } from "lucide-react";
+import { CheckCircle, Clock, Plus, Save, Trash2, XCircle } from "lucide-react";
 import PageHeader from "@/components/admin/ui/PageHeader";
 import Card from "@/components/admin/ui/Card";
 import Badge from "@/components/admin/ui/Badge";
@@ -43,6 +43,14 @@ export default function ServicesPage() {
   const [savingId, setSavingId] = useState<number | null>(null);
   const [savingAll, setSavingAll] = useState(false);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
+  const [newService, setNewService] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    duration: "30",
+    price: "0",
+    sortOrder: "0",
+  });
 
   const showToast = (ok: boolean, text: string) => {
     setToast({ ok, text });
@@ -122,6 +130,48 @@ export default function ServicesPage() {
     }
   };
 
+  const togglePopular = async (id: number, popular: boolean) => {
+    await adminApi.updateService(id, { popular });
+    await load();
+    showToast(true, popular ? "Popüler olarak işaretlendi." : "Popüler işareti kaldırıldı.");
+  };
+
+  const addService = async () => {
+    if (!newService.name.trim()) {
+      showToast(false, "Hizmet adı gerekli.");
+      return;
+    }
+    try {
+      await adminApi.createService({
+        name: newService.name.trim(),
+        slug: newService.slug.trim() || undefined,
+        description: newService.description,
+        duration: Number(newService.duration),
+        price: Number(newService.price),
+        sortOrder: Number(newService.sortOrder),
+        enabled: true,
+        popular: false,
+      });
+      setNewService({ name: "", slug: "", description: "", duration: "30", price: "0", sortOrder: "0" });
+      await load();
+      showToast(true, "Yeni hizmet eklendi.");
+    } catch (error) {
+      showToast(false, error instanceof Error ? error.message : "Eklenemedi.");
+    }
+  };
+
+  const removeService = async (id: number, name: string) => {
+    const ok = window.confirm(`"${name}" hizmetini silmek istediğinizden emin misiniz?`);
+    if (!ok) return;
+    try {
+      await adminApi.deleteService(id);
+      await load();
+      showToast(true, "Hizmet silindi.");
+    } catch (error) {
+      showToast(false, error instanceof Error ? error.message : "Silinemedi.");
+    }
+  };
+
   const setDraftField = (id: number, field: keyof ServiceDraft, value: string) => {
     setDrafts((prev) => ({
       ...prev,
@@ -157,6 +207,22 @@ export default function ServicesPage() {
           </Button>
         }
       />
+
+      <Card className="mb-6">
+        <h3 className="text-base font-semibold text-[#F8F8F8] mb-4">Yeni Hizmet Ekle</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <Input label="Hizmet Adı" value={newService.name} onChange={(e) => setNewService((p) => ({ ...p, name: e.target.value }))} />
+          <Input label="Slug (opsiyonel)" value={newService.slug} onChange={(e) => setNewService((p) => ({ ...p, slug: e.target.value }))} />
+          <Input label="Süre (dk)" type="number" value={newService.duration} onChange={(e) => setNewService((p) => ({ ...p, duration: e.target.value }))} />
+          <Input label="Fiyat (TL)" type="number" value={newService.price} onChange={(e) => setNewService((p) => ({ ...p, price: e.target.value }))} />
+          <Input label="Sıra" type="number" value={newService.sortOrder} onChange={(e) => setNewService((p) => ({ ...p, sortOrder: e.target.value }))} />
+          <Input label="Açıklama" value={newService.description} onChange={(e) => setNewService((p) => ({ ...p, description: e.target.value }))} />
+          <Button onClick={addService} className="self-end">
+            <Plus className="w-4 h-4" />
+            Hizmet Ekle
+          </Button>
+        </div>
+      </Card>
 
       <Card className="mb-6">
         <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">Hızlı Fiyat Güncelleme</h3>
@@ -264,6 +330,22 @@ export default function ServicesPage() {
                     onChange={(v) => toggle(service.id, v)}
                   />
                 </div>
+                <div className="mt-4 space-y-3">
+                  <Toggle
+                    label="Popüler"
+                    checked={service.popular}
+                    onChange={(v) => togglePopular(service.id, v)}
+                  />
+                  <Input
+                    label="Sıra"
+                    type="number"
+                    value={String(service.sortOrder ?? 0)}
+                    onChange={async (e) => {
+                      await adminApi.updateService(service.id, { sortOrder: Number(e.target.value) });
+                      await load();
+                    }}
+                  />
+                </div>
                 <div className="mt-4 space-y-2">
                   <Input
                     label="Hizmet Adı"
@@ -305,6 +387,10 @@ export default function ServicesPage() {
                   >
                     <Save className="w-4 h-4" />
                     {savingId === service.id ? "Kaydediliyor..." : "Hizmeti Kaydet"}
+                  </Button>
+                  <Button variant="danger" className="w-full" onClick={() => removeService(service.id, service.name)}>
+                    <Trash2 className="w-4 h-4" />
+                    Hizmeti Sil
                   </Button>
                 </div>
               </div>

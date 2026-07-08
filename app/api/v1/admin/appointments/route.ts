@@ -1,7 +1,7 @@
 import { ensureDb } from "@/lib/db/ensure";
 import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { appointments, customers, notifications, telegramLogs, services, barbers } from "@/lib/db/schema";
+import { appointments, customers, services, barbers } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { jsonResponse, errorResponse } from "@/lib/api/helpers";
 
@@ -50,9 +50,6 @@ export async function DELETE() {
     await requireAuth();
 
     await db.delete(appointments);
-    await db.delete(customers);
-    await db.delete(notifications);
-    await db.delete(telegramLogs);
     return jsonResponse({ success: true, cleared: true });
   } catch {
     return errorResponse("Unauthorized", 401);

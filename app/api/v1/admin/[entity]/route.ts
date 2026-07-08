@@ -15,6 +15,7 @@ import {
 import { eq, desc } from "drizzle-orm";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 import { getSettings } from "@/lib/services/booking";
+import { z } from "zod";
 
 type Entity = "barbers" | "services" | "customers" | "reviews" | "gallery" | "settings";
 
@@ -59,14 +60,39 @@ export async function PATCH(
     const body = await parseBody<Record<string, unknown>>(request);
 
     if (entity === "reviews" && body.id) {
-      const id = Number(body.id);
+      const reviewPatchSchema = z.object({
+        id: z.coerce.number(),
+        customerName: z.string().min(2).optional(),
+        customerEmail: z.string().email().nullable().optional(),
+        rating: z.coerce.number().int().min(1).max(5).optional(),
+        review: z.string().min(10).optional(),
+        source: z.enum(["google", "website"]).optional(),
+        approved: z.boolean().optional(),
+        featured: z.boolean().optional(),
+        reply: z.string().nullable().optional(),
+      });
+
+      const parsed = reviewPatchSchema.safeParse(body);
+      if (!parsed.success) {
+        return errorResponse(parsed.error.issues[0]?.message || "Geçersiz veri.", 400);
+      }
+
+      const data = parsed.data;
+      const id = data.id;
       const updates: Record<string, unknown> = {};
-      if (body.approved !== undefined) updates.approved = body.approved;
-      if (body.featured !== undefined) updates.featured = body.featured;
-      if (body.reply !== undefined) {
-        updates.reply = body.reply;
+
+      if (data.customerName !== undefined) updates.customerName = data.customerName;
+      if (data.customerEmail !== undefined) updates.customerEmail = data.customerEmail;
+      if (data.rating !== undefined) updates.rating = data.rating;
+      if (data.review !== undefined) updates.review = data.review;
+      if (data.source !== undefined) updates.source = data.source;
+      if (data.approved !== undefined) updates.approved = data.approved;
+      if (data.featured !== undefined) updates.featured = data.featured;
+      if (data.reply !== undefined) {
+        updates.reply = data.reply;
         updates.replied = true;
       }
+
       await db.update(reviews).set(updates).where(eq(reviews.id, id));
       return jsonResponse({ success: true });
     }
@@ -158,6 +184,33 @@ export async function POST(
       return jsonResponse(created, 201);
     }
 
+    if (entity === "services") {
+      const name = String(body.name || "").trim();
+      if (!name) return errorResponse("Hizmet adı gerekli", 400);
+      const slug =
+        String(body.slug || "")
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9-]/g, "") || `hizmet-${Date.now()}`;
+      const [created] = await db
+        .insert(services)
+        .values({
+          name,
+          slug,
+          description: String(body.description || ""),
+          duration: Number(body.duration || 30),
+          price: Number(body.price || 0),
+          image: body.image ? String(body.image) : null,
+          popular: Boolean(body.popular),
+          enabled: body.enabled !== false,
+          sortOrder: Number(body.sortOrder || 0),
+          createdAt: new Date().toISOString(),
+        })
+        .returning();
+      return jsonResponse(created, 201);
+    }
+
     return errorResponse("Geçersiz oluşturma isteği", 400);
   } catch (e) {
     return errorResponse(e instanceof Error ? e.message : "Oluşturulamadı", 500);
@@ -187,6 +240,19 @@ export async function DELETE(
     }
     if (entity === "gallery") {
       await db.delete(galleryImages).where(eq(galleryImages.id, id));
+      return jsonResponse({ success: true });
+    }
+    if (entity === "reviews") {
+      await db.delete(reviews).where(eq(reviews.id, id));
+      return jsonResponse({ success: true });
+    }
+    if (entity === "services") {
+      const linked = await db.select().from(appointments).where(eq(appointments.serviceId, id)).limit(1);
+      if (linked.length > 0) {
+        return errorResponse("Bu hizmete bağlı randevular var. Önce pasif yapın veya randevuları silin.", 400);
+      }
+      await db.delete(barberServices).where(eq(barberServices.serviceId, id));
+      await db.delete(services).where(eq(services.id, id));
       return jsonResponse({ success: true });
     }
     return errorResponse("Geçersiz silme isteği", 400);

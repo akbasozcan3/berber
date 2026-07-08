@@ -77,6 +77,8 @@ export interface GalleryImage {
 
 export interface PublicSettings {
   businessName: string;
+  logoUrl: string;
+  faviconUrl: string;
   address: string;
   phone: string;
   instagram: string;
@@ -109,6 +111,10 @@ export interface PublicSettings {
   workingHours: Array<{ day: string; open: string; close: string; closed?: boolean }>;
   googleRating: string;
   googleReviewCount: string;
+  locationShort: string;
+  footerIntro: string;
+  footerCopyright: string;
+  navCtaLabel: string;
   appointmentInterval: number;
   maxFutureBooking: number;
 }

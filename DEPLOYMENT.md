@@ -12,7 +12,7 @@ npm run dev
 
 - **Website:** http://localhost:3000
 - **Admin Panel:** http://localhost:3000/admin
-- **Admin Login:** `ozcanakbas38@gmail.com` / `Ozcan2009ak`
+- **Admin Login:** `.env.local` içindeki `ADMIN_EMAIL` / `ADMIN_PASSWORD`
 
 ## Environment Variables
 
@@ -21,8 +21,8 @@ Create `.env.local`:
 ```env
 DATABASE_URL=postgres://user:password@localhost:5432/newlife
 JWT_SECRET=your-super-secret-jwt-key-change-this
-ADMIN_EMAIL=ozcanakbas38@gmail.com
-ADMIN_PASSWORD=Ozcan2009ak
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=change-me-strong-password
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 TELEGRAM_CHAT_ID=your-telegram-chat-id
 ADMIN_URL=https://yourdomain.com/admin/appointments
