@@ -20,32 +20,52 @@ function loadLocalEnv() {
   }
 }
 
-let pool: Pool | null = null;
-let dbInstance: NodePgDatabase<typeof schema> | null = null;
+const globalForDb = globalThis as typeof globalThis & {
+  __pgPool?: Pool;
+  __drizzleDb?: NodePgDatabase<typeof schema>;
+};
 
 let initialized = false;
 let initPromise: Promise<void> | null = null;
 
-function getPool() {
-  if (!pool) {
-    if (!process.env.DATABASE_URL) loadLocalEnv();
-    const connectionString =
-      process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_CONNECTION_STRING;
-    if (!connectionString) {
-      throw new Error(
-        "PostgreSQL bağlantısı bulunamadı. Ortama en az `DATABASE_URL` ekleyin."
-      );
-    }
-    pool = new Pool({ connectionString });
+function resolveConnectionString(): string {
+  if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) loadLocalEnv();
+
+  // Prefer pooled URL on Vercel/serverless (avoids prisma_migration connection limits).
+  const connectionString =
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_CONNECTION_STRING;
+
+  if (!connectionString) {
+    throw new Error(
+      "PostgreSQL bağlantısı bulunamadı. Ortama `POSTGRES_URL` veya `DATABASE_URL` ekleyin."
+    );
   }
-  return pool;
+
+  return connectionString;
+}
+
+function getPool() {
+  if (!globalForDb.__pgPool) {
+    const isServerless = Boolean(process.env.VERCEL);
+    globalForDb.__pgPool = new Pool({
+      connectionString: resolveConnectionString(),
+      max: isServerless ? 1 : 5,
+      idleTimeoutMillis: isServerless ? 5000 : 30000,
+      connectionTimeoutMillis: 10000,
+      allowExitOnIdle: isServerless,
+    });
+  }
+  return globalForDb.__pgPool;
 }
 
 export function getDb() {
-  if (!dbInstance) {
-    dbInstance = drizzle(getPool(), { schema });
+  if (!globalForDb.__drizzleDb) {
+    globalForDb.__drizzleDb = drizzle(getPool(), { schema });
   }
-  return dbInstance;
+  return globalForDb.__drizzleDb;
 }
 
 export const db = new Proxy({} as NodePgDatabase<typeof schema>, {
@@ -59,11 +79,8 @@ export async function initDatabase() {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    // Table creation is handled by Drizzle (db:migrate/db:setup).
-    // This function only verifies connectivity once per process.
     const database = getPool();
     await database.query("select 1");
-
     initialized = true;
   })();
 

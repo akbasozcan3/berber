@@ -3,10 +3,14 @@ import { initDatabase } from "@/lib/db";
 
 let seeding: Promise<void> | null = null;
 
-/** Ensures SQLite is initialized and seeded once per process. */
+/** Verifies DB connectivity. Full seed runs at build (db:setup), not on every request. */
 export async function ensureDb() {
   await initDatabase();
   if (process.env.NEXT_PHASE === "phase-production-build") return;
+
+  // Serverless: never seed per request — exhausts Postgres connection limits.
+  if (process.env.VERCEL && process.env.RUN_DB_SEED !== "true") return;
+
   if (!seeding) {
     seeding = seedDatabase();
   }
