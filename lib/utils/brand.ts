@@ -27,3 +27,6 @@ export function brandWordmark(name?: string | null): string {
 export function withBusinessName(template: string, businessName: string): string {
   return template.replace(/\{business\}/g, businessName || "Salon");
 }
+
+export const siteLogoImageClass =
+  "h-20 sm:h-24 md:h-28 w-auto max-w-[min(440px,58vw)] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
-import { splitBusinessNameForLogo } from "@/lib/utils/brand";
+import { splitBusinessNameForLogo, siteLogoImageClass } from "@/lib/utils/brand";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -39,7 +39,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className="absolute left-0 top-1/2 -translate-y-1/2 h-20 sm:h-24 md:h-28 w-auto max-w-[min(440px,58vw)] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]"
+      className={`absolute left-0 top-1/2 -translate-y-1/2 ${siteLogoImageClass}`}
       fetchPriority="high"
       decoding="async"
     />

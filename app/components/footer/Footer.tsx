@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowUp } from "lucide-react";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { instagramUrl, formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
-import { splitBusinessNameForLogo } from "@/lib/utils/brand";
+import { splitBusinessNameForLogo, siteLogoImageClass } from "@/lib/utils/brand";
 
 export default function Footer() {
   const settings = usePublicSettings();
@@ -27,7 +27,7 @@ export default function Footer() {
                 <img
                   src={settings.brandLogoUrl}
                   alt={settings.businessName || "Salon"}
-                  className="h-14 sm:h-16 w-auto max-w-[280px] object-contain"
+                  className={siteLogoImageClass}
                 />
               ) : (
                 <>
