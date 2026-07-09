@@ -17,10 +17,20 @@ const SERVICE_ICONS: Record<string, typeof Scissors> = {
   vip: Crown,
 };
 
-export default function Booking() {
+export default function Booking({
+  initialServices = [],
+  initialBarbers = [],
+}: {
+  initialServices?: Service[];
+  initialBarbers?: Barber[];
+}) {
   const [step, setStep] = useState(1);
-  const [services, setServices] = useState<Service[]>([]);
-  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [services, setServices] = useState<Service[]>(initialServices);
+  const [barbers, setBarbers] = useState<Barber[]>(initialBarbers);
+  const [loadingCatalog, setLoadingCatalog] = useState(
+    initialServices.length === 0 || initialBarbers.length === 0
+  );
+  const [catalogError, setCatalogError] = useState("");
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [formData, setFormData] = useState({
@@ -46,11 +56,23 @@ export default function Booking() {
   } | null>(null);
 
   useEffect(() => {
-    Promise.all([api.getServices(), api.getBarbers()]).then(([s, b]) => {
-      setServices(s);
-      setBarbers(b);
-    });
-  }, []);
+    if (initialServices.length > 0 && initialBarbers.length > 0) {
+      setLoadingCatalog(false);
+      return;
+    }
+
+    setLoadingCatalog(true);
+    Promise.all([api.getServices(), api.getBarbers()])
+      .then(([s, b]) => {
+        setServices(s);
+        setBarbers(b);
+        setCatalogError("");
+      })
+      .catch((err) => {
+        setCatalogError(err instanceof Error ? err.message : "Hizmetler yüklenemedi.");
+      })
+      .finally(() => setLoadingCatalog(false));
+  }, [initialServices.length, initialBarbers.length]);
 
   const getNextDays = useCallback((count: number) => {
     const days = [];
@@ -181,6 +203,16 @@ export default function Booking() {
                   {step === 1 && (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                       <h3 className="text-xl font-serif font-light text-white">Hizmet Seçin</h3>
+                      {loadingCatalog ? (
+                        <div className="flex items-center gap-2 text-white/50 py-8">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Hizmetler yükleniyor...
+                        </div>
+                      ) : catalogError ? (
+                        <p className="text-sm text-red-400 py-4">{catalogError}</p>
+                      ) : services.length === 0 ? (
+                        <p className="text-sm text-white/50 py-4">Şu an listelenecek hizmet bulunamadı.</p>
+                      ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {services.map((s) => {
                           const Icon = SERVICE_ICONS[s.slug] || Scissors;
@@ -201,6 +233,7 @@ export default function Booking() {
                           );
                         })}
                       </div>
+                      )}
                       {errors.service && <p className="text-xs text-red-400">{errors.service}</p>}
                     </motion.div>
                   )}

@@ -1,7 +1,8 @@
 import PageHeader from "../components/ui/PageHeader";
 import Booking from "../components/booking/Booking";
-import { getPublicSettingsSnapshot } from "@/lib/data/public-server";
+import { getPublicSettingsSnapshot, getEnabledServices, getAvailableBarbers } from "@/lib/data/public-server";
 import { buildPageMetadata } from "@/lib/data/seo";
+import type { Barber, Service } from "@/lib/api/client";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,33 @@ export async function generateMetadata() {
 }
 
 export default async function RandevuPage() {
-  const settings = await getPublicSettingsSnapshot();
+  const [settings, serviceRows, barberRows] = await Promise.all([
+    getPublicSettingsSnapshot(),
+    getEnabledServices(),
+    getAvailableBarbers(),
+  ]);
+
+  const initialServices: Service[] = serviceRows.map((s) => ({
+    id: s.id,
+    name: s.name,
+    slug: s.slug,
+    description: s.description,
+    duration: s.duration,
+    price: s.price,
+    image: s.image,
+    popular: s.popular,
+  }));
+
+  const initialBarbers: Barber[] = barberRows.map((b) => ({
+    id: b.id,
+    name: b.name,
+    slug: b.slug,
+    position: b.position,
+    avatar: b.avatar,
+    specialty: b.specialty,
+    available: b.available,
+    performance: b.performance ?? undefined,
+  }));
 
   return (
     <main>
@@ -20,7 +47,7 @@ export default async function RandevuPage() {
         subtitle={settings.bookingPageSubtitle}
         bg={settings.bookingPageBanner}
       />
-      <Booking />
+      <Booking initialServices={initialServices} initialBarbers={initialBarbers} />
     </main>
   );
 }

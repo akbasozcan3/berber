@@ -1,7 +1,7 @@
 import { ensureDb } from "@/lib/db/ensure";
 import { db } from "@/lib/db";
-import { reviews, services, galleryImages } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { reviews, services, galleryImages, barbers } from "@/lib/db/schema";
+import { and, eq, desc } from "drizzle-orm";
 import { getPublicSettingsServer } from "@/lib/data/public-settings";
 
 export async function getApprovedReviews(limit = 50) {
@@ -49,6 +49,19 @@ export async function getGalleryImages() {
   try {
     await ensureDb();
     return db.select().from(galleryImages).orderBy(galleryImages.sortOrder);
+  } catch {
+    return [];
+  }
+}
+
+export async function getAvailableBarbers() {
+  try {
+    await ensureDb();
+    return db
+      .select()
+      .from(barbers)
+      .where(and(eq(barbers.available, true), eq(barbers.onVacation, false)))
+      .orderBy(barbers.sortOrder);
   } catch {
     return [];
   }
