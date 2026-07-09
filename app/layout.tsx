@@ -33,12 +33,6 @@ export default async function RootLayout({
         {initialSettings.logoUrl ? (
           <link rel="preload" as="image" href={initialSettings.logoUrl} />
         ) : null}
-        {initialSettings.faviconUrl ? (
-          <>
-            <link rel="icon" href={initialSettings.faviconUrl} />
-            <link rel="shortcut icon" href={initialSettings.faviconUrl} />
-          </>
-        ) : null}
       </head>
       <body className="min-h-screen text-white flex flex-col font-sans selection:bg-[#D4AF37] selection:text-black">
         <SiteChrome initialSettings={initialSettings}>{children}</SiteChrome>

@@ -19,7 +19,12 @@ export function buildRootMetadata(settings: PublicSettings): Metadata {
       .split(",")
       .map((k) => k.trim())
       .filter(Boolean),
-    icons: faviconUrl ? { icon: faviconUrl } : undefined,
+    icons: faviconUrl
+      ? {
+          icon: [{ url: "/api/favicon", type: "image/png" }],
+          shortcut: "/api/favicon",
+        }
+      : undefined,
     openGraph: {
       siteName: settings.businessName,
       locale: "tr_TR",

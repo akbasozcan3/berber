@@ -11,8 +11,9 @@ function FaviconManager() {
   const settings = usePublicSettings();
 
   useEffect(() => {
-    const faviconUrl = settings.faviconUrl?.trim();
-    if (!faviconUrl) return;
+    if (!settings.faviconUrl?.trim()) return;
+
+    const href = "/api/favicon";
 
     try {
       for (const rel of ["icon", "shortcut icon"] as const) {
@@ -23,7 +24,7 @@ function FaviconManager() {
           link.rel = rel;
           document.head.appendChild(link);
         }
-        link.href = faviconUrl;
+        link.href = href;
       }
     } catch {
       // Favicon güncellemesi asıl sayfayı bozmamalı.
