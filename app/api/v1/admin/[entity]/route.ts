@@ -182,11 +182,26 @@ export async function POST(
     }
 
     if (entity === "gallery") {
+      const mediaType = body.mediaType === "instagram" ? "instagram" : "image";
+      const instagramUrl = body.instagramUrl ? String(body.instagramUrl).trim() : null;
+      const coverUrl = body.coverUrl ? String(body.coverUrl).trim() : null;
+      const isVideo = Boolean(body.isVideo);
+      const url = String(body.url || coverUrl || "").trim();
+
+      if (!url) return errorResponse("Kapak görseli veya görsel URL gerekli", 400);
+      if (mediaType === "instagram" && !instagramUrl) {
+        return errorResponse("Instagram gönderi linki gerekli", 400);
+      }
+
       const [created] = await db
         .insert(galleryImages)
         .values({
-          url: String(body.url || ""),
-          title: String(body.title || "Galeri Görseli"),
+          url,
+          title: String(body.title || "Galeri"),
+          mediaType,
+          instagramUrl,
+          coverUrl,
+          isVideo,
           sortOrder: Number(body.sortOrder || 0),
           createdAt: new Date().toISOString(),
         })

@@ -105,6 +105,10 @@ export const galleryImages = pgTable("gallery_images", {
   id: serial("id").primaryKey(),
   url: text("url").notNull(),
   title: text("title").notNull(),
+  mediaType: text("media_type").notNull().default("image"),
+  instagramUrl: text("instagram_url"),
+  coverUrl: text("cover_url"),
+  isVideo: boolean("is_video").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: text("created_at").notNull(),
 });

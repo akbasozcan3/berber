@@ -1,12 +1,13 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { api, type GalleryImage } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { splitTitleLines } from "@/lib/data/home-content";
+import { instagramUrl } from "@/lib/utils/format";
+import GalleryItemCard from "@/components/gallery/GalleryItemCard";
 
 interface GalleryPreviewProps {
   initialImages?: GalleryImage[];
@@ -18,8 +19,12 @@ export default function GalleryPreview({ initialImages = [] }: GalleryPreviewPro
   const [titleLine1, titleLine2] = splitTitleLines(
     settings.homeGalleryTitle,
     settings.businessName,
-    "Koleksiyonu"
+    "Instagram"
   );
+
+  const ctaHref =
+    settings.homeGalleryCtaUrl?.trim() || instagramUrl(settings.instagram);
+  const ctaLabel = settings.homeGalleryCtaLabel || "Instagram'da Gör";
 
   useEffect(() => {
     if (initialImages.length > 0) return;
@@ -44,36 +49,19 @@ export default function GalleryPreview({ initialImages = [] }: GalleryPreviewPro
             </h2>
           </div>
           <Link
-            href="/galeri"
+            href={ctaHref}
+            target={ctaHref.startsWith("http") ? "_blank" : undefined}
+            rel={ctaHref.startsWith("http") ? "noopener noreferrer" : undefined}
             className="group flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] uppercase text-white/35 hover:text-white transition-colors shrink-0"
           >
-            Tüm Galeri
+            {ctaLabel}
             <ArrowRight size={13} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
           {images.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, scale: 0.97 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="relative overflow-hidden group bg-[#121212]/40 backdrop-blur-sm border border-white/[0.06] rounded-md cursor-pointer aspect-square md:aspect-[4/3]"
-            >
-              <div
-                className="w-full h-full bg-cover bg-center bg-no-repeat transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
-                style={{ backgroundImage: `url('${item.url}')` }}
-              />
-              <div className="absolute inset-0 bg-black/65 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center justify-center gap-2">
-                <span className="text-[9px] tracking-[0.35em] uppercase text-white/60 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-                  {item.title}
-                </span>
-                <span className="text-white font-serif italic text-sm transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500 delay-[60ms]">
-                  Görüntüle
-                </span>
-              </div>
-            </motion.div>
+            <GalleryItemCard key={item.id} item={item} index={i} />
           ))}
         </div>
       </div>

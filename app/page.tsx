@@ -10,6 +10,7 @@ import GalleryPreview from "./components/home/GalleryPreview";
 import { getGalleryImages, getPopularServices } from "@/lib/data/public-server";
 import { getPageMetadata } from "@/lib/data/seo";
 import type { GalleryImage, Service } from "@/lib/api/client";
+import { mapGalleryRow } from "@/lib/utils/gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +37,7 @@ function mapServices(rows: Awaited<ReturnType<typeof getPopularServices>>): Serv
 }
 
 function mapGallery(rows: Awaited<ReturnType<typeof getGalleryImages>>): GalleryImage[] {
-  return rows.map((g) => ({
-    id: g.id,
-    url: g.url,
-    title: g.title,
-    sortOrder: g.sortOrder,
-    createdAt: g.createdAt,
-  }));
+  return rows.map(mapGalleryRow);
 }
 
 export default async function HomePage() {

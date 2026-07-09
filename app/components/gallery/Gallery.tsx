@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type GalleryImage } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { splitTitleLines } from "@/lib/data/home-content";
+import GalleryItemCard from "@/components/gallery/GalleryItemCard";
+import {
+  getGalleryDisplayUrl,
+  isInstagramGalleryItem,
+} from "@/lib/utils/gallery";
 
 interface GalleryProps {
   initialImages?: GalleryImage[];
@@ -17,7 +22,7 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
   const [titleLine1, titleLine2] = splitTitleLines(
     settings.homeGalleryTitle,
     settings.businessName,
-    "Koleksiyonu"
+    "Instagram"
   );
   const [activeCategory, setActiveCategory] = useState("Tümü");
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
@@ -33,17 +38,25 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
     (img) => activeCategory === "Tümü" || img.title === activeCategory
   );
 
+  const lightboxImages = filteredImages.filter((img) => !isInstagramGalleryItem(img));
+
+  const openLightbox = (item: GalleryImage) => {
+    if (isInstagramGalleryItem(item)) return;
+    const index = lightboxImages.findIndex((img) => img.id === item.id);
+    if (index >= 0) setPhotoIndex(index);
+  };
+
   const handlePrev = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (photoIndex !== null) {
-      setPhotoIndex((photoIndex - 1 + filteredImages.length) % filteredImages.length);
+      setPhotoIndex((photoIndex - 1 + lightboxImages.length) % lightboxImages.length);
     }
   };
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (photoIndex !== null) {
-      setPhotoIndex((photoIndex + 1) % filteredImages.length);
+      setPhotoIndex((photoIndex + 1) % lightboxImages.length);
     }
   };
 
@@ -92,39 +105,19 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredImages.map((item, index) => (
-            <motion.div
+            <GalleryItemCard
               key={item.id}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              viewport={{ once: true, margin: "-40px" }}
-              onClick={() => setPhotoIndex(index)}
-              className="relative overflow-hidden group bg-black border border-white/5 rounded-md cursor-pointer"
-            >
-              <div
-                className="w-full aspect-square md:aspect-[4/3] bg-center bg-cover bg-no-repeat transition-all duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105"
-                style={{ backgroundImage: `url('${item.url}')` }}
-              />
-              <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col items-center justify-center gap-2.5">
-                <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/25 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-                  <Maximize2 size={16} className="text-white/60" />
-                </div>
-                <span className="text-[9px] tracking-[0.35em] uppercase text-white/60 transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-                  {item.title}
-                </span>
-                <span className="text-white font-serif italic text-base transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500 delay-75">
-                  Görüntüle
-                </span>
-              </div>
-            </motion.div>
+              item={item}
+              index={index}
+              onClick={isInstagramGalleryItem(item) ? undefined : () => openLightbox(item)}
+              className="bg-black"
+            />
           ))}
         </div>
       </div>
 
       <AnimatePresence>
-        {photoIndex !== null && filteredImages[photoIndex] && (
+        {photoIndex !== null && lightboxImages[photoIndex] && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -140,13 +133,15 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
               <X size={20} />
             </button>
 
-            <button
-              onClick={handlePrev}
-              className="absolute left-4 md:left-8 text-white/50 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10"
-              aria-label="Önceki Görsel"
-            >
-              <ChevronLeft size={24} />
-            </button>
+            {lightboxImages.length > 1 && (
+              <button
+                onClick={handlePrev}
+                className="absolute left-4 md:left-8 text-white/50 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10"
+                aria-label="Önceki Görsel"
+              >
+                <ChevronLeft size={24} />
+              </button>
+            )}
 
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -157,27 +152,29 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
               className="relative max-w-4xl max-h-[80vh] aspect-auto flex flex-col items-center"
             >
               <img
-                src={filteredImages[photoIndex].url}
-                alt={filteredImages[photoIndex].title}
+                src={getGalleryDisplayUrl(lightboxImages[photoIndex])}
+                alt={lightboxImages[photoIndex].title}
                 className="max-w-full max-h-[70vh] rounded-md object-contain border border-white/10 shadow-2xl"
               />
               <div className="mt-6 flex flex-col items-center text-center">
                 <span className="text-[9px] tracking-[0.35em] text-white/60 uppercase font-bold">
-                  {filteredImages[photoIndex].title}
+                  {lightboxImages[photoIndex].title}
                 </span>
                 <span className="text-white/40 text-xs mt-1">
-                  Görsel {photoIndex + 1} / {filteredImages.length}
+                  Görsel {photoIndex + 1} / {lightboxImages.length}
                 </span>
               </div>
             </motion.div>
 
-            <button
-              onClick={handleNext}
-              className="absolute right-4 md:right-8 text-white/50 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10"
-              aria-label="Sonraki Görsel"
-            >
-              <ChevronRight size={24} />
-            </button>
+            {lightboxImages.length > 1 && (
+              <button
+                onClick={handleNext}
+                className="absolute right-4 md:right-8 text-white/50 hover:text-white transition-colors w-12 h-12 flex items-center justify-center rounded-full bg-white/5 border border-white/10"
+                aria-label="Sonraki Görsel"
+              >
+                <ChevronRight size={24} />
+              </button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

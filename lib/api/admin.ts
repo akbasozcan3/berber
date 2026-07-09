@@ -26,7 +26,15 @@ export const adminApi = {
   getCustomers: () => adminFetch<AdminCustomer[]>("/admin/customers"),
   getReviews: () => adminFetch<AdminReview[]>("/admin/reviews"),
   getGallery: () => adminFetch<AdminGallery[]>("/admin/gallery"),
-  createGallery: (data: { title: string; url: string; sortOrder?: number }) =>
+  createGallery: (data: {
+    title: string;
+    url: string;
+    sortOrder?: number;
+    mediaType?: "image" | "instagram";
+    instagramUrl?: string | null;
+    coverUrl?: string | null;
+    isVideo?: boolean;
+  }) =>
     adminFetch<AdminGallery>("/admin/gallery", { method: "POST", body: JSON.stringify(data) }),
   updateGallery: (id: number, data: Partial<AdminGallery>) =>
     adminFetch("/admin/gallery", { method: "PATCH", body: JSON.stringify({ id, ...data }) }),
@@ -150,6 +158,10 @@ export interface AdminGallery {
   id: number;
   url: string;
   title: string;
+  mediaType: "image" | "instagram";
+  instagramUrl: string | null;
+  coverUrl: string | null;
+  isVideo: boolean;
   sortOrder: number;
 }
 

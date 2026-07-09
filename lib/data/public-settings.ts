@@ -59,6 +59,8 @@ export function mapSettingsToPublic(all: Record<string, string>): PublicSettings
     homeTeamTitle: all.home_team_title || publicSettingsDefaults.homeTeamTitle,
     homeGalleryEyebrow: all.home_gallery_eyebrow || publicSettingsDefaults.homeGalleryEyebrow,
     homeGalleryTitle: all.home_gallery_title || publicSettingsDefaults.homeGalleryTitle,
+    homeGalleryCtaLabel: all.home_gallery_cta_label || publicSettingsDefaults.homeGalleryCtaLabel,
+    homeGalleryCtaUrl: all.home_gallery_cta_url || publicSettingsDefaults.homeGalleryCtaUrl,
     homeTestimonialsEyebrow:
       all.home_testimonials_eyebrow || publicSettingsDefaults.homeTestimonialsEyebrow,
     homeTestimonialsTitle: all.home_testimonials_title || publicSettingsDefaults.homeTestimonialsTitle,

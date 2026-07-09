@@ -72,6 +72,10 @@ export interface GalleryImage {
   id: number;
   url: string;
   title: string;
+  mediaType: "image" | "instagram";
+  instagramUrl: string | null;
+  coverUrl: string | null;
+  isVideo: boolean;
   sortOrder: number;
   createdAt: string;
 }
@@ -130,6 +134,8 @@ export interface PublicSettings {
   homeTeamTitle: string;
   homeGalleryEyebrow: string;
   homeGalleryTitle: string;
+  homeGalleryCtaLabel: string;
+  homeGalleryCtaUrl: string;
   homeTestimonialsEyebrow: string;
   homeTestimonialsTitle: string;
   homeBookingCtaEyebrow: string;

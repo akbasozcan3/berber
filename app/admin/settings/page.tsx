@@ -361,7 +361,9 @@ export default function SettingsPage() {
             <Input label="Berberler Üst Metin" value={settings.home_team_eyebrow || ""} onChange={(e) => set("home_team_eyebrow", e.target.value)} />
             <Input label="Berberler Başlık" value={settings.home_team_title || ""} onChange={(e) => set("home_team_title", e.target.value)} />
             <Input label="Galeri Üst Metin" value={settings.home_gallery_eyebrow || ""} onChange={(e) => set("home_gallery_eyebrow", e.target.value)} />
-            <Input label="Galeri Başlık (\\n ile satır)" value={settings.home_gallery_title || ""} onChange={(e) => set("home_gallery_title", e.target.value)} />
+            <Input label="Galeri Başlık (\\n ile satır)" value={settings.home_gallery_title || ""} onChange={(e) => set("home_gallery_title", e.target.value)} placeholder="Instagram&#10;Reels & Çalışmalar" />
+            <Input label="Galeri CTA Metni" value={settings.home_gallery_cta_label || ""} onChange={(e) => set("home_gallery_cta_label", e.target.value)} placeholder="Instagram'da Gör" />
+            <Input label="Galeri CTA Linki (boş = Instagram profili)" value={settings.home_gallery_cta_url || ""} onChange={(e) => set("home_gallery_cta_url", e.target.value)} placeholder="https://instagram.com/..." />
             <Input label="Yorumlar Üst Metin" value={settings.home_testimonials_eyebrow || ""} onChange={(e) => set("home_testimonials_eyebrow", e.target.value)} />
             <Input label="Yorumlar Başlık (\\n ile satır)" value={settings.home_testimonials_title || ""} onChange={(e) => set("home_testimonials_title", e.target.value)} />
             <Input label="Randevu CTA Üst Metin" value={settings.home_booking_cta_eyebrow || ""} onChange={(e) => set("home_booking_cta_eyebrow", e.target.value)} />
