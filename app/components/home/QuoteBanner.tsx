@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { api, type PageContent } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { brandWordmark } from "@/lib/utils/brand";
 
 export default function QuoteBanner() {
+  const { businessName, footerIntro } = usePublicSettings();
   const [page, setPage] = useState<PageContent | null>(null);
 
   useEffect(() => {
@@ -19,7 +22,7 @@ export default function QuoteBanner() {
     <section className="relative py-24 bg-[#0A0A0A] overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px bg-white/[0.06]" />
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-        <span className="text-[20vw] font-serif font-bold text-white/[0.012] tracking-tight leading-none">LIFE</span>
+        <span className="text-[20vw] font-serif font-bold text-white/[0.012] tracking-tight leading-none">{brandWordmark(businessName)}</span>
       </div>
       <div className="container mx-auto px-6 lg:px-14 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
@@ -33,7 +36,7 @@ export default function QuoteBanner() {
               &ldquo;{page?.content || "Her kesim ve sakal tasarımı, tarzınızı yansıtan benzersiz bir imzadır."}&rdquo;
             </blockquote>
             <p className="text-white/50 text-base md:text-lg font-light max-w-2xl mx-auto leading-relaxed">
-              {meta.description || "New Life Erkek Kuaförü olarak, modern tasarım tekniklerini geleneksel berberlik titizliğiyle harmanlıyoruz."}
+              {meta.description || footerIntro || `${businessName} olarak modern tasarım tekniklerini geleneksel berberlik titizliğiyle harmanlıyoruz.`}
             </p>
           </motion.div>
         </div>

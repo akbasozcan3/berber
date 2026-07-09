@@ -29,14 +29,14 @@ const DEFAULT_STEPS = [
 type Step = { step: string; title: string; desc: string };
 
 export default function HowItWorks() {
-  const settings = usePublicSettings();
+  const { businessName, navCtaLabel } = usePublicSettings();
   const [eyebrow, setEyebrow] = useState("Nasıl Çalışır?");
   const [title, setTitle] = useState("3 Adımda Randevu");
   const [intro, setIntro] = useState(
-    "New Life deneyimi basit, hızlı ve konforlu. Randevunuzu alın, gerisini bize bırakın."
+    `${businessName} deneyimi basit, hızlı ve konforlu. Randevunuzu alın, gerisini bize bırakın.`
   );
   const [steps, setSteps] = useState<Step[]>(DEFAULT_STEPS);
-  const [ctaLabel, setCtaLabel] = useState("Hemen Randevu Al");
+  const [ctaLabel, setCtaLabel] = useState(navCtaLabel || "Randevu Al");
 
   useEffect(() => {
     fetch("/api/v1/content?slug=home_how_it_works")
@@ -116,7 +116,7 @@ export default function HowItWorks() {
             href="/randevu"
             className="inline-flex items-center gap-3 bg-black text-white hover:bg-black/85 px-10 py-4 rounded-full text-[10px] font-bold tracking-[0.28em] uppercase transition-all duration-300"
           >
-            {settings.navCtaLabel || ctaLabel}
+            {navCtaLabel || ctaLabel}
           </Link>
         </motion.div>
       </div>

@@ -30,7 +30,7 @@ export default function About() {
               style={{ backgroundImage: `url('${page?.heroImage || "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=1000&auto=format&fit=crop"}')` }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-10 left-10 z-10">
-              <p className="text-2xl font-serif font-light text-white">{businessName || "New Life Salon"}</p>
+              <p className="text-2xl font-serif font-light text-white">{businessName}</p>
               {locationShort ? (
                 <p className="text-white/60 font-bold tracking-[0.28em] uppercase text-[9px] mt-1.5">{locationShort}</p>
               ) : null}
@@ -42,7 +42,7 @@ export default function About() {
               <span className="w-8 h-[1px] bg-white" />
               <p className="text-[10px] font-bold tracking-[0.35em] text-white/60 uppercase">{page?.subtitle || "Hakkımızda & Hikayemiz"}</p>
             </div>
-            <h2 className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white mb-10 leading-[1.05]">{page?.title || "New Life Deneyimi"}</h2>
+            <h2 className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white mb-10 leading-[1.05]">{page?.title || businessName}</h2>
 
             <div className="prose prose-invert prose-lg max-w-none text-white/55 font-light leading-relaxed space-y-4
               [&_h3]:text-white [&_h3]:font-serif [&_h3]:text-2xl [&_h3]:mt-10 [&_h3]:mb-4

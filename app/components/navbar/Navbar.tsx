@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
+import { splitBusinessNameForLogo } from "@/lib/utils/brand";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -23,6 +24,7 @@ export default function Navbar() {
   ];
   const phoneDisplay = formatPhoneDisplay(settings.phone);
   const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
+  const logoText = splitBusinessNameForLogo(settings.businessName);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
@@ -36,7 +38,7 @@ export default function Navbar() {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={logoUrl}
-      alt={settings.businessName || "New Life"}
+      alt={settings.businessName || "Salon"}
       className="h-10 w-auto max-w-[160px] object-contain"
       width={160}
       height={40}
@@ -46,11 +48,13 @@ export default function Navbar() {
   ) : (
     <>
       <span className="text-base font-bold tracking-[0.25em] text-white uppercase group-hover:text-white/80 transition-colors duration-300 leading-none">
-        {(settings.businessName || "SALON").split(" ")[0]?.toUpperCase()}
+        {logoText.primary}
       </span>
-      <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
-        {(settings.businessName || "").split(" ").slice(1).join(" ") || "KUAFÖR"}
-      </span>
+      {logoText.secondary ? (
+        <span className="text-[8px] font-semibold tracking-[0.3em] text-white/50 uppercase mt-1 leading-none">
+          {logoText.secondary}
+        </span>
+      ) : null}
     </>
   );
 

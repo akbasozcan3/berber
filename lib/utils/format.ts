@@ -38,7 +38,7 @@ export function normalizePhoneStorage(phone?: string | null): string {
 }
 
 export function googleMapsEmbedUrl(mapsUrl?: string | null, address?: string | null): string {
-  const query = mapsUrl?.trim() || address?.trim() || "New Life Erkek Kuaförü Taşdelen Çekmeköy";
+  const query = mapsUrl?.trim() || address?.trim() || "Berber Salonu";
   return `https://maps.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
 }
 

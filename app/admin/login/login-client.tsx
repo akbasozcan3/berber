@@ -7,8 +7,15 @@ import { Lock, Mail } from "lucide-react";
 import { api } from "@/lib/api/client";
 import Input from "@/components/admin/ui/Input";
 import Button from "@/components/admin/ui/Button";
+import { businessInitials } from "@/lib/utils/brand";
 
-export default function AdminLoginPage() {
+export default function AdminLoginPage({
+  businessName,
+  logoUrl,
+}: {
+  businessName: string;
+  logoUrl?: string;
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,11 +45,16 @@ export default function AdminLoginPage() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#D4AF37] flex items-center justify-center mx-auto mb-4">
-            <span className="text-[#090909] font-bold text-xl">NL</span>
+          <div className="w-16 h-16 rounded-2xl bg-[#D4AF37] flex items-center justify-center mx-auto mb-4 overflow-hidden">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={businessName} className="w-full h-full object-contain p-2" />
+            ) : (
+              <span className="text-[#090909] font-bold text-xl">{businessInitials(businessName)}</span>
+            )}
           </div>
           <h1 className="text-2xl font-semibold text-[#F8F8F8]">Admin Girişi</h1>
-          <p className="text-sm text-[#71717A] mt-2">New Life Erkek Kuaförü Yönetim Paneli</p>
+          <p className="text-sm text-[#71717A] mt-2">{businessName} Yönetim Paneli</p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-[#111111] border border-white/[0.06] rounded-[20px] p-8 space-y-5">

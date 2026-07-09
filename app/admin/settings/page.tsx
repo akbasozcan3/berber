@@ -180,6 +180,9 @@ export default function SettingsPage() {
           <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">İşletme Bilgileri</h3>
           <div className="space-y-4">
             <Input label="İşletme Adı" value={settings.business_name || ""} onChange={(e) => set("business_name", e.target.value)} />
+            <p className="text-xs text-[#71717A]">
+              Logo yokken navbar/footer metin logosu, SEO başlıkları, admin panel ve Telegram mesajlarında görünür.
+            </p>
             <Input label="E-posta" value={settings.contact_email || ""} onChange={(e) => set("contact_email", e.target.value)} />
             <Input label="Instagram" value={settings.instagram || ""} onChange={(e) => set("instagram", e.target.value)} />
             <Input label="İletişim Metni" value={settings.contact_intro || ""} onChange={(e) => set("contact_intro", e.target.value)} placeholder="Bize Ulaşın açıklaması" />

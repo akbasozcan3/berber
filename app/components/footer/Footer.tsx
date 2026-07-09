@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUp } from "lucide-react";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { instagramUrl, formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
+import { splitBusinessNameForLogo } from "@/lib/utils/brand";
 
 export default function Footer() {
   const settings = usePublicSettings();
@@ -11,6 +12,7 @@ export default function Footer() {
   const insta = instagramUrl(settings.instagram);
   const phoneDisplay = formatPhoneDisplay(settings.phone);
   const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
+  const logoText = splitBusinessNameForLogo(settings.businessName);
 
   return (
     <footer className="bg-[#050505] pt-24 pb-12 border-t border-white/[0.06] relative z-10">
@@ -24,17 +26,19 @@ export default function Footer() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={settings.brandLogoUrl}
-                  alt={settings.businessName || "New Life"}
+                  alt={settings.businessName || "Salon"}
                   className="h-10 w-auto object-contain"
                 />
               ) : (
                 <>
                   <span className="text-2xl font-serif font-bold tracking-[0.15em] uppercase text-white hover:text-white/80 transition-colors duration-300">
-                    {(settings.businessName || "SALON").split(" ")[0]}
+                    {logoText.primary}
                   </span>
-                  <span className="block text-xs font-serif italic font-light tracking-[0.1em] uppercase text-white/50 mt-1">
-                    {(settings.businessName || "").split(" ").slice(1).join(" ") || "KUAFÖR"}
-                  </span>
+                  {logoText.secondary ? (
+                    <span className="block text-xs font-serif italic font-light tracking-[0.1em] uppercase text-white/50 mt-1">
+                      {logoText.secondary}
+                    </span>
+                  ) : null}
                 </>
               )}
             </Link>
@@ -140,7 +144,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10">
           <p className="text-white/30 text-xs mb-4 md:mb-0">
             {settings.footerCopyright ||
-              `© ${new Date().getFullYear()} ${settings.businessName || "New Life Erkek Kuaförü"}. Tüm hakları saklıdır.`}
+              `© ${new Date().getFullYear()} ${settings.businessName || "Salon"}. Tüm hakları saklıdır.`}
           </p>
           <button
             onClick={scrollToTop}

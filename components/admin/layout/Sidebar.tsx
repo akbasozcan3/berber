@@ -26,6 +26,7 @@ import { cn } from "@/lib/admin/cn";
 import Avatar from "../ui/Avatar";
 import { api } from "@/lib/api/client";
 import { adminApi } from "@/lib/api/admin";
+import { businessInitials } from "@/lib/utils/brand";
 import { useAdminSession } from "@/lib/context/AdminSessionContext";
 
 const menuItems = [
@@ -80,7 +81,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
         <Link href="/admin" className="flex items-center gap-3" onClick={onMobileClose}>
           <div className="w-10 h-10 rounded-2xl bg-[#D4AF37] flex items-center justify-center flex-shrink-0">
             <span className="text-[#090909] font-bold text-sm">
-              {businessName.slice(0, 2).toUpperCase()}
+              {businessInitials(businessName)}
             </span>
           </div>
           {!collapsed && (
