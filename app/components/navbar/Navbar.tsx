@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, formatWorkingHoursSummary, formatWorkingHoursTopbar, toTelHref } from "@/lib/utils/format";
-import { splitBusinessNameForLogo, navbarLogoImageClass } from "@/lib/utils/brand";
+import { splitBusinessNameForLogo, navbarLogoImageClass, mobileLogoImageClass } from "@/lib/utils/brand";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -57,6 +57,18 @@ export default function Navbar() {
     </>
   );
 
+  const mobileBrandLogo = logoUrl ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={logoUrl}
+      alt={settings.businessName || "Salon"}
+      className={mobileLogoImageClass}
+      decoding="async"
+    />
+  ) : (
+    brandLogo
+  );
+
   return (
     <>
       {/* ─── HEADER CONTAINER ─── */}
@@ -89,20 +101,20 @@ export default function Navbar() {
 
         {/* ─── 2. MAIN NAVBAR ─── */}
         <nav
-          className={`w-full overflow-hidden transition-all duration-300 ${
+          className={`w-full overflow-visible transition-all duration-300 ${
             scrolled
-              ? "bg-[#0A0A0A]/95 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-2"
-              : "bg-[#0A0A0A]/85 backdrop-blur-sm py-3"
+              ? "bg-[#0A0A0A]/95 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3"
+              : "bg-[#0A0A0A]/85 backdrop-blur-sm py-4.5"
           }`}
         >
-          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-20 sm:h-24 md:h-28 lg:h-32 flex items-center justify-between gap-6">
+          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6 overflow-visible">
             
-            {/* Logo — large but vertically centered inside the nav row */}
+            {/* Logo — large image, compact navbar row */}
             <Link
               href="/"
-              className={`shrink-0 group ${
+              className={`shrink-0 overflow-visible group ${
                 logoUrl
-                  ? "flex items-center h-full min-w-[10rem] sm:min-w-[12rem] md:min-w-[14rem]"
+                  ? "relative block h-10 w-[14rem] sm:w-[18rem] md:w-[24rem]"
                   : "flex flex-col items-start min-h-10 justify-center"
               }`}
             >
@@ -166,7 +178,7 @@ export default function Navbar() {
               {/* Top area */}
               <div className="space-y-12">
                 <div className="flex justify-between items-center">
-                  <div className="flex flex-col min-h-10 justify-center">{brandLogo}</div>
+                  <div className="flex flex-col min-h-10 justify-center">{mobileBrandLogo}</div>
                   <button onClick={() => setMobileOpen(false)} className="text-white/60 hover:text-white p-1">
                     <X size={20} />
                   </button>
