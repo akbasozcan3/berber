@@ -30,6 +30,9 @@ export function buildRootMetadata(settings: PublicSettings): Metadata {
       locale: "tr_TR",
       type: "website",
     },
+    verification: {
+      google: "Ehuuq0Zj5oMxkFthfZ1IGGSDMz341Tk-E8K14V7zi9I",
+    },
   };
 }
 
