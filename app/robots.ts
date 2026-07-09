@@ -10,16 +10,16 @@ function resolveBaseUrl(siteUrl: string): string {
   return "https://www.thebarberyasin.com";
 }
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default async function robots(): Promise<MetadataRoute.Robots> {
   const settings = await getPublicSettingsServer();
   const baseUrl = resolveBaseUrl(settings.siteUrl);
 
-  const routes = ["", "/hakkimizda", "/hizmetler", "/galeri", "/yorumlar", "/randevu", "/iletisim"];
-
-  return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: route === "" ? 1.0 : 0.8,
-  }));
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/admin/", "/api/"],
+    },
+    sitemap: `${baseUrl}/sitemap.xml`,
+  };
 }
