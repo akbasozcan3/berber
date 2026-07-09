@@ -132,6 +132,16 @@ export default function SettingsPage() {
 
   const set = (key: string, value: string) => setSettings((s) => ({ ...s, [key]: value }));
 
+  const saveBrandingImage = async (key: "logo_url" | "favicon_url", url: string) => {
+    set(key, url);
+    try {
+      await adminApi.saveSettings({ [key]: url });
+      showToast(true, key === "favicon_url" ? "Favicon kaydedildi ve site güncellendi." : "Logo kaydedildi.");
+    } catch {
+      showToast(false, "Görsel yüklendi ama kaydedilemedi. Kaydet'e basın.");
+    }
+  };
+
   const telegramEnabled = settings.notifications_telegram !== "false";
   const recipientName = settings.telegram_recipient_name || status?.recipientName || "Mehmet Abi";
   const botConnected = status?.connected ?? false;
@@ -197,19 +207,19 @@ export default function SettingsPage() {
               label="Logo"
               folder="branding"
               value={settings.logo_url || ""}
-              onChange={(url) => set("logo_url", url)}
+              onChange={(url) => void saveBrandingImage("logo_url", url)}
               previewHeightClass="h-28"
             />
             <ImageUpload
               label="Favicon"
               folder="branding"
+              variant="icon"
               value={settings.favicon_url || ""}
-              onChange={(url) => set("favicon_url", url)}
-              previewHeightClass="h-28"
+              onChange={(url) => void saveBrandingImage("favicon_url", url)}
             />
           </div>
           <p className="text-xs text-[#52525B] mt-4">
-            Yükleme sonrası site otomatik güncellenir.
+            Logo ve favicon yüklendikten sonra otomatik kaydedilir. Favicon için kare PNG veya ICO kullanın (32×32 veya 64×64).
           </p>
         </Card>
 

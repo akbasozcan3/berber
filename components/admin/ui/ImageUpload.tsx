@@ -12,6 +12,8 @@ interface ImageUploadProps {
   folder?: string;
   className?: string;
   previewHeightClass?: string;
+  /** Square icon preview — use for favicon uploads */
+  variant?: "default" | "icon";
 }
 
 export default function ImageUpload({
@@ -21,7 +23,13 @@ export default function ImageUpload({
   folder = "general",
   className,
   previewHeightClass = "h-40",
+  variant = "default",
 }: ImageUploadProps) {
+  const isIcon = variant === "icon";
+  const previewClass = isIcon ? "aspect-square h-28 w-28 mx-auto" : previewHeightClass;
+  const accept = isIcon
+    ? "image/png,image/jpeg,image/webp,image/gif,image/x-icon,image/vnd.microsoft.icon,image/svg+xml,.ico"
+    : "image/*";
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -49,17 +57,21 @@ export default function ImageUpload({
           <div
             className={cn(
               "relative w-full mb-3 rounded-lg overflow-hidden border border-white/[0.06] bg-black",
-              previewHeightClass
+              previewClass
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={value} alt="" className="w-full h-full object-cover" />
+            <img
+              src={value}
+              alt=""
+              className={cn("w-full h-full", isIcon ? "object-contain p-2" : "object-cover")}
+            />
           </div>
         ) : (
           <div
             className={cn(
               "mb-3 rounded-lg border border-dashed border-white/10 flex flex-col items-center justify-center gap-2 text-[#52525B]",
-              previewHeightClass
+              previewClass
             )}
           >
             <ImageIcon size={28} strokeWidth={1.5} />
@@ -70,7 +82,7 @@ export default function ImageUpload({
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept={accept}
           className="hidden"
           onChange={(e) => void handleFile(e.target.files?.[0] ?? null)}
         />
@@ -86,7 +98,9 @@ export default function ImageUpload({
         </button>
 
         <p className="text-[10px] text-[#52525B] mt-2 text-center">
-          Telefon veya bilgisayardan seçin · Maks. 5MB
+          {isIcon
+            ? "Kare PNG veya ICO önerilir · Maks. 5MB"
+            : "Telefon veya bilgisayardan seçin · Maks. 5MB"}
         </p>
         {error && <p className="text-xs text-red-400 mt-2">{error}</p>}
       </div>

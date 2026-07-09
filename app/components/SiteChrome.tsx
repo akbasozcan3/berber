@@ -11,18 +11,20 @@ function FaviconManager() {
   const settings = usePublicSettings();
 
   useEffect(() => {
-    const faviconUrl = settings.faviconUrl;
+    const faviconUrl = settings.faviconUrl?.trim();
     if (!faviconUrl) return;
 
     try {
-      let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
-      if (!link) {
-        link = document.createElement("link");
-        link.rel = "icon";
-        document.head.appendChild(link);
+      for (const rel of ["icon", "shortcut icon"] as const) {
+        const selector = rel === "icon" ? 'link[rel="icon"]' : 'link[rel="shortcut icon"]';
+        let link = document.querySelector<HTMLLinkElement>(selector);
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = rel;
+          document.head.appendChild(link);
+        }
+        link.href = faviconUrl;
       }
-
-      link.href = faviconUrl;
     } catch {
       // Favicon güncellemesi asıl sayfayı bozmamalı.
     }
