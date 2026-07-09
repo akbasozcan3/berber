@@ -54,7 +54,7 @@ export const publicSettingsDefaults: PublicSettings = {
   appointmentInterval: 30,
   maxFutureBooking: 30,
   maxBookingsPerSlot: 1,
-  siteUrl: "",
+  siteUrl: "https://www.thebarberyasin.com",
   seoHomeTitle: "",
   seoDefaultDescription:
     "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı, cilt bakımı ve erkek bakım hizmetleri.",

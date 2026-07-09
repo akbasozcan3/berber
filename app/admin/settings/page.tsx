@@ -350,7 +350,10 @@ export default function SettingsPage() {
         <Card>
           <h3 className="text-base font-semibold text-[#F8F8F8] mb-2">SEO & Site</h3>
           <div className="space-y-4">
-            <Input label="Site URL (https://...)" value={settings.site_url || ""} onChange={(e) => set("site_url", e.target.value)} placeholder="https://siteniz.com" />
+            <Input label="Site URL (https://...)" value={settings.site_url || ""} onChange={(e) => set("site_url", e.target.value)} placeholder="https://www.thebarberyasin.com" />
+            <p className="text-xs text-[#71717A]">
+              Sitemap, robots.txt ve paylaşım linkleri bu adresi kullanır. Boş bırakılırsa canlı domain otomatik seçilir.
+            </p>
             <Input label="Ana Sayfa SEO Başlık (boş = otomatik)" value={settings.seo_home_title || ""} onChange={(e) => set("seo_home_title", e.target.value)} />
             <Input label="SEO Açıklama" value={settings.seo_default_description || ""} onChange={(e) => set("seo_default_description", e.target.value)} />
             <Input label="SEO Anahtar Kelimeler (virgülle)" value={settings.seo_keywords || ""} onChange={(e) => set("seo_keywords", e.target.value)} />
