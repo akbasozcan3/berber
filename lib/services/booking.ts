@@ -2,6 +2,10 @@ import { db } from "@/lib/db";
 import { settings, appointments, barbers, services, customers } from "@/lib/db/schema";
 import { eq, and, ne } from "drizzle-orm";
 import {
+  isMultilineSettingKey,
+  normalizeMultilineSettingValue,
+} from "@/lib/data/multiline-settings";
+import {
   getActiveRulesForDate,
   getDayStatus,
   getEffectiveHours,
@@ -25,7 +29,21 @@ export async function setSetting(key: string, value: string): Promise<void> {
 
 export async function getSettings(): Promise<Record<string, string>> {
   const rows = await db.select().from(settings);
-  return Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  const result: Record<string, string> = {};
+
+  for (const row of rows) {
+    let value = row.value;
+    if (isMultilineSettingKey(row.key)) {
+      const fixed = normalizeMultilineSettingValue(value);
+      if (fixed !== value) {
+        await setSetting(row.key, fixed);
+        value = fixed;
+      }
+    }
+    result[row.key] = value;
+  }
+
+  return result;
 }
 
 function formatTime(minutes: number): string {

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Scissors, Sparkles, Droplets, Crown, ArrowRight, Calendar } from "lucide-react";
 import { api, type Service } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { splitTitleLines } from "@/lib/data/home-content";
+import SectionTitle from "@/components/ui/SectionTitle";
 
 const ICONS = [Scissors, Sparkles, Droplets, Crown];
 
@@ -17,11 +17,6 @@ interface ServicesPreviewProps {
 export default function ServicesPreview({ initialServices = [] }: ServicesPreviewProps) {
   const settings = usePublicSettings();
   const [services, setServices] = useState<Service[]>(initialServices);
-  const [titleLine1, titleLine2] = splitTitleLines(
-    settings.servicesSectionTitle,
-    "Özenle Tasarlanmış",
-    "Bakım Ritüelleri"
-  );
 
   useEffect(() => {
     if (initialServices.length > 0) return;
@@ -41,10 +36,13 @@ export default function ServicesPreview({ initialServices = [] }: ServicesPrevie
                 {settings.servicesSectionEyebrow || settings.navServicesLabel}
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-light text-black tracking-tight leading-[1.1]">
-              {titleLine1} <br />
-              <span className="italic text-black/35 font-light">{titleLine2}</span>
-            </h2>
+            <SectionTitle
+              title={settings.servicesSectionTitle}
+              fallbackLine1="Özenle Tasarlanmış"
+              fallbackLine2="Bakım Ritüelleri"
+              className="text-4xl md:text-5xl lg:text-6xl font-serif font-light text-black tracking-tight leading-[1.1]"
+              line2ClassName="italic text-black/35 font-light"
+            />
           </div>
           <Link
             href="/hizmetler"

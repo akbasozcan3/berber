@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import { api, type GalleryImage } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { splitTitleLines } from "@/lib/data/home-content";
+import SectionTitle from "@/components/ui/SectionTitle";
 import GalleryItemCard from "@/components/gallery/GalleryItemCard";
 import {
   getGalleryDisplayUrl,
@@ -19,11 +19,6 @@ interface GalleryProps {
 export default function Gallery({ initialImages = [] }: GalleryProps) {
   const settings = usePublicSettings();
   const [images, setImages] = useState<GalleryImage[]>(initialImages);
-  const [titleLine1, titleLine2] = splitTitleLines(
-    settings.homeGalleryTitle,
-    settings.businessName,
-    "Instagram"
-  );
   const [activeCategory, setActiveCategory] = useState("Tümü");
   const [photoIndex, setPhotoIndex] = useState<number | null>(null);
 
@@ -73,10 +68,13 @@ export default function Gallery({ initialImages = [] }: GalleryProps) {
             </p>
             <span className="w-8 h-[1px] bg-white" />
           </div>
-          <h2 className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white mb-6 leading-[1.05]">
-            {titleLine1}{" "}
-            <span className="italic text-white/40 font-light">{titleLine2}</span>
-          </h2>
+          <SectionTitle
+            title={settings.homeGalleryTitle}
+            fallbackLine1={settings.businessName}
+            fallbackLine2="Instagram"
+            className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white mb-6 leading-[1.05]"
+            line2ClassName="italic text-white/40 font-light"
+          />
           <p className="text-white/50 text-lg max-w-xl mx-auto font-light leading-relaxed">
             {settings.galleryPageSubtitle}
           </p>

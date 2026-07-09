@@ -3,6 +3,11 @@ import { getSettings } from "@/lib/services/booking";
 import type { PublicSettings } from "@/lib/api/client";
 import { publicSettingsDefaults } from "./public-settings-defaults";
 import { parseWorkingHoursJson } from "./working-hours";
+import { normalizeMultilineSettingValue } from "./multiline-settings";
+
+function ml(value: string | undefined, fallback: string): string {
+  return normalizeMultilineSettingValue(value || fallback);
+}
 
 export function mapSettingsToPublic(all: Record<string, string>): PublicSettings {
   return {
@@ -23,7 +28,7 @@ export function mapSettingsToPublic(all: Record<string, string>): PublicSettings
     servicesPageTitle: all.services_page_title || publicSettingsDefaults.servicesPageTitle,
     servicesPageSubtitle: all.services_page_subtitle || publicSettingsDefaults.servicesPageSubtitle,
     servicesSectionEyebrow: all.services_section_eyebrow || publicSettingsDefaults.servicesSectionEyebrow,
-    servicesSectionTitle: all.services_section_title || publicSettingsDefaults.servicesSectionTitle,
+    servicesSectionTitle: ml(all.services_section_title, publicSettingsDefaults.servicesSectionTitle),
     servicesSectionSubtitle: all.services_section_subtitle || publicSettingsDefaults.servicesSectionSubtitle,
     galleryPageTitle: all.gallery_page_title || publicSettingsDefaults.galleryPageTitle,
     galleryPageSubtitle: all.gallery_page_subtitle || publicSettingsDefaults.galleryPageSubtitle,
@@ -58,18 +63,21 @@ export function mapSettingsToPublic(all: Record<string, string>): PublicSettings
     homeTeamEyebrow: all.home_team_eyebrow || publicSettingsDefaults.homeTeamEyebrow,
     homeTeamTitle: all.home_team_title || publicSettingsDefaults.homeTeamTitle,
     homeGalleryEyebrow: all.home_gallery_eyebrow || publicSettingsDefaults.homeGalleryEyebrow,
-    homeGalleryTitle: all.home_gallery_title || publicSettingsDefaults.homeGalleryTitle,
+    homeGalleryTitle: ml(all.home_gallery_title, publicSettingsDefaults.homeGalleryTitle),
     homeGalleryCtaLabel: all.home_gallery_cta_label || publicSettingsDefaults.homeGalleryCtaLabel,
     homeGalleryCtaUrl: all.home_gallery_cta_url || publicSettingsDefaults.homeGalleryCtaUrl,
     homeTestimonialsEyebrow:
       all.home_testimonials_eyebrow || publicSettingsDefaults.homeTestimonialsEyebrow,
-    homeTestimonialsTitle: all.home_testimonials_title || publicSettingsDefaults.homeTestimonialsTitle,
+    homeTestimonialsTitle: ml(
+      all.home_testimonials_title,
+      publicSettingsDefaults.homeTestimonialsTitle
+    ),
     homeBookingCtaEyebrow: all.home_booking_cta_eyebrow || publicSettingsDefaults.homeBookingCtaEyebrow,
-    homeBookingCtaTitle: all.home_booking_cta_title || publicSettingsDefaults.homeBookingCtaTitle,
+    homeBookingCtaTitle: ml(all.home_booking_cta_title, publicSettingsDefaults.homeBookingCtaTitle),
     homeBookingCtaSubtitle: all.home_booking_cta_subtitle || publicSettingsDefaults.homeBookingCtaSubtitle,
     homeBookingCtaBanner: all.home_booking_cta_banner || publicSettingsDefaults.homeBookingCtaBanner,
     experienceEyebrow: all.experience_eyebrow || publicSettingsDefaults.experienceEyebrow,
-    experienceTitle: all.experience_title || publicSettingsDefaults.experienceTitle,
+    experienceTitle: ml(all.experience_title, publicSettingsDefaults.experienceTitle),
     experienceYears: all.experience_years || publicSettingsDefaults.experienceYears,
     experienceHygiene: all.experience_hygiene || publicSettingsDefaults.experienceHygiene,
     reviewsSectionIntro: all.reviews_section_intro || publicSettingsDefaults.reviewsSectionIntro,

@@ -6,6 +6,7 @@ import { Scissors, Sparkles, Droplets, Crown } from "lucide-react";
 import Link from "next/link";
 import { api, type Service } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import SectionTitle from "@/components/ui/SectionTitle";
 
 const ICONS = [Scissors, Sparkles, Droplets, Crown];
 
@@ -23,9 +24,6 @@ export default function Services({
   const [services, setServices] = useState<Service[]>(initialServices);
   const [loading, setLoading] = useState(initialServices.length === 0);
   const settings = usePublicSettings();
-  const titleParts = (settings.servicesSectionTitle || "").split("\n");
-  const titleLine1 = titleParts[0] || settings.servicesSectionTitle;
-  const titleLine2 = titleParts[1] || "";
   const isLight = theme === "light";
 
   useEffect(() => {
@@ -56,18 +54,15 @@ export default function Services({
                 {settings.servicesSectionEyebrow}
               </p>
             </div>
-            <h2
+            <SectionTitle
+              title={settings.servicesSectionTitle}
+              fallbackLine1="Özenle Tasarlanmış"
+              fallbackLine2="Bakım Ritüelleri"
               className={`text-4xl md:text-6xl font-serif font-light tracking-tight mb-6 leading-[1.05] ${
                 isLight ? "text-black" : "text-white"
               }`}
-            >
-              {titleLine1} <br />
-              {titleLine2 ? (
-                <span className={`italic font-light ${isLight ? "text-black/35" : "text-white/30"}`}>
-                  {titleLine2}
-                </span>
-              ) : null}
-            </h2>
+              line2ClassName={`italic font-light ${isLight ? "text-black/35" : "text-white/30"}`}
+            />
             <p
               className={`text-base md:text-lg font-light leading-relaxed max-w-xl ${
                 isLight ? "text-black/50" : "text-white/50"

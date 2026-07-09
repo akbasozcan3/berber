@@ -7,17 +7,12 @@ import Link from "next/link";
 import { api, type Review } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { getInitials } from "@/lib/utils/format";
-import { splitTitleLines } from "@/lib/data/home-content";
+import SectionTitle from "@/components/ui/SectionTitle";
 
 export default function TestimonialsSlider() {
   const settings = usePublicSettings();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [current, setCurrent] = useState(0);
-  const [titleLine1, titleLine2] = splitTitleLines(
-    settings.homeTestimonialsTitle,
-    "Deneyimleyenlerin",
-    "Gözünden"
-  );
 
   useEffect(() => {
     api.getReviews(true).then((data) => {
@@ -61,10 +56,13 @@ export default function TestimonialsSlider() {
                 {settings.homeTestimonialsEyebrow || settings.reviewsPageTitle}
               </span>
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-light tracking-tight text-black leading-[1.05]">
-              {titleLine1} <br />
-              <span className="italic text-black/35">{titleLine2}</span>
-            </h2>
+            <SectionTitle
+              title={settings.homeTestimonialsTitle}
+              fallbackLine1="Deneyimleyenlerin"
+              fallbackLine2="Gözünden"
+              className="text-4xl md:text-5xl lg:text-6xl font-serif font-light tracking-tight text-black leading-[1.05]"
+              line2ClassName="italic text-black/35"
+            />
           </div>
           <Link
             href="/yorumlar"

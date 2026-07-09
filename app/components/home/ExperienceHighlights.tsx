@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { splitTitleLines } from "@/lib/data/home-content";
+import SectionTitle from "@/components/ui/SectionTitle";
 
 export default function ExperienceHighlights() {
   const {
@@ -14,7 +14,6 @@ export default function ExperienceHighlights() {
     experienceYears,
     experienceHygiene,
   } = usePublicSettings();
-  const [titleLine1, titleLine2] = splitTitleLines(experienceTitle, "Güvenin", "Sayılarla Kanıtı");
 
   const highlights = [
     { value: `${googleRating}`, label: "Google Puanı", suffix: "/ 5" },
@@ -39,10 +38,13 @@ export default function ExperienceHighlights() {
             </span>
             <span className="w-8 h-px bg-black/25" />
           </div>
-          <h2 className="text-3xl md:text-4xl font-serif font-light text-black tracking-tight">
-            {titleLine1}{" "}
-            <span className="italic text-black/40">{titleLine2}</span>
-          </h2>
+          <SectionTitle
+            title={experienceTitle}
+            fallbackLine1="Güvenin"
+            fallbackLine2="Sayılarla Kanıtı"
+            className="text-3xl md:text-4xl font-serif font-light text-black tracking-tight"
+            line2ClassName="italic text-black/40"
+          />
         </motion.div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-black/10 rounded-2xl overflow-hidden border border-black/10">

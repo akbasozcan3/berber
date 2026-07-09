@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { api, type GalleryImage } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { splitTitleLines } from "@/lib/data/home-content";
+import SectionTitle from "@/components/ui/SectionTitle";
 import { instagramUrl } from "@/lib/utils/format";
 import GalleryItemCard from "@/components/gallery/GalleryItemCard";
 
@@ -16,11 +16,6 @@ interface GalleryPreviewProps {
 export default function GalleryPreview({ initialImages = [] }: GalleryPreviewProps) {
   const settings = usePublicSettings();
   const [images, setImages] = useState<GalleryImage[]>(initialImages.slice(0, 6));
-  const [titleLine1, titleLine2] = splitTitleLines(
-    settings.homeGalleryTitle,
-    settings.businessName,
-    "Instagram"
-  );
 
   const ctaHref =
     settings.homeGalleryCtaUrl?.trim() || instagramUrl(settings.instagram);
@@ -43,10 +38,13 @@ export default function GalleryPreview({ initialImages = [] }: GalleryPreviewPro
                 {settings.homeGalleryEyebrow || settings.navGalleryLabel}
               </span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white leading-[1.05]">
-              {titleLine1} <br />
-              <span className="italic text-white/25">{titleLine2}</span>
-            </h2>
+            <SectionTitle
+              title={settings.homeGalleryTitle}
+              fallbackLine1={settings.businessName}
+              fallbackLine2="Instagram"
+              className="text-5xl md:text-7xl font-serif font-light tracking-tight text-white leading-[1.05]"
+              line2ClassName="italic text-white/25"
+            />
           </div>
           <Link
             href={ctaHref}

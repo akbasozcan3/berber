@@ -18,7 +18,7 @@ import { getSettings } from "@/lib/services/booking";
 import { normalizePhoneStorage } from "@/lib/utils/format";
 import { revalidatePath } from "next/cache";
 import { normalizeInstagramPostUrl } from "@/lib/utils/gallery";
-import { normalizeMultilineText } from "@/lib/data/home-content";
+import { MULTILINE_SETTING_KEYS, normalizeMultilineSettingValue } from "@/lib/data/multiline-settings";
 import { z } from "zod";
 
 function revalidateGalleryPages() {
@@ -36,13 +36,6 @@ function parseGalleryPayload(body: Record<string, unknown>) {
   return { mediaType, instagramUrl, coverUrl, isVideo, url };
 }
 
-const MULTILINE_SETTING_KEYS = new Set([
-  "home_gallery_title",
-  "home_testimonials_title",
-  "home_booking_cta_title",
-  "services_section_title",
-  "experience_title",
-]);
 
 type Entity = "barbers" | "services" | "customers" | "reviews" | "gallery" | "settings";
 
@@ -174,8 +167,8 @@ export async function PATCH(
     if (entity === "settings") {
       for (const [key, value] of Object.entries(body)) {
         let stored = key === "phone" ? normalizePhoneStorage(String(value)) : String(value);
-        if (MULTILINE_SETTING_KEYS.has(key)) {
-          stored = normalizeMultilineText(stored);
+        if (MULTILINE_SETTING_KEYS.includes(key as (typeof MULTILINE_SETTING_KEYS)[number])) {
+          stored = normalizeMultilineSettingValue(stored);
         }
         const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
         if (existing[0]) {

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Phone, Scissors } from "lucide-react";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, toTelHref } from "@/lib/utils/format";
-import { splitTitleLines } from "@/lib/data/home-content";
+import SectionTitle from "@/components/ui/SectionTitle";
 import { api, type Service } from "@/lib/api/client";
 
 interface BookingCTAProps {
@@ -16,11 +16,6 @@ interface BookingCTAProps {
 export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
   const settings = usePublicSettings();
   const [services, setServices] = useState<Service[]>(initialServices);
-  const [titleLine1, titleLine2] = splitTitleLines(
-    settings.homeBookingCtaTitle,
-    "Randevunuzu",
-    "Hemen Oluşturun"
-  );
 
   useEffect(() => {
     if (initialServices.length > 0) return;
@@ -55,10 +50,13 @@ export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
                 {settings.homeBookingCtaEyebrow}
               </span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-serif font-light text-white tracking-tight leading-[1.05] mb-8 whitespace-pre-line">
-              {titleLine1} <br />
-              <span className="italic text-white/25">{titleLine2}</span>
-            </h2>
+            <SectionTitle
+              title={settings.homeBookingCtaTitle}
+              fallbackLine1="Randevunuzu"
+              fallbackLine2="Hemen Oluşturun"
+              className="text-5xl md:text-7xl font-serif font-light text-white tracking-tight leading-[1.05] mb-8"
+              line2ClassName="italic text-white/25"
+            />
             <p className="text-white/40 text-lg font-light leading-relaxed max-w-md">
               {settings.homeBookingCtaSubtitle}
             </p>
