@@ -39,7 +39,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className="h-14 sm:h-16 md:h-[4.5rem] w-auto max-w-[min(300px,72vw)] object-contain"
+      className="h-10 w-auto max-w-[200px] object-contain origin-left scale-[1.5] sm:scale-[1.65] md:scale-[1.8]"
       fetchPriority="high"
       decoding="async"
     />
@@ -90,16 +90,23 @@ export default function Navbar() {
 
         {/* ─── 2. MAIN NAVBAR ─── */}
         <nav
-          className={`w-full transition-all duration-300 ${
+          className={`w-full overflow-visible transition-all duration-300 ${
             scrolled
               ? "bg-[#0A0A0A]/95 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3"
               : "bg-[#0A0A0A]/85 backdrop-blur-sm py-4.5"
           }`}
         >
-          <div className="max-w-7xl mx-auto px-5 lg:px-10 min-h-16 md:min-h-[4.5rem] flex items-center justify-between gap-6 py-2">
+          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6 overflow-visible">
             
-            {/* Logo - Minimal & Editorial */}
-            <Link href="/" className="flex flex-col items-start group shrink-0">
+            {/* Logo - scaled up visually without growing navbar height */}
+            <Link
+              href="/"
+              className={`relative shrink-0 overflow-visible group ${
+                logoUrl
+                  ? "flex h-10 items-center pr-10 sm:pr-14 md:pr-16"
+                  : "flex flex-col items-start min-h-10 justify-center"
+              }`}
+            >
               {brandLogo}
             </Link>
 
