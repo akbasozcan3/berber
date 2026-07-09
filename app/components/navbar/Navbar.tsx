@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, formatWorkingHoursSummary, formatWorkingHoursTopbar, toTelHref } from "@/lib/utils/format";
-import { splitBusinessNameForLogo, siteLogoImageClass } from "@/lib/utils/brand";
+import { splitBusinessNameForLogo, navbarLogoImageClass } from "@/lib/utils/brand";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -40,7 +40,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className={`absolute left-0 top-1/2 -translate-y-1/2 translate-y-2 sm:translate-y-3 ${siteLogoImageClass}`}
+      className={navbarLogoImageClass}
       fetchPriority="high"
       decoding="async"
     />
@@ -89,20 +89,20 @@ export default function Navbar() {
 
         {/* ─── 2. MAIN NAVBAR ─── */}
         <nav
-          className={`w-full overflow-visible transition-all duration-300 ${
+          className={`w-full overflow-hidden transition-all duration-300 ${
             scrolled
               ? "bg-[#0A0A0A]/95 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3"
               : "bg-[#0A0A0A]/85 backdrop-blur-sm py-4.5"
           }`}
         >
-          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6 overflow-visible">
+          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6">
             
             {/* Logo - scaled up visually without growing navbar height */}
             <Link
               href="/"
-              className={`relative shrink-0 overflow-visible group ${
+              className={`shrink-0 group ${
                 logoUrl
-                  ? "block h-10 w-[14rem] sm:w-[18rem] md:w-[24rem]"
+                  ? "flex items-center h-14 min-w-[10rem] sm:min-w-[12rem] md:min-w-[14rem]"
                   : "flex flex-col items-start min-h-10 justify-center"
               }`}
             >
