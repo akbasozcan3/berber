@@ -40,7 +40,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className={`absolute left-0 top-1/2 -translate-y-1/2 translate-y-6 sm:translate-y-8 ${siteLogoImageClass}`}
+      className={`absolute left-0 top-1/2 -translate-y-1/2 ${siteLogoImageClass}`}
       fetchPriority="high"
       decoding="async"
     />
