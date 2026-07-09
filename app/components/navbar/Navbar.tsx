@@ -39,7 +39,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className="h-10 w-auto max-w-[200px] object-contain origin-left scale-[1.5] sm:scale-[1.65] md:scale-[1.8]"
+      className="absolute left-0 top-1/2 -translate-y-1/2 h-14 sm:h-[3.75rem] md:h-16 w-auto max-w-[min(320px,48vw)] object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.35)]"
       fetchPriority="high"
       decoding="async"
     />
@@ -103,7 +103,7 @@ export default function Navbar() {
               href="/"
               className={`relative shrink-0 overflow-visible group ${
                 logoUrl
-                  ? "flex h-10 items-center pr-10 sm:pr-14 md:pr-16"
+                  ? "block h-10 w-[9.5rem] sm:w-[11.5rem] md:w-[13.5rem]"
                   : "flex flex-col items-start min-h-10 justify-center"
               }`}
             >
