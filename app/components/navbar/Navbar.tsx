@@ -91,18 +91,18 @@ export default function Navbar() {
         <nav
           className={`w-full overflow-hidden transition-all duration-300 ${
             scrolled
-              ? "bg-[#0A0A0A]/95 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-3"
-              : "bg-[#0A0A0A]/85 backdrop-blur-sm py-4.5"
+              ? "bg-[#0A0A0A]/95 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.5)] py-2"
+              : "bg-[#0A0A0A]/85 backdrop-blur-sm py-3"
           }`}
         >
-          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6">
+          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-20 sm:h-24 md:h-28 lg:h-32 flex items-center justify-between gap-6">
             
-            {/* Logo - scaled up visually without growing navbar height */}
+            {/* Logo — large but vertically centered inside the nav row */}
             <Link
               href="/"
               className={`shrink-0 group ${
                 logoUrl
-                  ? "flex items-center h-14 min-w-[10rem] sm:min-w-[12rem] md:min-w-[14rem]"
+                  ? "flex items-center h-full min-w-[10rem] sm:min-w-[12rem] md:min-w-[14rem]"
                   : "flex flex-col items-start min-h-10 justify-center"
               }`}
             >

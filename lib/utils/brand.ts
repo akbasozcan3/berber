@@ -32,4 +32,4 @@ export const siteLogoImageClass =
   "h-24 sm:h-28 md:h-32 lg:h-36 w-auto max-w-[min(520px,64vw)] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
 
 export const navbarLogoImageClass =
-  "h-14 sm:h-16 md:h-[4.25rem] w-auto max-w-[min(400px,48vw)] object-contain object-left drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
+  "h-20 sm:h-24 md:h-28 lg:h-32 w-auto max-w-[min(480px,58vw)] object-contain object-left drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
