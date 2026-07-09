@@ -6,16 +6,18 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { api, type PageContent } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { htmlToPlainPreview } from "@/lib/utils/html";
 
 export default function AboutBanner() {
   const { businessName } = usePublicSettings();
   const [page, setPage] = useState<PageContent | null>(null);
 
   useEffect(() => {
-    api.getPageContent("home_about").then(setPage).catch(() => {});
+    api.getPageContent("about").then(setPage).catch(() => {});
   }, []);
 
-  const sections = Array.isArray(page?.sections) ? page.sections as { title: string; desc: string }[] : [];
+  const sections = Array.isArray(page?.sections) ? (page.sections as { title: string; desc: string }[]) : [];
+  const previewText = page?.content ? htmlToPlainPreview(page.content) : "";
 
   return (
     <section className="relative py-0 bg-[#0A0A0A] overflow-hidden">
@@ -33,7 +35,7 @@ export default function AboutBanner() {
             <span className="text-[10px] font-bold tracking-[0.38em] uppercase text-white/60">{page?.subtitle || "Hakkımızda"}</span>
           </div>
           <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-light text-white tracking-tight mb-8 leading-none whitespace-pre-line">{page?.title || businessName}</h2>
-          <p className="text-white/60 text-base md:text-lg font-light leading-relaxed mb-12">{page?.content || ""}</p>
+          <p className="text-white/60 text-base md:text-lg font-light leading-relaxed mb-12">{previewText}</p>
           {sections.length > 0 && (
             <div className="grid grid-cols-3 gap-8 py-8 border-y border-white/[0.08] mb-10">
               {sections.map((item, i) => (

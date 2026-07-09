@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { pageContent } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
+import { revalidatePath } from "next/cache";
 
 export async function GET(request: Request) {
   try {
@@ -62,6 +63,10 @@ export async function PATCH(request: Request) {
         updatedAt: new Date().toISOString(),
       });
     }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/hakkimizda");
 
     return jsonResponse({ success: true });
   } catch (e) {

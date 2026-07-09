@@ -10,8 +10,7 @@ import Textarea from "@/components/admin/ui/Textarea";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 
 const PAGES = [
-  { slug: "about", label: "Hakkımızda Sayfası" },
-  { slug: "home_about", label: "Ana Sayfa Hakkımızda Banner" },
+  { slug: "about", label: "Hakkımızda (Ana Sayfa + Sayfa)" },
   { slug: "home_quote", label: "Ana Sayfa Felsefe Banner" },
   { slug: "home_how_it_works", label: "Ana Sayfa Nasıl Çalışır" },
   { slug: "legal_privacy", label: "Gizlilik Politikası" },
@@ -156,7 +155,7 @@ export default function ContentAdminPage() {
               </div>
             </>
           )}
-          {(activeSlug === "about" || activeSlug === "home_about" || activeSlug === "home_quote") && (
+          {(activeSlug === "about" || activeSlug === "home_quote") && (
             <div>
               <label className="text-xs text-[#71717A] mb-2 block">Ek Bölümler (JSON)</label>
               <Textarea
@@ -167,6 +166,12 @@ export default function ContentAdminPage() {
                 placeholder='[{"title":"Zanaat","desc":"Özenli İşçilik"}]'
               />
             </div>
+          )}
+          {activeSlug === "about" && (
+            <p className="text-xs text-[#71717A]">
+              Bu içerik hem ana sayfadaki Hakkımızda bölümünde hem de /hakkimizda sayfasında görünür.
+              Ana sayfada kısa özet, sayfada tam HTML içerik gösterilir.
+            </p>
           )}
           {(activeSlug === "about" || activeSlug.startsWith("legal_")) && (
             <p className="text-xs text-[#52525B]">
