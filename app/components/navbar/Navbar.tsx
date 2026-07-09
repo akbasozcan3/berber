@@ -39,7 +39,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className="h-auto w-auto max-w-none object-contain"
+      className="h-14 sm:h-16 md:h-[4.5rem] w-auto max-w-[min(300px,72vw)] object-contain"
       fetchPriority="high"
       decoding="async"
     />
@@ -96,7 +96,7 @@ export default function Navbar() {
               : "bg-[#0A0A0A]/85 backdrop-blur-sm py-4.5"
           }`}
         >
-          <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6">
+          <div className="max-w-7xl mx-auto px-5 lg:px-10 min-h-16 md:min-h-[4.5rem] flex items-center justify-between gap-6 py-2">
             
             {/* Logo - Minimal & Editorial */}
             <Link href="/" className="flex flex-col items-start group shrink-0">
