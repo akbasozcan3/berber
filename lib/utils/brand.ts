@@ -29,4 +29,4 @@ export function withBusinessName(template: string, businessName: string): string
 }
 
 export const siteLogoImageClass =
-  "h-20 sm:h-24 md:h-28 w-auto max-w-[min(440px,58vw)] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
+  "h-24 sm:h-28 md:h-32 lg:h-36 w-auto max-w-[min(520px,64vw)] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";

@@ -102,7 +102,7 @@ export default function Navbar() {
               href="/"
               className={`relative shrink-0 overflow-visible group ${
                 logoUrl
-                  ? "block h-10 w-[12rem] sm:w-[16rem] md:w-[20rem]"
+                  ? "block h-10 w-[14rem] sm:w-[18rem] md:w-[24rem]"
                   : "flex flex-col items-start min-h-10 justify-center"
               }`}
             >
