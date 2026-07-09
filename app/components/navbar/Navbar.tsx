@@ -39,9 +39,7 @@ export default function Navbar() {
     <img
       src={logoUrl}
       alt={settings.businessName || "Salon"}
-      className="h-10 w-auto max-w-[160px] object-contain"
-      width={160}
-      height={40}
+      className="h-auto w-auto max-w-none object-contain"
       fetchPriority="high"
       decoding="async"
     />
@@ -101,7 +99,7 @@ export default function Navbar() {
           <div className="max-w-7xl mx-auto px-5 lg:px-10 h-14 flex items-center justify-between gap-6">
             
             {/* Logo - Minimal & Editorial */}
-            <Link href="/" className="flex flex-col items-start group min-h-10 justify-center">
+            <Link href="/" className="flex flex-col items-start group shrink-0">
               {brandLogo}
             </Link>
 
