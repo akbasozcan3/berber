@@ -2,7 +2,7 @@ import PageHeader from "../components/ui/PageHeader";
 import Gallery from "../components/gallery/Gallery";
 import { getGalleryImages, getPublicSettingsSnapshot } from "@/lib/data/public-server";
 import { buildPageMetadata } from "@/lib/data/seo";
-import { mapGalleryRow } from "@/lib/utils/gallery";
+import { mapGalleryRow, filterVisibleGalleryItems } from "@/lib/utils/gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +17,7 @@ export default async function GaleriPage() {
     getGalleryImages(),
   ]);
 
-  const initialImages = galleryRows.map(mapGalleryRow);
+  const initialImages = filterVisibleGalleryItems(galleryRows.map(mapGalleryRow));
 
   return (
     <main>

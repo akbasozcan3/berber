@@ -17,7 +17,32 @@ import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 import { getSettings } from "@/lib/services/booking";
 import { normalizePhoneStorage } from "@/lib/utils/format";
 import { revalidatePath } from "next/cache";
+import { normalizeInstagramPostUrl } from "@/lib/utils/gallery";
+import { normalizeMultilineText } from "@/lib/data/home-content";
 import { z } from "zod";
+
+function revalidateGalleryPages() {
+  revalidatePath("/", "layout");
+  revalidatePath("/galeri");
+}
+
+function parseGalleryPayload(body: Record<string, unknown>) {
+  const mediaType = body.mediaType === "instagram" ? "instagram" : "image";
+  const instagramUrl = body.instagramUrl ? normalizeInstagramPostUrl(String(body.instagramUrl)) : null;
+  const coverUrl = body.coverUrl ? String(body.coverUrl).trim() : null;
+  const isVideo = Boolean(body.isVideo);
+  const url = String(body.url || coverUrl || "").trim();
+
+  return { mediaType, instagramUrl, coverUrl, isVideo, url };
+}
+
+const MULTILINE_SETTING_KEYS = new Set([
+  "home_gallery_title",
+  "home_testimonials_title",
+  "home_booking_cta_title",
+  "services_section_title",
+  "experience_title",
+]);
 
 type Entity = "barbers" | "services" | "customers" | "reviews" | "gallery" | "settings";
 
@@ -115,18 +140,43 @@ export async function PATCH(
 
     if (entity === "gallery" && body.id) {
       const id = Number(body.id);
-      const { id: _, ...updates } = body;
-      await db
-        .update(galleryImages)
-        .set(updates as Partial<typeof galleryImages.$inferInsert>)
-        .where(eq(galleryImages.id, id));
+      const { id: _, ...raw } = body;
+      const parsed = parseGalleryPayload(raw);
+      const title = raw.title !== undefined ? String(raw.title).trim() : undefined;
+      const sortOrder = raw.sortOrder !== undefined ? Number(raw.sortOrder) : undefined;
+
+      if (parsed.mediaType === "instagram") {
+        if (!parsed.instagramUrl) return errorResponse("Instagram gönderi linki gerekli", 400);
+        if (!parsed.url) return errorResponse("Kapak görseli gerekli", 400);
+        if (parsed.isVideo && !parsed.coverUrl) {
+          return errorResponse("Video içerikler için kapak görseli zorunludur", 400);
+        }
+      } else if (raw.url !== undefined && !parsed.url) {
+        return errorResponse("Görsel URL gerekli", 400);
+      }
+
+      const updates: Partial<typeof galleryImages.$inferInsert> = {
+        mediaType: parsed.mediaType,
+        instagramUrl: parsed.mediaType === "instagram" ? parsed.instagramUrl : null,
+        coverUrl: parsed.coverUrl,
+        isVideo: parsed.mediaType === "instagram" ? parsed.isVideo : false,
+      };
+
+      if (raw.url !== undefined || raw.coverUrl !== undefined) updates.url = parsed.url;
+      if (title !== undefined) updates.title = title || "Galeri";
+      if (sortOrder !== undefined) updates.sortOrder = sortOrder;
+
+      await db.update(galleryImages).set(updates).where(eq(galleryImages.id, id));
+      revalidateGalleryPages();
       return jsonResponse({ success: true });
     }
 
     if (entity === "settings") {
       for (const [key, value] of Object.entries(body)) {
-        const stored =
-          key === "phone" ? normalizePhoneStorage(String(value)) : String(value);
+        let stored = key === "phone" ? normalizePhoneStorage(String(value)) : String(value);
+        if (MULTILINE_SETTING_KEYS.has(key)) {
+          stored = normalizeMultilineText(stored);
+        }
         const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
         if (existing[0]) {
           await db.update(settings).set({ value: stored }).where(eq(settings.key, key));
@@ -182,30 +232,30 @@ export async function POST(
     }
 
     if (entity === "gallery") {
-      const mediaType = body.mediaType === "instagram" ? "instagram" : "image";
-      const instagramUrl = body.instagramUrl ? String(body.instagramUrl).trim() : null;
-      const coverUrl = body.coverUrl ? String(body.coverUrl).trim() : null;
-      const isVideo = Boolean(body.isVideo);
-      const url = String(body.url || coverUrl || "").trim();
+      const parsed = parseGalleryPayload(body);
 
-      if (!url) return errorResponse("Kapak görseli veya görsel URL gerekli", 400);
-      if (mediaType === "instagram" && !instagramUrl) {
+      if (!parsed.url) return errorResponse("Kapak görseli veya görsel URL gerekli", 400);
+      if (parsed.mediaType === "instagram" && !parsed.instagramUrl) {
         return errorResponse("Instagram gönderi linki gerekli", 400);
+      }
+      if (parsed.mediaType === "instagram" && parsed.isVideo && !parsed.coverUrl) {
+        return errorResponse("Video içerikler için kapak görseli zorunludur", 400);
       }
 
       const [created] = await db
         .insert(galleryImages)
         .values({
-          url,
+          url: parsed.url,
           title: String(body.title || "Galeri"),
-          mediaType,
-          instagramUrl,
-          coverUrl,
-          isVideo,
+          mediaType: parsed.mediaType,
+          instagramUrl: parsed.mediaType === "instagram" ? parsed.instagramUrl : null,
+          coverUrl: parsed.coverUrl,
+          isVideo: parsed.mediaType === "instagram" ? parsed.isVideo : false,
           sortOrder: Number(body.sortOrder || 0),
           createdAt: new Date().toISOString(),
         })
         .returning();
+      revalidateGalleryPages();
       return jsonResponse(created, 201);
     }
 
@@ -265,6 +315,7 @@ export async function DELETE(
     }
     if (entity === "gallery") {
       await db.delete(galleryImages).where(eq(galleryImages.id, id));
+      revalidateGalleryPages();
       return jsonResponse({ success: true });
     }
     if (entity === "reviews") {

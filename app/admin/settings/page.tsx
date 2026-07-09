@@ -6,6 +6,7 @@ import PageHeader from "@/components/admin/ui/PageHeader";
 import Card from "@/components/admin/ui/Card";
 import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
+import Textarea from "@/components/admin/ui/Textarea";
 import Toggle from "@/components/admin/ui/Toggle";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 import WorkingHoursEditor from "@/components/admin/WorkingHoursEditor";
@@ -361,13 +362,30 @@ export default function SettingsPage() {
             <Input label="Berberler Üst Metin" value={settings.home_team_eyebrow || ""} onChange={(e) => set("home_team_eyebrow", e.target.value)} />
             <Input label="Berberler Başlık" value={settings.home_team_title || ""} onChange={(e) => set("home_team_title", e.target.value)} />
             <Input label="Galeri Üst Metin" value={settings.home_gallery_eyebrow || ""} onChange={(e) => set("home_gallery_eyebrow", e.target.value)} />
-            <Input label="Galeri Başlık (\\n ile satır)" value={settings.home_gallery_title || ""} onChange={(e) => set("home_gallery_title", e.target.value)} placeholder="Instagram&#10;Reels & Çalışmalar" />
+            <Textarea
+              label="Galeri Başlık (Enter ile alt satır)"
+              value={settings.home_gallery_title || ""}
+              onChange={(e) => set("home_gallery_title", e.target.value)}
+              placeholder={"Instagram\nReels & Çalışmalar"}
+              className="min-h-[80px]"
+            />
             <Input label="Galeri CTA Metni" value={settings.home_gallery_cta_label || ""} onChange={(e) => set("home_gallery_cta_label", e.target.value)} placeholder="Instagram'da Gör" />
             <Input label="Galeri CTA Linki (boş = Instagram profili)" value={settings.home_gallery_cta_url || ""} onChange={(e) => set("home_gallery_cta_url", e.target.value)} placeholder="https://instagram.com/..." />
             <Input label="Yorumlar Üst Metin" value={settings.home_testimonials_eyebrow || ""} onChange={(e) => set("home_testimonials_eyebrow", e.target.value)} />
-            <Input label="Yorumlar Başlık (\\n ile satır)" value={settings.home_testimonials_title || ""} onChange={(e) => set("home_testimonials_title", e.target.value)} />
+            <Textarea
+              label="Yorumlar Başlık (Enter ile alt satır)"
+              value={settings.home_testimonials_title || ""}
+              onChange={(e) => set("home_testimonials_title", e.target.value)}
+              placeholder={"Deneyimleyenlerin\nGözünden"}
+              className="min-h-[80px]"
+            />
             <Input label="Randevu CTA Üst Metin" value={settings.home_booking_cta_eyebrow || ""} onChange={(e) => set("home_booking_cta_eyebrow", e.target.value)} />
-            <Input label="Randevu CTA Başlık (\\n ile satır)" value={settings.home_booking_cta_title || ""} onChange={(e) => set("home_booking_cta_title", e.target.value)} />
+            <Textarea
+              label="Randevu CTA Başlık (Enter ile alt satır)"
+              value={settings.home_booking_cta_title || ""}
+              onChange={(e) => set("home_booking_cta_title", e.target.value)}
+              className="min-h-[80px]"
+            />
             <Input label="Randevu CTA Açıklama" value={settings.home_booking_cta_subtitle || ""} onChange={(e) => set("home_booking_cta_subtitle", e.target.value)} />
             <ImageUpload label="Randevu CTA Arkaplan" folder="banners" value={settings.home_booking_cta_banner || ""} onChange={(url) => set("home_booking_cta_banner", url)} />
             <Input label="Deneyim Üst Metin" value={settings.experience_eyebrow || ""} onChange={(e) => set("experience_eyebrow", e.target.value)} />
@@ -399,7 +417,12 @@ export default function SettingsPage() {
             <Input label="Hizmetler Sayfası Başlık" value={settings.services_page_title || ""} onChange={(e) => set("services_page_title", e.target.value)} />
             <Input label="Hizmetler Sayfası Alt Başlık" value={settings.services_page_subtitle || ""} onChange={(e) => set("services_page_subtitle", e.target.value)} />
             <Input label="Hizmetler Bölümü Üst Metin" value={settings.services_section_eyebrow || ""} onChange={(e) => set("services_section_eyebrow", e.target.value)} />
-            <Input label="Hizmetler Bölümü Başlık (Satır için \\n kullanın)" value={settings.services_section_title || ""} onChange={(e) => set("services_section_title", e.target.value)} />
+            <Textarea
+              label="Hizmetler Bölümü Başlık (Enter ile alt satır)"
+              value={settings.services_section_title || ""}
+              onChange={(e) => set("services_section_title", e.target.value)}
+              className="min-h-[80px]"
+            />
             <Input label="Hizmetler Bölümü Açıklama" value={settings.services_section_subtitle || ""} onChange={(e) => set("services_section_subtitle", e.target.value)} />
             <Input label="Galeri Sayfası Başlık" value={settings.gallery_page_title || ""} onChange={(e) => set("gallery_page_title", e.target.value)} />
             <Input label="Galeri Sayfası Alt Başlık" value={settings.gallery_page_subtitle || ""} onChange={(e) => set("gallery_page_subtitle", e.target.value)} />

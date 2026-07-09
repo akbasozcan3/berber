@@ -19,8 +19,13 @@ export function parseHomeStatsJson(raw: string | null | undefined): HomeStatItem
   return DEFAULT_STATS;
 }
 
+export function normalizeMultilineText(text: string): string {
+  return text.replace(/\\n/g, "\n").trim();
+}
+
 export function splitTitleLines(title: string, fallbackLine1: string, fallbackLine2 = ""): [string, string] {
-  const parts = title.split("\n").map((p) => p.trim()).filter(Boolean);
+  const normalized = normalizeMultilineText(title);
+  const parts = normalized.split("\n").map((p) => p.trim()).filter(Boolean);
   if (parts.length === 0) return [fallbackLine1, fallbackLine2];
   if (parts.length === 1) return [parts[0], fallbackLine2];
   return [parts[0], parts.slice(1).join(" ")];

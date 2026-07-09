@@ -225,9 +225,10 @@ export default function GalleryPage() {
             url: d.url || img.url,
             coverUrl: d.coverUrl || img.coverUrl,
           });
+          const missingCover = !preview;
 
           return (
-            <Card key={img.id} padding="none" className="mb-4 break-inside-avoid overflow-hidden">
+            <Card key={img.id} padding="none" className={`mb-4 break-inside-avoid overflow-hidden ${missingCover ? "ring-1 ring-red-500/40" : ""}`}>
               <div className="relative h-56 bg-[#111]">
                 {preview ? (
                   <Image src={preview} alt={d.title} fill className="object-cover" unoptimized />
@@ -243,6 +244,11 @@ export default function GalleryPage() {
                   />
                 </div>
               </div>
+              {missingCover && (
+                <div className="px-4 py-2 bg-red-500/10 border-t border-red-500/20 text-red-300 text-xs">
+                  Kapak görseli eksik — bu içerik sitede görünmez. Görsel yükleyip kaydedin.
+                </div>
+              )}
               <div className="p-4 space-y-3">
                 <Select
                   label="İçerik Türü"

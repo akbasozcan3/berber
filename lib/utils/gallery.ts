@@ -27,7 +27,17 @@ export function mapGalleryRow(
 }
 
 export function getGalleryDisplayUrl(item: Pick<GalleryImage, "url" | "coverUrl">): string {
-  return item.coverUrl?.trim() || item.url;
+  const cover = item.coverUrl?.trim();
+  const url = item.url?.trim();
+  return cover || url || "";
+}
+
+export function isGalleryItemVisible(item: GalleryImage): boolean {
+  return Boolean(getGalleryDisplayUrl(item));
+}
+
+export function filterVisibleGalleryItems(items: GalleryImage[]): GalleryImage[] {
+  return items.filter(isGalleryItemVisible);
 }
 
 export function isInstagramGalleryItem(

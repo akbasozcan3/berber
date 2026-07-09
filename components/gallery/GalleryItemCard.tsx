@@ -32,12 +32,13 @@ export default function GalleryItemCard({
 
   const inner = (
     <>
-      <div
-        className={`w-full ${aspectClassName} bg-cover bg-center bg-no-repeat transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105`}
-        style={{ backgroundImage: displayUrl ? `url('${displayUrl}')` : undefined }}
-      />
-      {!displayUrl && (
-        <div className={`w-full ${aspectClassName} bg-[#1a1a1a] flex items-center justify-center`}>
+      {displayUrl ? (
+        <div
+          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105`}
+          style={{ backgroundImage: `url('${displayUrl}')` }}
+        />
+      ) : (
+        <div className="absolute inset-0 bg-[#1a1a1a] flex items-center justify-center">
           <InstagramIcon size={28} className="text-white/20" />
         </div>
       )}
@@ -72,7 +73,7 @@ export default function GalleryItemCard({
     initial: { opacity: 0, scale: 0.97 } as const,
     animate: { opacity: 1, scale: 1 } as const,
     transition: { delay: index * 0.05, duration: 0.5, ease: [0.16, 1, 0.3, 1] as const },
-    className: `relative overflow-hidden group bg-[#121212]/40 backdrop-blur-sm border border-white/[0.06] rounded-md cursor-pointer ${className}`,
+    className: `relative overflow-hidden group bg-[#121212]/40 backdrop-blur-sm border border-white/[0.06] rounded-md cursor-pointer ${aspectClassName} ${className}`,
   };
 
   if (externalLink) {
