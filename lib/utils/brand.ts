@@ -32,7 +32,7 @@ export const siteLogoImageClass =
   "h-24 sm:h-28 md:h-32 lg:h-36 w-auto max-w-[min(520px,64vw)] object-contain drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
 
 export const navbarLogoImageClass =
-  "absolute left-0 top-1/2 -translate-y-1/2 h-24 sm:h-28 md:h-32 lg:h-36 w-auto max-w-[min(520px,64vw)] object-contain object-left drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
+  "absolute left-0 top-[calc(50%+6px)] -translate-y-1/2 h-24 sm:h-28 md:h-32 lg:h-36 w-auto max-w-[min(520px,64vw)] object-contain object-left drop-shadow-[0_4px_14px_rgba(0,0,0,0.45)]";
 
 export const mobileLogoImageClass =
   "h-16 w-auto max-w-[220px] object-contain object-left";
