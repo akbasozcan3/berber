@@ -1,9 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
-import bcrypt from "bcryptjs";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "newlife-super-secret-key-change-in-production"
@@ -11,24 +7,23 @@ const JWT_SECRET = new TextEncoder().encode(
 
 const COOKIE_NAME = "newlife_admin_token";
 const ALLOWED_ADMIN_EMAIL = process.env.ADMIN_EMAIL || "ozcanakbas38@gmail.com";
+const ALLOWED_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "";
 
 export async function login(email: string, password: string) {
   if (email.toLowerCase() !== ALLOWED_ADMIN_EMAIL.toLowerCase()) {
     throw new Error("Bu panele erişim yetkiniz yok.");
   }
 
-  const user = (await db.select().from(users).where(eq(users.email, email)).limit(1))[0];
-  if (!user) throw new Error("Geçersiz e-posta veya şifre.");
+  if (!ALLOWED_ADMIN_PASSWORD || password !== ALLOWED_ADMIN_PASSWORD) {
+    throw new Error("Geçersiz e-posta veya şifre.");
+  }
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) throw new Error("Geçersiz e-posta veya şifre.");
-
-  const token = await new SignJWT({ sub: String(user.id), email: user.email, name: user.name })
+  const token = await new SignJWT({ sub: "1", email: ALLOWED_ADMIN_EMAIL, name: "Admin" })
     .setProtectedHeader({ alg: "HS256" })
     .setExpirationTime("7d")
     .sign(JWT_SECRET);
 
-  return { token, user: { id: user.id, name: user.name, email: user.email } };
+  return { token, user: { id: 1, name: "Admin", email: ALLOWED_ADMIN_EMAIL } };
 }
 
 export async function setAuthCookie(token: string) {
