@@ -20,7 +20,12 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const databaseUrl = process.env.DATABASE_URL;
+// Migrate needs a direct (non-pooled) connection. Runtime app uses POSTGRES_URL (pooled).
+const databaseUrl =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL_NON_POOLING ||
+  process.env.POSTGRES_URL ||
+  "";
 
 const drizzleConfig: Config = {
   schema: ["./lib/db/schema.ts"],
