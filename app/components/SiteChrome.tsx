@@ -13,18 +13,23 @@ function FaviconManager() {
   useEffect(() => {
     if (!settings.faviconUrl?.trim()) return;
 
-    const href = "/api/favicon";
+    const href = "/favicon.ico";
 
     try {
-      for (const rel of ["icon", "shortcut icon"] as const) {
-        const selector = rel === "icon" ? 'link[rel="icon"]' : 'link[rel="shortcut icon"]';
+      for (const rel of ["icon", "shortcut icon", "apple-touch-icon"] as const) {
+        const selector =
+          rel === "icon"
+            ? 'link[rel="icon"]'
+            : rel === "shortcut icon"
+              ? 'link[rel="shortcut icon"]'
+              : 'link[rel="apple-touch-icon"]';
         let link = document.querySelector<HTMLLinkElement>(selector);
         if (!link) {
           link = document.createElement("link");
           link.rel = rel;
           document.head.appendChild(link);
         }
-        link.href = href;
+        link.href = rel === "apple-touch-icon" ? "/api/favicon?size=180" : href;
       }
     } catch {
       // Favicon güncellemesi asıl sayfayı bozmamalı.

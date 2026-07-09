@@ -21,8 +21,13 @@ export function buildRootMetadata(settings: PublicSettings): Metadata {
       .filter(Boolean),
     icons: faviconUrl
       ? {
-          icon: [{ url: "/api/favicon", type: "image/png" }],
-          shortcut: "/api/favicon",
+          icon: [
+            { url: "/favicon.ico", sizes: "32x32" },
+            { url: "/api/favicon?size=32", type: "image/png", sizes: "32x32" },
+            { url: "/api/favicon?size=192", type: "image/png", sizes: "192x192" },
+          ],
+          apple: [{ url: "/api/favicon?size=180", type: "image/png", sizes: "180x180" }],
+          shortcut: "/favicon.ico",
         }
       : undefined,
     openGraph: {
