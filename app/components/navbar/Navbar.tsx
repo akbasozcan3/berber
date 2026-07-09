@@ -6,7 +6,7 @@ import { Menu, X, Phone, Clock, MapPin } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
+import { formatPhoneDisplay, formatWorkingHoursSummary, formatWorkingHoursTopbar, toTelHref } from "@/lib/utils/format";
 import { splitBusinessNameForLogo, siteLogoImageClass } from "@/lib/utils/brand";
 
 export default function Navbar() {
@@ -24,6 +24,7 @@ export default function Navbar() {
   ];
   const phoneDisplay = formatPhoneDisplay(settings.phone);
   const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
+  const topbarHoursDisplay = formatWorkingHoursTopbar(settings.workingHours);
   const logoText = splitBusinessNameForLogo(settings.businessName);
 
   useEffect(() => {
@@ -63,27 +64,25 @@ export default function Navbar() {
         
         {/* ─── 1. TOPBAR (Always Visible, Professional & Minimalist) ─── */}
         <div className="w-full bg-[#050505] border-b border-white/[0.04] h-9 flex items-center">
-          <div className="w-full max-w-7xl mx-auto px-4 lg:px-10 flex items-center justify-between text-white/50 text-[10px] font-semibold tracking-[0.12em] sm:tracking-[0.18em] uppercase">
-            {/* Left side info */}
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-              <a
-                href={toTelHref(settings.phone)}
-                className="flex items-center gap-1.5 hover:text-white transition-colors duration-300 min-w-0"
-              >
-                <Phone size={10} className="text-white/60 shrink-0" />
-                <span className="truncate">{phoneDisplay}</span>
-              </a>
-              {settings.locationShort ? (
-                <span className="hidden sm:inline-flex items-center gap-1.5 border-l border-white/10 pl-3 min-w-0">
-                  <MapPin size={10} className="text-white/60 shrink-0" />
-                  <span className="truncate">{settings.locationShort}</span>
-                </span>
-              ) : null}
-            </div>
+          <div className="w-full max-w-7xl mx-auto px-4 lg:px-10 flex items-center gap-3 text-white/50 text-[10px] font-semibold tracking-[0.12em] sm:tracking-[0.18em] uppercase">
+            <a
+              href={toTelHref(settings.phone)}
+              className="flex items-center gap-1.5 hover:text-white transition-colors duration-300 shrink-0 whitespace-nowrap"
+            >
+              <Phone size={10} className="text-white/60 shrink-0" />
+              <span>{phoneDisplay}</span>
+            </a>
 
-            <div className="flex items-center gap-1.5 shrink-0 ml-2">
-              <Clock size={10} className="text-white/60" />
-              <span className="truncate max-w-[42vw] sm:max-w-none">{hoursDisplay}</span>
+            {settings.locationShort ? (
+              <span className="hidden md:inline-flex items-center gap-1.5 border-l border-white/10 pl-3 min-w-0 truncate">
+                <MapPin size={10} className="text-white/60 shrink-0" />
+                <span className="truncate">{settings.locationShort}</span>
+              </span>
+            ) : null}
+
+            <div className="flex items-center gap-1.5 min-w-0 ml-auto">
+              <Clock size={10} className="text-white/60 shrink-0" />
+              <span className="truncate">{topbarHoursDisplay}</span>
             </div>
           </div>
         </div>

@@ -46,17 +46,51 @@ export function formatWorkingHoursSummary(hours: WorkingHour[]): string {
   const openDays = hours.filter((h) => !h.closed && h.open && h.close);
   if (openDays.length === 0) return "Kapalı";
 
+  const displayClose = (close: string) => (close === "00:00" ? "24:00" : close);
+
   const sameHours = openDays.every(
-    (h) => h.open === openDays[0].open && h.close === openDays[0].close
+    (h) =>
+      h.open === openDays[0].open &&
+      displayClose(h.close) === displayClose(openDays[0].close)
   );
   const closedSunday =
     hours.some((h) => h.day === "Pazar" && h.closed) && openDays.length === 6;
 
   if (sameHours && closedSunday) {
-    return `Pzt–Cmt: ${openDays[0].open} – ${openDays[0].close}`;
+    return `Pzt–Cmt: ${openDays[0].open} – ${displayClose(openDays[0].close)}`;
   }
 
-  return openDays.map((h) => `${h.day}: ${h.open}–${h.close}`).join(" · ");
+  return openDays.map((h) => `${h.day}: ${h.open}–${displayClose(h.close)}`).join(" · ");
+}
+
+/** Kısa özet — navbar üst şeridi gibi dar alanlar için */
+export function formatWorkingHoursTopbar(hours: WorkingHour[]): string {
+  const openDays = hours.filter((h) => !h.closed && h.open && h.close);
+  if (openDays.length === 0) return "Kapalı";
+
+  const displayClose = (close: string) => (close === "00:00" ? "24:00" : close);
+  const slot = (h: WorkingHour) => `${h.open}–${displayClose(h.close)}`;
+
+  const weekdays = openDays.filter((h) => h.day !== "Cumartesi" && h.day !== "Pazar");
+  const saturday = openDays.find((h) => h.day === "Cumartesi");
+  const weekdaySlot = weekdays[0] ? slot(weekdays[0]) : "";
+  const weekdaysMatch =
+    weekdays.length > 0 &&
+    weekdays.every((h) => slot(h) === weekdaySlot);
+
+  if (weekdaysMatch && saturday) {
+    if (slot(saturday) === weekdaySlot) {
+      return `Pzt–Cmt: ${weekdaySlot}`;
+    }
+    return `Pzt–Cum: ${weekdaySlot} · Cmt: ${slot(saturday)}`;
+  }
+
+  if (weekdaysMatch) {
+    return `Pzt–Cum: ${weekdaySlot}`;
+  }
+
+  const summary = formatWorkingHoursSummary(hours);
+  return summary.length > 42 ? `${openDays[0].day.slice(0, 3)}–${openDays[openDays.length - 1].day.slice(0, 3)}: ${slot(openDays[0])}` : summary;
 }
 
 export function instagramUrl(handle?: string | null): string {
