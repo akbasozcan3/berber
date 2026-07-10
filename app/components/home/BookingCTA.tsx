@@ -88,8 +88,7 @@ export default function BookingCTA({ initialServices = [] }: BookingCTAProps) {
             </div>
             {services.length === 0 && (
               <p className="text-white/45 text-sm">
-                Hizmet fiyatları yüklenemedi. Lütfen Admin &gt; Hizmetler bölümünden hizmetleri
-                kontrol edin.
+                Şu an fiyat listesi yüklenemedi. Randevu almak için bizi arayabilirsiniz.
               </p>
             )}
 

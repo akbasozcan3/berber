@@ -40,7 +40,7 @@ export default function AvailabilityPage() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
-  const [toast, setToast] = useState("");
+  const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState(() => {
@@ -75,9 +75,14 @@ export default function AvailabilityPage() {
 
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(""), 3000);
+  const showToast = (text: string, ok = true) => {
+    setToast({ text, ok });
+    setTimeout(() => setToast(null), 3500);
+  };
+
+  const confirmAction = (message: string, body: Record<string, unknown>) => {
+    if (!window.confirm(message)) return;
+    void postAction(body);
   };
 
   const postAction = async (body: Record<string, unknown>) => {
@@ -91,10 +96,10 @@ export default function AvailabilityPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      showToast(data.message || "Availability updated successfully.");
+      showToast(data.message || "Müsaitlik güncellendi.", true);
       await load();
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "Hata oluştu");
+      showToast(e instanceof Error ? e.message : "Hata oluştu", false);
     } finally {
       setLoading(false);
     }
@@ -106,6 +111,9 @@ export default function AvailabilityPage() {
     { label: "Bu Ayı Kapat", scope: "this_month" },
     { label: "Bu Yılı Kapat", scope: "this_year" },
   ];
+
+  const barberName = (id: number | null) =>
+    id ? barbers.find((b) => b.id === id)?.name || `Berber #${id}` : "Tüm salon";
 
   const [year, month] = currentMonth.split("-").map(Number);
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -147,8 +155,13 @@ export default function AvailabilityPage() {
 
       {toast && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-xl flex items-center gap-3 text-[#D4AF37] text-sm">
-          <CheckCircle size={18} /> {toast}
+          className={cn(
+            "mb-6 p-4 rounded-xl flex items-center gap-3 text-sm border",
+            toast.ok
+              ? "bg-green-500/10 border-green-500/20 text-green-400"
+              : "bg-red-500/10 border-red-500/20 text-red-400"
+          )}>
+          <CheckCircle size={18} /> {toast.text}
         </motion.div>
       )}
 
@@ -197,12 +210,12 @@ export default function AvailabilityPage() {
           <div className="space-y-2">
             {quickActions.map((a) => (
               <Button key={a.scope} variant="outline" className="w-full justify-start" disabled={loading}
-                onClick={() => postAction({ scope: a.scope, ruleType: "close_day", reason: "Kapalı" })}>
+                onClick={() => confirmAction(`${a.label} — bu süre boyunca randevu alınamaz. Emin misiniz?`, { scope: a.scope, ruleType: "close_day", reason: "Kapalı" })}>
                 {a.label}
               </Button>
             ))}
             <Button variant="outline" className="w-full justify-start text-green-400 border-green-500/20" disabled={loading}
-              onClick={() => postAction({ action: "open_all" })}>
+              onClick={() => confirmAction("Tüm kapalı gün ve saat kuralları kaldırılacak. Emin misiniz?", { action: "open_all" })}>
               <RotateCcw className="w-4 h-4 mr-2" /> Her Şeyi Aç
             </Button>
           </div>
@@ -314,7 +327,7 @@ export default function AvailabilityPage() {
                   <p className="text-sm text-[#F8F8F8] truncate">{formatAvailabilityRule(b)}</p>
                   <p className="text-xs text-[#71717A]">
                     {RULE_TYPE_LABELS[b.ruleType] || b.ruleType}
-                    {b.barberId ? ` · Berber #${b.barberId}` : " · Tüm salon"}
+                    {b.barberId ? ` · ${barberName(b.barberId)}` : " · Tüm salon"}
                   </p>
                 </div>
                 <Button variant="ghost" size="sm" className="shrink-0" onClick={async () => { await adminApi.deleteAvailability(b.id); load(); }}>Kaldır</Button>

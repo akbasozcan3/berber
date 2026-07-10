@@ -7,9 +7,9 @@ import { createNotification } from "@/lib/services/notifications";
 import { sendTelegramContactNotification } from "@/lib/telegram";
 
 const contactSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  message: z.string().min(10),
+  name: z.string().min(2, "Ad en az 2 karakter olmalıdır."),
+  email: z.string().email("Geçerli bir e-posta girin."),
+  message: z.string().min(10, "Mesaj en az 10 karakter olmalıdır."),
 });
 
 export async function POST(request: Request) {

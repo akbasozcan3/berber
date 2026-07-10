@@ -7,6 +7,8 @@ import {
   User, Phone, Check, MessageSquare, Users, Loader2,
 } from "lucide-react";
 import { api, type Service, type Barber, type TimeSlot } from "@/lib/api/client";
+import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
+import { toLocalIsoDate, formatIsoDateTr } from "@/lib/utils/format";
 
 const SERVICE_ICONS: Record<string, typeof Scissors> = {
   "sac-kesimi": Scissors,
@@ -24,6 +26,7 @@ export default function Booking({
   initialServices?: Service[];
   initialBarbers?: Barber[];
 }) {
+  const settings = usePublicSettings();
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<Service[]>(initialServices);
   const [barbers, setBarbers] = useState<Barber[]>(initialBarbers);
@@ -33,6 +36,7 @@ export default function Booking({
   const [catalogError, setCatalogError] = useState("");
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [slotsError, setSlotsError] = useState("");
   const [formData, setFormData] = useState({
     serviceId: 0,
     barberId: 0,
@@ -80,31 +84,58 @@ export default function Booking({
     for (let i = 0; i < count; i++) {
       const d = new Date();
       d.setDate(d.getDate() + i);
+      const isoDate = toLocalIsoDate(d);
       days.push({
         dayNum: d.getDate(),
         month: d.toLocaleDateString(locale, { month: "short" }),
         dayName: d.toLocaleDateString(locale, { weekday: "short" }),
-        isoDate: d.toISOString().split("T")[0],
+        isoDate,
       });
     }
     return days;
   }, []);
 
-  const nextDays = getNextDays(14);
+  const bookingHorizon = Math.min(Math.max(settings.maxFutureBooking || 30, 7), 60);
+  const nextDays = getNextDays(bookingHorizon);
 
   useEffect(() => {
-    if (formData.date && formData.serviceId) {
-      // React purity rule: avoid synchronous setState inside effect body.
-      void Promise.resolve().then(() => setLoadingSlots(true));
-      api
-        .getSlots(
-          formData.date,
-          formData.serviceId,
-          formData.noPreference ? undefined : formData.barberId || undefined
-        )
-        .then(setSlots)
-        .finally(() => setLoadingSlots(false));
-    }
+    if (!formData.date || !formData.serviceId) return;
+
+    let cancelled = false;
+    void Promise.resolve().then(() => {
+      if (!cancelled) {
+        setLoadingSlots(true);
+        setSlotsError("");
+      }
+    });
+
+    api
+      .getSlots(
+        formData.date,
+        formData.serviceId,
+        formData.noPreference ? undefined : formData.barberId || undefined
+      )
+      .then((data) => {
+        if (cancelled) return;
+        setSlots(data);
+        setFormData((prev) => {
+          if (!prev.time) return prev;
+          const stillValid = data.some((s) => s.time === prev.time && s.available);
+          return stillValid ? prev : { ...prev, time: "" };
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setSlots([]);
+        setSlotsError("Müsait saatler yüklenemedi. Lütfen tekrar deneyin.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSlots(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [formData.date, formData.serviceId, formData.barberId, formData.noPreference]);
 
   const validateStep = () => {
@@ -114,6 +145,9 @@ export default function Booking({
     if (step === 3) {
       if (!formData.date) tempErrors.date = "Lütfen bir gün seçin.";
       if (!formData.time) tempErrors.time = "Lütfen bir saat seçin.";
+      else if (!availableSlots.some((s) => s.time === formData.time)) {
+        tempErrors.time = "Seçilen saat artık müsait değil. Lütfen başka saat seçin.";
+      }
     }
     if (step === 4) {
       if (!formData.name.trim()) tempErrors.name = "Ad Soyad zorunludur.";
@@ -146,8 +180,8 @@ export default function Booking({
       });
       setAppointmentResult({
         id: result.appointment.id,
-        service: selectedService?.name || "",
-        barber: selectedBarber?.name || "Otomatik Atandı",
+        service: result.appointment.service || selectedService?.name || "",
+        barber: result.appointment.barber || selectedBarber?.name || "Atandı",
         date: formData.date,
         time: formData.time,
       });
@@ -163,8 +197,7 @@ export default function Booking({
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
   const availableSlots = slots.filter((s) => s.available);
 
-  const getFormattedDate = (iso: string) =>
-    iso ? new Date(iso).toLocaleDateString("tr-TR", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "";
+  const getFormattedDate = (iso: string) => (iso ? formatIsoDateTr(iso) : "");
 
   return (
     <section id="booking" className="py-16 md:py-32 bg-[#0A0A0A] relative min-h-screen text-white">
@@ -242,16 +275,19 @@ export default function Booking({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                       <h3 className="text-xl font-serif font-light text-white">Stilist Seçin</h3>
                       <div
-                        onClick={() => setFormData({ ...formData, noPreference: true, barberId: 0 })}
+                        onClick={() => setFormData({ ...formData, noPreference: true, barberId: 0, time: "" })}
                         className={`p-5 border rounded-sm cursor-pointer mb-4 ${formData.noPreference ? "border-white bg-white/[0.03]" : "border-white/[0.06] hover:border-white/20"}`}>
                         <p className={`font-medium ${formData.noPreference ? "text-white/60" : "text-white"}`}>Tercihim Yok</p>
                         <p className="text-white/40 text-xs mt-1">Müsait berbere otomatik atanır</p>
                       </div>
+                      {barbers.length === 0 ? (
+                        <p className="text-sm text-white/50 py-2">Şu an müsait stilist bulunmuyor. &quot;Tercihim Yok&quot; ile devam edebilirsiniz.</p>
+                      ) : (
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {barbers.map((b) => {
                           const sel = formData.barberId === b.id && !formData.noPreference;
                           return (
-                            <div key={b.id} onClick={() => setFormData({ ...formData, barberId: b.id, noPreference: false })}
+                            <div key={b.id} onClick={() => setFormData({ ...formData, barberId: b.id, noPreference: false, time: "" })}
                               className={`p-5 sm:p-6 border rounded-sm cursor-pointer text-center h-52 flex flex-col items-center justify-between ${sel ? "border-white bg-white/[0.03]" : "border-white/[0.06] hover:border-white/20"}`}>
                               <div className={`w-14 h-14 rounded-full flex items-center justify-center border font-bold text-sm ${sel ? "border-white bg-white text-black" : "border-white/10 bg-white/5 text-white/70"}`}>
                                 {b.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
@@ -265,6 +301,7 @@ export default function Booking({
                           );
                         })}
                       </div>
+                      )}
                       {errors.barber && <p className="text-xs text-red-400">{errors.barber}</p>}
                     </motion.div>
                   )}
@@ -289,6 +326,8 @@ export default function Booking({
                         <div className="pt-4 border-t border-white/[0.06]">
                           {loadingSlots ? (
                             <div className="flex items-center gap-2 text-white/50"><Loader2 className="w-4 h-4 animate-spin" /> Müsait saatler yükleniyor...</div>
+                          ) : slotsError ? (
+                            <p className="text-red-400 text-sm">{slotsError}</p>
                           ) : availableSlots.length === 0 ? (
                             <p className="text-white/50 text-sm">Bu tarihte müsait saat bulunmuyor.</p>
                           ) : (
@@ -366,11 +405,15 @@ export default function Booking({
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-full border border-white/15 text-white/60 bg-white/[0.03]"><Check size={36} strokeWidth={2.5} /></div>
                   <div>
                     <h3 className="text-3xl font-serif font-light text-white">Randevunuz Alındı!</h3>
-                    <p className="text-white/50 text-sm max-w-md mx-auto mt-3">Sayın <span className="text-white font-semibold">{formData.name}</span>, randevunuz başarıyla oluşturuldu. Salon sahibine anında bildirim gönderildi.</p>
+                    <p className="text-white/50 text-sm max-w-md mx-auto mt-3">Sayın <span className="text-white font-semibold">{formData.name}</span>, randevunuz başarıyla oluşturuldu.</p>
                     {appointmentResult && (
-                      <p className="text-white/60 text-sm mt-3">
-                        Randevu No: #{appointmentResult.id}
-                      </p>
+                      <div className="mt-6 p-5 bg-white/[0.03] border border-white/[0.08] rounded-sm text-left max-w-md mx-auto space-y-2 text-sm">
+                        <p><span className="text-white/40">Randevu No:</span> <span className="text-white font-semibold">#{appointmentResult.id}</span></p>
+                        <p><span className="text-white/40">Hizmet:</span> <span className="text-white">{appointmentResult.service}</span></p>
+                        <p><span className="text-white/40">Berber:</span> <span className="text-white">{appointmentResult.barber}</span></p>
+                        <p><span className="text-white/40">Tarih:</span> <span className="text-white">{getFormattedDate(appointmentResult.date)}</span></p>
+                        <p><span className="text-white/40">Saat:</span> <span className="text-[#D4AF37] font-semibold">{appointmentResult.time}</span></p>
+                      </div>
                     )}
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

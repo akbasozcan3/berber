@@ -30,7 +30,7 @@ import { businessInitials } from "@/lib/utils/brand";
 import { useAdminSession } from "@/lib/context/AdminSessionContext";
 
 const menuItems = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin", label: "Özet", icon: LayoutDashboard },
   { href: "/admin/appointments", label: "Randevular", icon: ClipboardList },
   { href: "/admin/calendar", label: "Takvim", icon: Calendar },
   { href: "/admin/availability", label: "Müsaitlik / Kapalı Saat", icon: Ban },

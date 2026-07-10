@@ -13,6 +13,19 @@ import Button from "@/components/admin/ui/Button";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 import { adminApi, type AdminBarber } from "@/lib/api/admin";
 
+function slugifyName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ı/g, "i")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 export default function BarbersPage() {
   const [barbers, setBarbers] = useState<AdminBarber[]>([]);
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -54,10 +67,19 @@ export default function BarbersPage() {
   };
 
   const addBarber = async () => {
-    if (!newBarber.name.trim() || !newBarber.slug.trim()) return;
+    const name = newBarber.name.trim();
+    const slug = (newBarber.slug.trim() || slugifyName(name)).toLowerCase();
+    if (!name) {
+      window.alert("Berber adı gerekli.");
+      return;
+    }
+    if (!slug) {
+      window.alert("Geçerli bir berber adı girin.");
+      return;
+    }
     await adminApi.createBarber({
-      name: newBarber.name,
-      slug: newBarber.slug.trim().toLowerCase(),
+      name,
+      slug,
       position: newBarber.position,
       specialty: newBarber.specialty,
       workingStart: newBarber.workingStart,
@@ -117,16 +139,10 @@ export default function BarbersPage() {
       <Card className="mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <input
-            className="h-11 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 text-sm"
-            placeholder="Berber Adı"
+            className="h-11 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 text-sm md:col-span-2"
+            placeholder="Berber Adı (ör. Mehmet Abi)"
             value={newBarber.name}
             onChange={(e) => setNewBarber((p) => ({ ...p, name: e.target.value }))}
-          />
-          <input
-            className="h-11 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 text-sm"
-            placeholder="Slug (mehmet-abi)"
-            value={newBarber.slug}
-            onChange={(e) => setNewBarber((p) => ({ ...p, slug: e.target.value }))}
           />
           <input
             className="h-11 bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 text-sm"

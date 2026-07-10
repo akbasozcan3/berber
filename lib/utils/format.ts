@@ -9,6 +9,25 @@ export function digitsOnly(phone?: string | null): string {
   return (phone ?? "").replace(/\D/g, "");
 }
 
+/** YYYY-MM-DD in local timezone (avoids UTC midnight drift). */
+export function toLocalIsoDate(date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function formatIsoDateTr(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString("tr-TR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 export function formatPhoneDisplay(phone?: string | null): string {
   const safe = phone ?? "";
   const digits = digitsOnly(phone);

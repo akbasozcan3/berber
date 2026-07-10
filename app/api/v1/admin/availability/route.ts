@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         reason: "Open Everything",
       });
       await createNotification({ type: "availability", title: "Müsaitlik Güncellendi", message: "Tüm kısıtlamalar kaldırıldı. Randevular açık." });
-      return jsonResponse({ success: true, message: "Availability updated successfully." });
+      return jsonResponse({ success: true, message: "Müsaitlik güncellendi." });
     }
 
     let date = body.date || "";
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       message: `${date}${endDate && endDate !== date ? ` - ${endDate}` : ""}: ${body.reason || "Kapalı"}`,
     });
 
-    return jsonResponse({ success: true, blocks: created, message: "Availability updated successfully." }, 201);
+    return jsonResponse({ success: true, blocks: created, message: "Müsaitlik güncellendi." }, 201);
   } catch (e) {
     return errorResponse(e instanceof Error ? e.message : "Oluşturulamadı", 500);
   }

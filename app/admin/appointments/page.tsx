@@ -13,6 +13,8 @@ import Pagination from "@/components/admin/ui/Pagination";
 import Avatar from "@/components/admin/ui/Avatar";
 import { adminApi, type AdminAppointment } from "@/lib/api/admin";
 import { formatCurrency, formatDate } from "@/lib/admin/utils";
+import { toLocalIsoDate } from "@/lib/utils/format";
+import { cn } from "@/lib/admin/cn";
 
 const filterTabs = [
   { id: "all", label: "Tümü" },
@@ -28,6 +30,7 @@ export default function AppointmentsPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
 
   const load = useCallback(() => {
     adminApi.getAppointments().then(setAppointments);
@@ -35,10 +38,12 @@ export default function AppointmentsPage() {
 
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
 
-  const today = new Date().toISOString().split("T")[0];
-  const tomorrowDate = new Date();
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const tomorrow = tomorrowDate.toISOString().split("T")[0];
+  const today = toLocalIsoDate();
+  const tomorrow = toLocalIsoDate(new Date(Date.now() + 86400000));
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeFilter, search]);
 
   const filtered = appointments.filter((apt) => {
     const matchesSearch =
@@ -60,9 +65,25 @@ export default function AppointmentsPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
 
-  const updateStatus = async (id: number, status: string) => {
-    await adminApi.updateAppointment(id, status);
-    load();
+  const showToast = (text: string, ok: boolean) => {
+    setToast({ text, ok });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const updateStatus = async (id: number, status: string, customerName?: string) => {
+    if (status === "cancelled") {
+      const ok = window.confirm(
+        `${customerName || "Bu müşteri"} randevusunu iptal etmek istiyor musunuz?`
+      );
+      if (!ok) return;
+    }
+    try {
+      await adminApi.updateAppointment(id, status);
+      showToast(status === "cancelled" ? "Randevu iptal edildi." : "Randevu güncellendi.", true);
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Güncellenemedi.", false);
+    }
   };
 
   const clearAllAppointments = async () => {
@@ -78,7 +99,7 @@ export default function AppointmentsPage() {
     const firstName = apt.customerName.trim().split(" ")[0] || apt.customerName;
     const normalizedPhone = apt.phone.replace(/\D/g, "").replace(/^0/, "90");
     const text =
-      `Merhaba ${firstName} Bey,\n` +
+      `Merhaba ${firstName},\n` +
       `${formatDate(apt.date)} ${apt.time} randevunuz iptal edilmiştir.\n` +
       "Yeni randevu için bizimle iletişime geçebilirsiniz.";
     return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(text)}`;
@@ -96,6 +117,17 @@ export default function AppointmentsPage() {
           </Button>
         }
       />
+
+      {toast && (
+        <div
+          className={cn(
+            "mb-4 p-3 rounded-xl text-sm border",
+            toast.ok ? "bg-green-500/10 border-green-500/20 text-green-400" : "bg-red-500/10 border-red-500/20 text-red-400"
+          )}
+        >
+          {toast.text}
+        </div>
+      )}
 
       <Card padding="sm" className="mb-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-2">
@@ -115,7 +147,14 @@ export default function AppointmentsPage() {
               </tr>
             </thead>
             <tbody>
-              {paginated.map((apt, i) => (
+              {paginated.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-6 py-10 text-center text-sm text-[#71717A]">
+                    Bu filtrede randevu bulunamadı.
+                  </td>
+                </tr>
+              ) : (
+                paginated.map((apt, i) => (
                 <motion.tr key={apt.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
                   className="border-b border-white/[0.04] hover:bg-white/[0.02]">
                   <td className="px-6 py-4">
@@ -136,13 +175,13 @@ export default function AppointmentsPage() {
                       {apt.status === "pending" && (
                         <>
                           <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "confirmed")} title="Onayla"><Check className="w-4 h-4 text-green-400" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "cancelled")} title="İptal"><X className="w-4 h-4 text-red-400" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "cancelled", apt.customerName)} title="İptal"><X className="w-4 h-4 text-red-400" /></Button>
                         </>
                       )}
                       {apt.status === "confirmed" && (
                         <>
                           <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "completed")} title="Tamamla"><Check className="w-4 h-4 text-blue-400" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "cancelled")} title="İptal"><X className="w-4 h-4 text-red-400" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "cancelled", apt.customerName)} title="İptal"><X className="w-4 h-4 text-red-400" /></Button>
                         </>
                       )}
                       {apt.status === "cancelled" && (
@@ -159,7 +198,8 @@ export default function AppointmentsPage() {
                     </div>
                   </td>
                 </motion.tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>

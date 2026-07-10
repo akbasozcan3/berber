@@ -93,7 +93,7 @@ export default function Services({
             }`}
           >
             <p className={isLight ? "text-black/50" : "text-white/50"}>
-              Henüz hizmet eklenmemiş. Admin panelinden hizmet ekleyebilirsiniz.
+              Henüz online randevuya açık hizmet bulunmuyor. Bizi arayarak randevu alabilirsiniz.
             </p>
           </div>
         )}

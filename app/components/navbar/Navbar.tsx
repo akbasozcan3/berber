@@ -28,11 +28,23 @@ export default function Navbar() {
   const logoText = splitBusinessNameForLogo(settings.businessName);
 
   useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  const closeMobile = () => setMobileOpen(false);
   const isActive = (href: string) => pathname === href;
 
   const brandLogo = logoUrl ? (
@@ -166,7 +178,7 @@ export default function Navbar() {
       {/* ─── MOBILE DRAWER MENU ─── */}
       <AnimatePresence>
         {mobileOpen && (
-          <div className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)}>
+          <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm lg:hidden" onClick={closeMobile}>
             <motion.div
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -179,7 +191,7 @@ export default function Navbar() {
               <div className="space-y-12">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col min-h-10 justify-center">{mobileBrandLogo}</div>
-                  <button onClick={() => setMobileOpen(false)} className="text-white/60 hover:text-white p-1">
+                  <button onClick={closeMobile} className="text-white/60 hover:text-white p-1">
                     <X size={20} />
                   </button>
                 </div>
@@ -189,6 +201,7 @@ export default function Navbar() {
                     <Link
                       key={link.name}
                       href={link.href}
+                      onClick={closeMobile}
                       className={`text-sm font-bold tracking-[0.15em] uppercase py-2 border-b border-white/[0.03] transition-colors ${
                         isActive(link.href) ? "text-white" : "text-white/60 hover:text-white"
                       }`}
@@ -203,6 +216,7 @@ export default function Navbar() {
               <div className="space-y-6 pt-8 border-t border-white/[0.05]">
                 <Link
                   href="/randevu"
+                  onClick={closeMobile}
                   className="w-full bg-white text-black text-center py-4 rounded-sm text-[11px] font-bold tracking-[0.2em] uppercase hover:bg-white/90 transition-all block"
                 >
                   {settings.navCtaLabel || "Randevu Al"}

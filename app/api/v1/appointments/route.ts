@@ -72,6 +72,14 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return errorResponse(error.issues[0]?.message || "Geçersiz veri.");
     }
-    return errorResponse(error instanceof Error ? error.message : "Randevu oluşturulamadı.", 500);
+    const message = error instanceof Error ? error.message : "Randevu oluşturulamadı.";
+    const clientErrors = [
+      "Seçilen saat müsait değil.",
+      "Müsait berber bulunamadı.",
+      "Hizmet bulunamadı.",
+      "Sözleşme onayı gereklidir.",
+    ];
+    const status = clientErrors.includes(message) ? 409 : 500;
+    return errorResponse(message, status);
   }
 }

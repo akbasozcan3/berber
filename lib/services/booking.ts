@@ -5,6 +5,7 @@ import {
   isMultilineSettingKey,
   normalizeMultilineSettingValue,
 } from "@/lib/data/multiline-settings";
+import { normalizePhoneStorage, digitsOnly } from "@/lib/utils/format";
 import {
   getActiveRulesForDate,
   getDayStatus,
@@ -217,23 +218,27 @@ export async function createBooking(data: {
     barberId = freeBarber.id;
   }
 
+  const phoneStored = normalizePhoneStorage(data.phone);
+  const phoneDigits = digitsOnly(phoneStored);
+
   const existingCustomer = await db
     .select()
-    .from(customers)
-    .where(eq(customers.phone, data.phone))
-    .limit(1);
+    .from(customers);
+  const matchedCustomer = existingCustomer.find(
+    (c) => digitsOnly(c.phone) === phoneDigits
+  );
 
   let customerId: number;
   const timestamp = new Date().toISOString();
 
-  if (existingCustomer[0]) {
-    customerId = existingCustomer[0].id;
+  if (matchedCustomer) {
+    customerId = matchedCustomer.id;
     await db
       .update(customers)
       .set({
         name: data.customerName,
-        email: data.email || existingCustomer[0].email,
-        visitCount: existingCustomer[0].visitCount + 1,
+        email: data.email || matchedCustomer.email,
+        visitCount: matchedCustomer.visitCount + 1,
       })
       .where(eq(customers.id, customerId));
   } else {
@@ -241,7 +246,7 @@ export async function createBooking(data: {
       .insert(customers)
       .values({
         name: data.customerName,
-        phone: data.phone,
+        phone: phoneStored || data.phone,
         email: data.email,
         visitCount: 1,
         totalSpent: 0,
