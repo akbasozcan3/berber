@@ -177,6 +177,9 @@ export async function createBooking(data: {
 }) {
   if (!data.agreed) throw new Error("Sözleşme onayı gereklidir.");
 
+  const email = data.email?.trim().toLowerCase() || "";
+  if (!email) throw new Error("E-posta adresi gereklidir.");
+
   const service = (await db.select().from(services).where(eq(services.id, data.serviceId)).limit(1))[0];
   if (!service || !service.enabled) throw new Error("Hizmet bulunamadı.");
 
@@ -232,7 +235,7 @@ export async function createBooking(data: {
       .update(customers)
       .set({
         name: data.customerName,
-        email: data.email || matchedCustomer.email,
+        email: email || matchedCustomer.email,
         visitCount: matchedCustomer.visitCount + 1,
       })
       .where(eq(customers.id, customerId));
@@ -242,7 +245,7 @@ export async function createBooking(data: {
       .values({
         name: data.customerName,
         phone: phoneStored || data.phone,
-        email: data.email,
+        email,
         visitCount: 1,
         totalSpent: 0,
         createdAt: timestamp,

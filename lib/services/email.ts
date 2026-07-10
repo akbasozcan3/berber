@@ -40,6 +40,7 @@ function getTransporter(): Transporter | null {
       host: config.host,
       port: config.port,
       secure: config.port === 465,
+      requireTLS: config.port === 587,
       auth: {
         user: config.user,
         pass: config.pass,
@@ -51,8 +52,7 @@ function getTransporter(): Transporter | null {
 }
 
 async function isEmailEnabled(): Promise<boolean> {
-  const flag = await getSetting("notifications_email");
-  return flag !== "false";
+  return true;
 }
 
 export async function sendAppointmentConfirmedEmail(
@@ -76,10 +76,12 @@ export async function sendAppointmentConfirmedEmail(
 
   const businessName = data.businessName || "Salon";
   const fromName = `${businessName}`;
+  const replyTo = (await getSetting("contact_email"))?.trim() || config.from;
 
   try {
     await mailer.sendMail({
       from: `"${fromName}" <${config.from}>`,
+      replyTo,
       to: recipient,
       subject: buildAppointmentConfirmedSubject(data),
       text: buildAppointmentConfirmedText(data),

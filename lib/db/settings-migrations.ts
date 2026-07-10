@@ -42,4 +42,13 @@ export async function runSettingsMigrations() {
       await db.update(barbers).set({ workingDays: normalized }).where(eq(barbers.id, barber.id));
     }
   }
+
+  const emailRow = await db.select().from(settings).where(eq(settings.key, "notifications_email")).limit(1);
+  if (!emailRow[0] || emailRow[0].value === "false") {
+    if (emailRow[0]) {
+      await db.update(settings).set({ value: "true" }).where(eq(settings.key, "notifications_email"));
+    } else {
+      await db.insert(settings).values({ key: "notifications_email", value: "true" });
+    }
+  }
 }

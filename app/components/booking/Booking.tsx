@@ -422,27 +422,30 @@ export default function Booking({
 
                   {step === 4 && (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
-                      <h3 className="text-xl font-serif font-light text-white">Bilgileriniz</h3>
+                      <div>
+                        <h3 className="text-xl font-serif font-light text-white">Bilgileriniz</h3>
+                        <p className="text-sm text-white/45 mt-2">Randevu onayı e-posta adresinize gönderilir.</p>
+                      </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div>
                           <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><User size={10} className="text-white/60" /> Ad Soyad</label>
                           <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="Adınız Soyadınız" />
+                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="Adınız Soyadınız" autoComplete="name" />
                           {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
                         </div>
                         <div>
                           <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><Phone size={10} className="text-white/60" /> Telefon</label>
                           <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="05XX XXX XX XX" />
+                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="05XX XXX XX XX" autoComplete="tel" />
                           {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
                         </div>
-                      </div>
-                      <div>
-                        <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><Mail size={10} className="text-white/60" /> E-posta</label>
-                        <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="ornek@email.com" />
-                        <p className="text-[10px] text-white/35 mt-1.5">Randevu onaylandığında bu adrese bilgilendirme gönderilir.</p>
-                        {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
+                        <div className="md:col-span-2">
+                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><Mail size={10} className="text-white/60" /> E-posta</label>
+                          <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="ornek@email.com" autoComplete="email" inputMode="email" />
+                          <p className="text-[10px] text-white/35 mt-1.5">Salon randevunuzu onayladığında bu adrese bilgilendirme maili gider.</p>
+                          {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
+                        </div>
                       </div>
                       <div>
                         <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Notlar (Opsiyonel)</label>
@@ -452,7 +455,7 @@ export default function Booking({
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input type="checkbox" checked={formData.agreed} onChange={(e) => setFormData({ ...formData, agreed: e.target.checked })}
                           className="mt-1 accent-white" />
-                        <span className="text-xs text-white/50">Randevu bilgilerimin doğruluğunu onaylıyorum ve iletişim bilgilerime bilgilendirme yapılmasını kabul ediyorum.</span>
+                        <span className="text-xs text-white/50">Randevu bilgilerimin doğruluğunu onaylıyorum ve e-posta ile bilgilendirme yapılmasını kabul ediyorum.</span>
                       </label>
                       {errors.agreed && <p className="text-xs text-red-400">{errors.agreed}</p>}
                       <div className="p-5 sm:p-6 bg-white/[0.02] border border-white/[0.06] rounded-sm grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -460,6 +463,9 @@ export default function Booking({
                         <div><span className="text-white/40 block">Berber:</span><span className="text-white font-semibold">{formData.noPreference ? "Otomatik" : selectedBarber?.name}</span></div>
                         <div><span className="text-white/40 block">Tarih:</span><span className="text-white font-semibold">{getFormattedDate(formData.date)}</span></div>
                         <div><span className="text-white/40 block">Saat:</span><span className="text-white/60 font-semibold">{formData.time}</span></div>
+                        {formData.email.trim() && (
+                          <div className="sm:col-span-2"><span className="text-white/40 block">E-posta:</span><span className="text-white/80 font-medium">{formData.email.trim()}</span></div>
+                        )}
                       </div>
                       {errors.submit && <p className="text-sm text-red-400">{errors.submit}</p>}
                     </motion.div>

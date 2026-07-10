@@ -85,6 +85,7 @@ export async function POST(request: Request) {
       "Müsait berber bulunamadı.",
       "Hizmet bulunamadı.",
       "Sözleşme onayı gereklidir.",
+      "E-posta adresi gereklidir.",
     ];
     const status = clientErrors.includes(message) ? 409 : 500;
     return errorResponse(message, status);
