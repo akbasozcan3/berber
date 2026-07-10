@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -239,9 +239,18 @@ export default function Booking({
   const selectedService = services.find((s) => s.id === formData.serviceId);
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
   const availableSlots = slots.filter((s) => s.available);
-  const fullSlots = slots.filter((s) => !s.available);
+  const bookedSlots = slots.filter((s) => !s.available && s.reason === "Dolu");
+  const passedSlots = slots.filter((s) => !s.available && s.reason === "Geçmiş saat");
   const todayIso = toLocalIsoDate();
   const tomorrowIso = nextDays[1]?.isoDate ?? "";
+
+  const slotSummary = [
+    availableSlots.length > 0 ? `${availableSlots.length} müsait` : null,
+    bookedSlots.length > 0 ? `${bookedSlots.length} dolu` : null,
+    passedSlots.length > 0 ? `${passedSlots.length} geçti` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const getFormattedDate = (iso: string) => (iso ? formatIsoDateTr(iso) : "");
 
@@ -423,27 +432,52 @@ export default function Booking({
                                     Saat Seçimi
                                   </p>
                                   <p className="text-xs text-white/45 mt-1">
-                                    {availableSlots.length > 0
-                                      ? `${availableSlots.length} müsait, ${fullSlots.length} dolu saat`
-                                      : "Bu tarihte tüm saatler dolu"}
+                                    {slotSummary || "Saat bilgisi yükleniyor"}
                                   </p>
                                 </div>
-                                <div className="flex items-center gap-4 text-[9px] uppercase tracking-wider text-white/35">
+                                <div className="flex flex-wrap items-center gap-3 text-[9px] uppercase tracking-wider text-white/35">
                                   <span className="flex items-center gap-1.5">
                                     <span className="w-2.5 h-2.5 rounded-sm border border-white/30 bg-white/10" />
                                     Müsait
                                   </span>
                                   <span className="flex items-center gap-1.5">
-                                    <span className="w-2.5 h-2.5 rounded-sm border border-white/5 bg-white/[0.02]" />
+                                    <span className="w-2.5 h-2.5 rounded-sm border border-red-500/30 bg-red-500/10" />
                                     Dolu
+                                  </span>
+                                  <span className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-sm border border-white/5 bg-white/[0.02]" />
+                                    Geçti
                                   </span>
                                 </div>
                               </div>
 
-                              {availableSlots.length === 0 && (
+                              {availableSlots.length === 0 && bookedSlots.length > 0 && (
                                 <div className="p-3.5 bg-red-500/[0.06] border border-red-500/20 rounded-sm">
                                   <p className="text-xs text-red-300/90 leading-relaxed">
-                                    Seçtiğiniz tarihte tüm saatler dolu. Lütfen başka bir gün veya saat seçin.
+                                    Bu tarihte dolu saatler var. Lütfen müsait bir saat veya başka bir gün seçin.
+                                  </p>
+                                </div>
+                              )}
+
+                              {availableSlots.length === 0 && bookedSlots.length === 0 && passedSlots.length > 0 && formData.date === todayIso && tomorrowIso && (
+                                <div className="p-3.5 bg-white/[0.03] border border-white/[0.08] rounded-sm">
+                                  <p className="text-xs text-white/55 leading-relaxed">
+                                    Bugün için uygun saat kalmadı (geçmiş saatler seçilemez).
+                                  </p>
+                                  <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, date: tomorrowIso, time: "" })}
+                                    className="text-xs text-[#D4AF37] hover:text-[#E8C547] font-semibold mt-2"
+                                  >
+                                    Yarın için saatleri göster →
+                                  </button>
+                                </div>
+                              )}
+
+                              {availableSlots.length === 0 && bookedSlots.length === 0 && passedSlots.length === 0 && (
+                                <div className="p-3.5 bg-red-500/[0.06] border border-red-500/20 rounded-sm">
+                                  <p className="text-xs text-red-300/90 leading-relaxed">
+                                    Bu tarihte müsait saat bulunmuyor.
                                   </p>
                                 </div>
                               )}

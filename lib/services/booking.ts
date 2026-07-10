@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { settings, appointments, barbers, services, customers } from "@/lib/db/schema";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, inArray } from "drizzle-orm";
 import {
   isMultilineSettingKey,
   normalizeMultilineSettingValue,
@@ -121,7 +121,12 @@ export async function getAvailableSlots(
   const existingAppointments = await db
     .select()
     .from(appointments)
-    .where(and(eq(appointments.date, date), ne(appointments.status, "cancelled")));
+    .where(
+      and(
+        eq(appointments.date, date),
+        inArray(appointments.status, ["pending", "confirmed"])
+      )
+    );
 
   const leadMinutes = Math.max(interval, 30);
   const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
@@ -193,7 +198,10 @@ export async function createBooking(data: {
       and(eq(barbers.available, true), eq(barbers.onVacation, false))
     );
     const existingApts = await db.select().from(appointments).where(
-      and(eq(appointments.date, data.date), ne(appointments.status, "cancelled"))
+      and(
+        eq(appointments.date, data.date),
+        inArray(appointments.status, ["pending", "confirmed"])
+      )
     );
     const rules = await getActiveRulesForDate(data.date);
     const breakTimes = parseBreakTimes(await getSetting("break_times"));
