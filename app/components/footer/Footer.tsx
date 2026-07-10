@@ -1,9 +1,9 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, MessageCircle } from "lucide-react";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { instagramUrl, formatPhoneDisplay, formatWorkingHoursSummary, toTelHref } from "@/lib/utils/format";
+import { instagramUrl, formatPhoneDisplay, formatWorkingHoursSummary, toTelHref, toWhatsAppHref } from "@/lib/utils/format";
 import { splitBusinessNameForLogo, siteLogoImageClass } from "@/lib/utils/brand";
 
 export default function Footer() {
@@ -122,7 +122,18 @@ export default function Footer() {
             <h4 className="text-white text-[9px] font-bold uppercase tracking-[0.28em] mb-6">
               Sosyal Medya
             </h4>
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-3">
+              {settings.phone ? (
+                <a
+                  href={toWhatsAppHref(settings.phone, `Merhaba ${settings.businessName || "salon"}, bilgi almak istiyorum.`)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 rounded-full border border-[#25D366]/30 bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle size={16} />
+                </a>
+              ) : null}
               <a
                 href={insta}
                 target="_blank"

@@ -74,20 +74,26 @@ export default function AppointmentsPage() {
 
   const cancelAppointment = async (apt: AdminAppointment) => {
     const confirmed = window.confirm(
-      `${apt.customerName} — ${formatDate(apt.date)} ${apt.time} randevusu iptal edilip listeden silinecek. Devam edilsin mi?`
+      `${apt.customerName} — ${formatDate(apt.date)} ${apt.time} randevusu iptal edilecek, müşteriye e-posta gidecek ve kayıt silinecek. Saat tekrar müsait olur. Devam edilsin mi?`
     );
     if (!confirmed) return;
 
-    const notifyWhatsapp = window.confirm(
-      "Müşteriye WhatsApp üzerinden iptal bildirimi göndermek ister misiniz?"
-    );
-    if (notifyWhatsapp) {
-      window.open(buildWhatsappLink(apt), "_blank", "noopener,noreferrer");
-    }
-
     try {
-      await adminApi.updateAppointment(apt.id, "cancelled");
-      showToast("Randevu iptal edildi ve listeden silindi.", true);
+      const result = await adminApi.updateAppointment(apt.id, "cancelled");
+      if (result.email?.sent) {
+        showToast("Randevu iptal edildi. İptal e-postası gönderildi. Saat müsait.", true);
+      } else if (result.email?.skipped) {
+        showToast(
+          result.email.reason === "Müşteri e-postası yok"
+            ? "Randevu iptal edildi. Müşterinin e-postası yok. Saat müsait."
+            : `Randevu iptal edildi. E-posta gönderilmedi: ${result.email.reason || "bilinmeyen"}`,
+          true
+        );
+      } else if (result.email?.error) {
+        showToast(`Randevu iptal edildi ancak e-posta gönderilemedi: ${result.email.error}`, false);
+      } else {
+        showToast("Randevu iptal edildi. Saat tekrar müsait.", true);
+      }
       load();
     } catch (e) {
       showToast(e instanceof Error ? e.message : "İptal edilemedi.", false);

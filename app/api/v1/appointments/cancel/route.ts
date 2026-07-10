@@ -1,9 +1,10 @@
-import { z } from "zod";
-import { and, eq } from "drizzle-orm";
 import { ensureDb } from "@/lib/db/ensure";
 import { db } from "@/lib/db";
 import { appointments, customers } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { errorResponse, jsonResponse, parseBody } from "@/lib/api/helpers";
+import { cancelAppointmentWithEmail } from "@/lib/services/appointment-confirm";
+import { z } from "zod";
 
 const cancelSchema = z.object({
   appointmentId: z.number().int().positive(),
@@ -38,14 +39,13 @@ export async function POST(request: Request) {
       return jsonResponse({ success: true, message: "Randevu zaten iptal edilmiş." });
     }
 
-    await db
-      .update(appointments)
-      .set({ status: "cancelled", updatedAt: new Date().toISOString() })
-      .where(
-        and(eq(appointments.id, payload.appointmentId), eq(appointments.status, booking.status))
-      );
+    const { email } = await cancelAppointmentWithEmail(payload.appointmentId);
 
-    return jsonResponse({ success: true, message: "Randevunuz iptal edildi." });
+    return jsonResponse({
+      success: true,
+      message: "Randevunuz iptal edildi.",
+      email,
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return errorResponse(error.issues[0]?.message || "Geçersiz istek.");
@@ -53,4 +53,3 @@ export async function POST(request: Request) {
     return errorResponse("Randevu iptal edilemedi.", 500);
   }
 }
-

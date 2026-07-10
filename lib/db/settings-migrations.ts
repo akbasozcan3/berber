@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { settings, barbers } from "@/lib/db/schema";
+import { settings, barbers, appointments } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { isLegacyDefaultLunchBreak, serializeBreakTimes } from "@/lib/utils/break-times";
 import { normalizeBarberWorkingDays } from "@/lib/utils/salon-schedule";
@@ -51,4 +51,6 @@ export async function runSettingsMigrations() {
       await db.insert(settings).values({ key: "notifications_email", value: "true" });
     }
   }
+
+  await db.delete(appointments).where(eq(appointments.status, "cancelled"));
 }

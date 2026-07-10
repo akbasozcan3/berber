@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "@/app/components/navbar/Navbar";
 import Footer from "@/app/components/footer/Footer";
+import WhatsAppButton from "@/app/components/WhatsAppButton";
 import { PublicSettingsProvider, usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import type { PublicSettings } from "@/lib/api/client";
 
@@ -59,6 +60,7 @@ export default function SiteChrome({
       <Navbar />
       <div className="flex-1">{children}</div>
       <Footer />
+      <WhatsAppButton />
     </PublicSettingsProvider>
   );
 }

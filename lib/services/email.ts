@@ -7,6 +7,12 @@ import {
   buildAppointmentConfirmedText,
   type AppointmentConfirmedEmailData,
 } from "@/lib/email/appointment-confirmed";
+import {
+  buildAppointmentCancelledHtml,
+  buildAppointmentCancelledSubject,
+  buildAppointmentCancelledText,
+  type AppointmentCancelledEmailData,
+} from "@/lib/email/appointment-cancelled";
 
 export interface EmailResult {
   sent: boolean;
@@ -91,6 +97,45 @@ export async function sendAppointmentConfirmedEmail(
   } catch (err) {
     const error = err instanceof Error ? err.message : "E-posta gönderilemedi";
     console.error("[Email] Appointment confirmed failed:", error);
+    return { sent: false, error };
+  }
+}
+
+export async function sendAppointmentCancelledEmail(
+  to: string,
+  data: AppointmentCancelledEmailData
+): Promise<EmailResult> {
+  if (!(await isEmailEnabled())) {
+    return { sent: false, skipped: true, reason: "E-posta bildirimleri kapalı" };
+  }
+
+  const recipient = to.trim().toLowerCase();
+  if (!recipient || !recipient.includes("@")) {
+    return { sent: false, skipped: true, reason: "Müşteri e-postası yok" };
+  }
+
+  const mailer = getTransporter();
+  const config = getSmtpConfig();
+  if (!mailer || !config?.from) {
+    return { sent: false, skipped: true, reason: "SMTP yapılandırması eksik" };
+  }
+
+  const businessName = data.businessName || "Salon";
+  const replyTo = (await getSetting("contact_email"))?.trim() || config.from;
+
+  try {
+    await mailer.sendMail({
+      from: `"${businessName}" <${config.from}>`,
+      replyTo,
+      to: recipient,
+      subject: buildAppointmentCancelledSubject(data),
+      text: buildAppointmentCancelledText(data),
+      html: buildAppointmentCancelledHtml(data),
+    });
+    return { sent: true };
+  } catch (err) {
+    const error = err instanceof Error ? err.message : "E-posta gönderilemedi";
+    console.error("[Email] Appointment cancelled failed:", error);
     return { sent: false, error };
   }
 }

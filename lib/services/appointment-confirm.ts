@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { appointments, customers, services, barbers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getSetting } from "./booking";
-import { sendAppointmentConfirmedEmail, type EmailResult } from "./email";
+import { sendAppointmentConfirmedEmail, sendAppointmentCancelledEmail, type EmailResult } from "./email";
 import { resolvePublicSiteUrl } from "@/lib/utils/site-url";
 
 type AppointmentRow = {
@@ -111,4 +111,36 @@ export async function confirmAllPendingAppointments(): Promise<{
   }
 
   return { confirmed, emailsSent, emailsSkipped, emailsFailed };
+}
+
+function buildCancelledEmailPayload(
+  row: AppointmentRow,
+  brand: Awaited<ReturnType<typeof loadEmailBranding>>
+) {
+  return {
+    customerName: row.customer.name,
+    serviceName: row.service.name,
+    barberName: row.barber?.name || "Atandı",
+    date: row.appointment.date,
+    time: row.appointment.time,
+    businessName: brand.businessName,
+    logoUrl: brand.logoUrl,
+    address: brand.address,
+    phone: brand.phone,
+    siteUrl: brand.siteUrl,
+  };
+}
+
+export async function cancelAppointmentWithEmail(
+  appointmentId: number
+): Promise<{ email: EmailResult | null }> {
+  const row = await fetchAppointmentRow(appointmentId);
+  if (!row) throw new Error("Randevu bulunamadı");
+
+  const brand = await loadEmailBranding();
+  const email = await sendAppointmentCancelledEmail(row.customer.email || "", buildCancelledEmailPayload(row, brand));
+
+  await db.delete(appointments).where(eq(appointments.id, appointmentId));
+
+  return { email };
 }

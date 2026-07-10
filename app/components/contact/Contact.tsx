@@ -9,10 +9,11 @@ import {
   CheckCircle,
   ExternalLink,
   Navigation,
+  MessageCircle,
 } from "lucide-react";
 import { api } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { formatPhoneDisplay, formatWorkingHoursSummary, googleMapsEmbedUrl, instagramUrl, toTelHref } from "@/lib/utils/format";
+import { formatPhoneDisplay, formatWorkingHoursSummary, googleMapsEmbedUrl, instagramUrl, toTelHref, toWhatsAppHref } from "@/lib/utils/format";
 
 interface ContactProps {
   showHeading?: boolean;
@@ -31,13 +32,28 @@ export default function Contact({ showHeading = true }: ContactProps) {
   const mapEmbed = googleMapsEmbedUrl(settings.googleMaps, settings.address);
 
   const contactItems = [
-    {
-      icon: Phone,
-      title: "Telefon",
-      detail: phoneDisplay,
-      action: "Hemen Ara",
-      href: toTelHref(settings.phone),
-    },
+    ...(settings.phone
+      ? [
+          {
+            icon: Phone,
+            title: "Telefon",
+            detail: phoneDisplay,
+            action: "Hemen Ara",
+            href: toTelHref(settings.phone),
+          },
+          {
+            icon: MessageCircle,
+            title: "WhatsApp",
+            detail: phoneDisplay,
+            action: "WhatsApp ile Yaz",
+            href: toWhatsAppHref(
+              settings.phone,
+              `Merhaba ${settings.businessName || "salon"}, bilgi almak istiyorum.`
+            ),
+            external: true,
+          },
+        ]
+      : []),
     {
       icon: Mail,
       title: "E-posta",

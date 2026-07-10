@@ -66,6 +66,18 @@ export function toTelHref(phone?: string | null): string {
   return `tel:+${digits.startsWith("90") ? digits : `90${digits.replace(/^0/, "")}`}`;
 }
 
+/** WhatsApp deep link for salon / business contact. */
+export function toWhatsAppHref(phone?: string | null, message?: string): string {
+  const digits = digitsOnly(phone);
+  if (!digits) return "https://wa.me/";
+  let normalized = digits;
+  if (normalized.startsWith("0")) normalized = `90${normalized.slice(1)}`;
+  else if (normalized.length === 10) normalized = `90${normalized}`;
+  const base = `https://wa.me/${normalized}`;
+  if (!message?.trim()) return base;
+  return `${base}?text=${encodeURIComponent(message.trim())}`;
+}
+
 /** Store phones as +90XXXXXXXXXX for consistent display across the site. */
 export function normalizePhoneStorage(phone?: string | null): string {
   const digits = digitsOnly(phone);
