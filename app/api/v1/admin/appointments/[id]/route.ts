@@ -50,11 +50,12 @@ export async function PATCH(
       null;
 
     if (body.status === "confirmed" && previousStatus !== "confirmed") {
-      const [businessName, address, phone, siteUrlSetting] = await Promise.all([
+      const [businessName, address, phone, siteUrlSetting, logoUrl] = await Promise.all([
         getSetting("business_name"),
         getSetting("address"),
         getSetting("phone"),
         getSetting("site_url"),
+        getSetting("logo_url"),
       ]);
 
       const siteUrl = resolvePublicSiteUrl(siteUrlSetting);
@@ -68,6 +69,7 @@ export async function PATCH(
         duration: row.appointment.duration,
         price: row.appointment.price,
         businessName: businessName?.trim() || "The Barber",
+        logoUrl: logoUrl || undefined,
         address: address || undefined,
         phone: phone || undefined,
         siteUrl,
