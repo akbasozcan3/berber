@@ -37,6 +37,7 @@ export default function Booking({
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState("");
+  const [slotsRetry, setSlotsRetry] = useState(0);
   const [formData, setFormData] = useState({
     serviceId: 0,
     barberId: 0,
@@ -99,6 +100,11 @@ export default function Booking({
   const nextDays = getNextDays(bookingHorizon);
 
   useEffect(() => {
+    if (step !== 3 || formData.date) return;
+    setFormData((prev) => ({ ...prev, date: toLocalIsoDate(), time: "" }));
+  }, [step, formData.date]);
+
+  useEffect(() => {
     if (!formData.date || !formData.serviceId) return;
 
     let cancelled = false;
@@ -136,7 +142,7 @@ export default function Booking({
     return () => {
       cancelled = true;
     };
-  }, [formData.date, formData.serviceId, formData.barberId, formData.noPreference]);
+  }, [formData.date, formData.serviceId, formData.barberId, formData.noPreference, slotsRetry]);
 
   const validateStep = () => {
     const tempErrors: Record<string, string> = {};
@@ -166,6 +172,19 @@ export default function Booking({
     if (!validateStep()) return;
     setIsSubmitting(true);
     try {
+      const freshSlots = await api.getSlots(
+        formData.date,
+        formData.serviceId,
+        formData.noPreference ? undefined : formData.barberId || undefined
+      );
+      const slotOk = freshSlots.some((s) => s.time === formData.time && s.available);
+      if (!slotOk) {
+        setSlots(freshSlots);
+        setErrors({ time: "Seçilen saat artık müsait değil. Lütfen başka saat seçin." });
+        setStep(3);
+        return;
+      }
+
       const selectedService = services.find((s) => s.id === formData.serviceId);
       const selectedBarber = barbers.find((b) => b.id === formData.barberId);
       const result = await api.createBooking({
@@ -196,6 +215,8 @@ export default function Booking({
   const selectedService = services.find((s) => s.id === formData.serviceId);
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
   const availableSlots = slots.filter((s) => s.available);
+  const todayIso = toLocalIsoDate();
+  const tomorrowIso = nextDays[1]?.isoDate ?? "";
 
   const getFormattedDate = (iso: string) => (iso ? formatIsoDateTr(iso) : "");
 
@@ -308,14 +329,20 @@ export default function Booking({
 
                   {step === 3 && (
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
-                      <h3 className="text-xl font-serif font-light text-white">Tarih & Saat</h3>
-                      <div className="flex gap-2.5 overflow-x-auto pb-3">
+                      <div>
+                        <h3 className="text-xl font-serif font-light text-white">Tarih & Saat</h3>
+                        {formData.date && (
+                          <p className="text-sm text-white/50 mt-2">{getFormattedDate(formData.date)}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2.5 overflow-x-auto pb-3 scrollbar-thin">
                         {nextDays.map((day) => {
                           const sel = formData.date === day.isoDate;
+                          const isToday = day.isoDate === todayIso;
                           return (
                             <button type="button" key={day.isoDate} onClick={() => setFormData({ ...formData, date: day.isoDate, time: "" })}
-                              className={`flex flex-col items-center py-4 px-5 rounded-sm border min-w-[76px] transition-all ${sel ? "bg-white border-white text-black" : "border-white/10 text-white/50 hover:border-white/30"}`}>
-                              <span className="text-[10px] uppercase font-bold">{day.dayName}</span>
+                              className={`flex flex-col items-center py-4 px-5 rounded-sm border min-w-[76px] shrink-0 transition-all ${sel ? "bg-white border-white text-black" : "border-white/10 text-white/50 hover:border-white/30"}`}>
+                              <span className="text-[10px] uppercase font-bold">{isToday ? "Bugün" : day.dayName}</span>
                               <span className="text-lg font-serif font-bold">{day.dayNum}</span>
                               <span className="text-[8px] uppercase opacity-70">{day.month}</span>
                             </button>
@@ -327,22 +354,50 @@ export default function Booking({
                           {loadingSlots ? (
                             <div className="flex items-center gap-2 text-white/50"><Loader2 className="w-4 h-4 animate-spin" /> Müsait saatler yükleniyor...</div>
                           ) : slotsError ? (
-                            <p className="text-red-400 text-sm">{slotsError}</p>
+                            <div className="space-y-3">
+                              <p className="text-red-400 text-sm">{slotsError}</p>
+                              <button type="button" onClick={() => setSlotsRetry((n) => n + 1)}
+                                className="text-xs text-white/60 underline hover:text-white">
+                                Tekrar dene
+                              </button>
+                            </div>
                           ) : availableSlots.length === 0 ? (
-                            <p className="text-white/50 text-sm">Bu tarihte müsait saat bulunmuyor.</p>
-                          ) : (
-                            <div className="flex flex-wrap gap-2.5">
-                              {slots.map((slot) => (
-                                <button type="button" key={slot.time} disabled={!slot.available}
-                                  title={slot.reason || ""}
-                                  onClick={() => setFormData({ ...formData, time: slot.time })}
-                                  className={`py-3 px-6 text-xs font-semibold rounded-sm border transition-all ${!slot.available ? "opacity-30 cursor-not-allowed border-white/5 text-white/20 line-through" : formData.time === slot.time ? "bg-white border-white text-black" : "border-white/10 text-white/60 hover:border-white/30"}`}>
-                                  {slot.time}
+                            <div className="space-y-3">
+                              <p className="text-white/50 text-sm">
+                                {formData.date === todayIso
+                                  ? "Bugün için müsait saat kalmadı."
+                                  : "Bu tarihte müsait saat bulunmuyor."}
+                              </p>
+                              {formData.date === todayIso && tomorrowIso && (
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData({ ...formData, date: tomorrowIso, time: "" })}
+                                  className="text-xs text-[#D4AF37] hover:text-[#E8C547] font-semibold"
+                                >
+                                  Yarın için saatleri göster →
                                 </button>
-                              ))}
+                              )}
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-[10px] uppercase tracking-widest text-white/40 mb-3">
+                                Müsait saatler ({availableSlots.length})
+                              </p>
+                              <div className="flex flex-wrap gap-2.5">
+                                {availableSlots.map((slot) => (
+                                  <button type="button" key={slot.time}
+                                    onClick={() => { setFormData({ ...formData, time: slot.time }); setErrors((e) => ({ ...e, time: "" })); }}
+                                    className={`py-3 px-6 text-xs font-semibold rounded-sm border transition-all ${formData.time === slot.time ? "bg-white border-white text-black" : "border-white/10 text-white/60 hover:border-white/30"}`}>
+                                    {slot.time}
+                                  </button>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
+                      )}
+                      {!formData.date && (
+                        <p className="text-white/40 text-sm">Randevu için bir gün seçin.</p>
                       )}
                       {errors.date && <p className="text-xs text-red-400">{errors.date}</p>}
                       {errors.time && <p className="text-xs text-red-400">{errors.time}</p>}

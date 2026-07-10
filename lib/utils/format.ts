@@ -17,6 +17,26 @@ export function toLocalIsoDate(date = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Parse YYYY-MM-DD as local calendar date (never UTC midnight). */
+export function parseLocalIsoDate(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return new Date(NaN);
+  return new Date(y, m - 1, d);
+}
+
+export function isLocalIsoToday(iso: string): boolean {
+  return iso === toLocalIsoDate();
+}
+
+/** 0 = Sunday, same as Date#getDay(). */
+export function getLocalDayOfWeek(iso: string): number {
+  return parseLocalIsoDate(iso).getDay();
+}
+
+export function compareLocalIsoDates(a: string, b: string): number {
+  return a.localeCompare(b);
+}
+
 export function formatIsoDateTr(iso: string): string {
   const [y, m, d] = iso.split("-").map(Number);
   if (!y || !m || !d) return iso;

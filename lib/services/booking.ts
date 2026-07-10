@@ -5,7 +5,7 @@ import {
   isMultilineSettingKey,
   normalizeMultilineSettingValue,
 } from "@/lib/data/multiline-settings";
-import { normalizePhoneStorage, digitsOnly } from "@/lib/utils/format";
+import { normalizePhoneStorage, digitsOnly, parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday } from "@/lib/utils/format";
 import {
   getActiveRulesForDate,
   getDayStatus,
@@ -55,11 +55,12 @@ function formatTime(minutes: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function generateSlots(start: string, end: string, interval: number): string[] {
+function generateSlots(start: string, end: string, interval: number, serviceDuration: number): string[] {
   const slots: string[] = [];
   let current = parseTime(start);
   const endMin = parseTime(end);
-  while (current + interval <= endMin) {
+  const minSpan = Math.max(interval, serviceDuration);
+  while (current + minSpan <= endMin) {
     slots.push(formatTime(current));
     current += interval;
   }
@@ -75,11 +76,11 @@ export async function getAvailableSlots(
   const breakTimes = JSON.parse((await getSetting("break_times")) || "[]");
   const maxFuture = Number((await getSetting("max_future_booking")) || 30);
 
-  const selectedDate = new Date(date);
+  const selectedDate = parseLocalIsoDate(date);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  if (selectedDate < today) return [];
+  if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) return [];
 
   const maxDate = new Date(today);
   maxDate.setDate(maxDate.getDate() + maxFuture);
@@ -101,7 +102,7 @@ export async function getAvailableSlots(
     targetBarbers = targetBarbers.filter((b) => b.id === barberId);
   }
 
-  const dayOfWeek = selectedDate.getDay();
+  const dayOfWeek = parseLocalIsoDate(date).getDay();
   targetBarbers = targetBarbers.filter((b) => {
     const days = b.workingDays.split(",").map(Number);
     return days.includes(dayOfWeek === 0 ? 7 : dayOfWeek);
@@ -115,12 +116,15 @@ export async function getAvailableSlots(
   const earliestStart = hoursList.reduce((min, h) => Math.min(min, parseTime(h.open)), Infinity);
   const latestEnd = hoursList.reduce((max, h) => Math.max(max, parseTime(h.close)), 0);
 
-  const allSlots = generateSlots(formatTime(earliestStart), formatTime(latestEnd), interval);
+  const allSlots = generateSlots(formatTime(earliestStart), formatTime(latestEnd), interval, service.duration);
 
   const existingAppointments = await db
     .select()
     .from(appointments)
     .where(and(eq(appointments.date, date), ne(appointments.status, "cancelled")));
+
+  const leadMinutes = Math.max(interval, 30);
+  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
 
   return allSlots.map((time) => {
     if (isInBreak(time, service.duration, breakTimes)) {
@@ -135,37 +139,28 @@ export async function getAvailableSlots(
       return { time, available: false, reason: blocked.reason || "Müsait değil" };
     }
 
-    const hasConflict = existingAppointments.some((apt) => {
-      if (barberId && apt.barberId !== barberId) return false;
-      if (!barberId && apt.barberId) {
-        const barber = targetBarbers.find((b) => b.id === apt.barberId);
-        if (!barber) return false;
-      }
-      const aptStart = parseTime(apt.time);
-      const aptEnd = aptStart + apt.duration;
-      return slotStart < aptEnd && slotEnd > aptStart;
-    });
+    if (isLocalIsoToday(date) && slotStart < nowMinutes + leadMinutes) {
+      return { time, available: false, reason: "Geçmiş saat" };
+    }
 
-    const anyBarberFree = barberId
-      ? !hasConflict
-      : targetBarbers.some((barber) =>
-          canBarberTakeSlot({
-            barber,
-            date,
-            slotTime: time,
-            slotStart,
-            slotEnd,
-            rules,
-            existingAppointments,
-            breakTimes,
-          })
-        );
+    const anyBarberFree = targetBarbers.some((barber) =>
+      canBarberTakeSlot({
+        barber,
+        date,
+        slotTime: time,
+        slotStart,
+        slotEnd,
+        rules,
+        existingAppointments,
+        breakTimes,
+      })
+    );
 
-    const isPast =
-      date === today.toISOString().split("T")[0] &&
-      slotStart <= today.getHours() * 60 + today.getMinutes();
-
-    return { time, available: anyBarberFree && !isPast, reason: anyBarberFree && !isPast ? undefined : "Dolu" };
+    return {
+      time,
+      available: anyBarberFree,
+      reason: anyBarberFree ? undefined : "Dolu",
+    };
   });
 }
 

@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { availabilityBlocks, availabilityAuditLog, barbers } from "@/lib/db/schema";
 import { eq, and, lte, gte, or, isNull } from "drizzle-orm";
 import { getSetting } from "./booking";
+import { parseLocalIsoDate, toLocalIsoDate } from "@/lib/utils/format";
 
 export type RuleType = "block" | "close_day" | "hours_override" | "early_close" | "late_open" | "permanent";
 export type QuickScope = "today" | "tomorrow" | "this_week" | "next_week" | "this_month" | "next_month" | "this_year" | "permanent";
@@ -21,7 +22,7 @@ export interface CreateAvailabilityInput {
 }
 
 function formatDate(d: Date): string {
-  return d.toISOString().split("T")[0];
+  return toLocalIsoDate(d);
 }
 
 function addDays(d: Date, n: number): Date {
@@ -94,8 +95,8 @@ export function getDateRangeForScope(scope: QuickScope, ref = new Date()): { sta
 
 function eachDateInRange(start: string, end: string): string[] {
   const dates: string[] = [];
-  const cur = new Date(start);
-  const last = new Date(end);
+  const cur = parseLocalIsoDate(start);
+  const last = parseLocalIsoDate(end);
   while (cur <= last) {
     dates.push(formatDate(cur));
     cur.setDate(cur.getDate() + 1);
@@ -187,8 +188,8 @@ export async function getActiveRulesForDate(date: string) {
 export async function getDayStatus(date: string): Promise<"available" | "closed" | "limited" | "holiday" | "past"> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const d = new Date(date);
-  if (d < today) return "past";
+  const d = parseLocalIsoDate(date);
+  if (Number.isNaN(d.getTime()) || d < today) return "past";
 
   const holidays = JSON.parse((await getSetting("holidays")) || "[]") as string[];
   if (holidays.includes(date)) return "holiday";
@@ -202,7 +203,6 @@ export async function getDayStatus(date: string): Promise<"available" | "closed"
   const hasOverride = rules.some((r) => r.ruleType === "hours_override" || r.ruleType === "early_close" || r.ruleType === "late_open");
   if (hasOverride) return "limited";
 
-  if (d.getDay() === 0) return "closed";
   return "available";
 }
 
@@ -279,7 +279,7 @@ export function canBarberTakeSlot(params: {
   const { barber, date, slotTime, slotStart, slotEnd, rules, existingAppointments, breakTimes } =
     params;
 
-  const dayOfWeek = new Date(date).getDay();
+  const dayOfWeek = parseLocalIsoDate(date).getDay();
   const days = barber.workingDays.split(",").map(Number);
   if (!days.includes(dayOfWeek === 0 ? 7 : dayOfWeek)) return false;
 
