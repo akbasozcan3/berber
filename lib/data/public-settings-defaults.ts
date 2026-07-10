@@ -93,5 +93,5 @@ export const publicSettingsDefaults: PublicSettings = {
     { title: "Konforlu Salon", desc: "Rahat ve modern atmosfer." },
     { title: "Kaliteli Ürünler", desc: "Dünya markalarıyla bakım." },
   ]),
-  breakTimes: JSON.stringify([{ start: "13:00", end: "14:00" }]),
+  breakTimes: "[]",
 };

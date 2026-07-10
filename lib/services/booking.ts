@@ -5,6 +5,7 @@ import {
   isMultilineSettingKey,
   normalizeMultilineSettingValue,
 } from "@/lib/data/multiline-settings";
+import { parseBreakTimes } from "@/lib/utils/break-times";
 import { normalizePhoneStorage, digitsOnly, parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday } from "@/lib/utils/format";
 import {
   getActiveRulesForDate,
@@ -73,7 +74,7 @@ export async function getAvailableSlots(
   barberId?: number | null
 ): Promise<{ time: string; available: boolean; reason?: string }[]> {
   const interval = Number((await getSetting("appointment_interval")) || 30);
-  const breakTimes = JSON.parse((await getSetting("break_times")) || "[]");
+  const breakTimes = parseBreakTimes(await getSetting("break_times"));
   const maxFuture = Number((await getSetting("max_future_booking")) || 30);
 
   const selectedDate = parseLocalIsoDate(date);
@@ -193,7 +194,7 @@ export async function createBooking(data: {
       and(eq(appointments.date, data.date), ne(appointments.status, "cancelled"))
     );
     const rules = await getActiveRulesForDate(data.date);
-    const breakTimes = JSON.parse((await getSetting("break_times")) || "[]");
+    const breakTimes = parseBreakTimes(await getSetting("break_times"));
     const slotStart = parseTime(data.time);
     const slotEnd = slotStart + service.duration;
 

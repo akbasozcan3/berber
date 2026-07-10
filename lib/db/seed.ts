@@ -368,7 +368,7 @@ export async function seedDatabase() {
       { day: "Cumartesi", open: "09:00", close: "22:00" },
       { day: "Pazar", open: "", close: "", closed: true },
     ]),
-    break_times: JSON.stringify([{ start: "13:00", end: "14:00" }]),
+    break_times: "[]",
     holidays: JSON.stringify([]),
     appointment_interval: "30",
     max_future_booking: "30",

@@ -10,6 +10,7 @@ import Textarea from "@/components/admin/ui/Textarea";
 import Toggle from "@/components/admin/ui/Toggle";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 import WorkingHoursEditor from "@/components/admin/WorkingHoursEditor";
+import BreakTimesEditor from "@/components/admin/BreakTimesEditor";
 import { adminApi } from "@/lib/api/admin";
 import { getPrimaryWorkingHours, parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
 import { normalizePhoneStorage } from "@/lib/utils/format";
@@ -335,15 +336,10 @@ export default function SettingsPage() {
             <Input label="Randevu Aralığı (dk)" type="number" value={settings.appointment_interval || "30"} onChange={(e) => set("appointment_interval", e.target.value)} />
             <Input label="Max İleri Tarih (gün)" type="number" value={settings.max_future_booking || "30"} onChange={(e) => set("max_future_booking", e.target.value)} />
             <Input label="Slot Başına Max Randevu" type="number" value={settings.max_bookings_per_slot || "1"} onChange={(e) => set("max_bookings_per_slot", e.target.value)} />
-            <div>
-              <label className="text-xs text-[#71717A] mb-2 block">Öğle Arası (JSON)</label>
-              <textarea
-                className="w-full min-h-[80px] bg-[#0A0A0A] border border-white/[0.06] rounded-2xl px-4 py-3 text-sm font-mono text-[#F8F8F8]"
-                value={settings.break_times || ""}
-                onChange={(e) => set("break_times", e.target.value)}
-                placeholder='[{"start":"13:00","end":"14:00"}]'
-              />
-            </div>
+            <BreakTimesEditor
+              value={settings.break_times || "[]"}
+              onChange={(json) => set("break_times", json)}
+            />
           </div>
         </Card>
 

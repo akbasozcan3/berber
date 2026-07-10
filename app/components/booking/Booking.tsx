@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Scissors, Sparkles, Crown, ChevronRight, ChevronLeft,
@@ -8,7 +9,7 @@ import {
 } from "lucide-react";
 import { api, type Service, type Barber, type TimeSlot } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { toLocalIsoDate, formatIsoDateTr } from "@/lib/utils/format";
+import { toLocalIsoDate, formatIsoDateTr, getInitials } from "@/lib/utils/format";
 
 const SERVICE_ICONS: Record<string, typeof Scissors> = {
   "sac-kesimi": Scissors,
@@ -309,14 +310,26 @@ export default function Booking({
                           const sel = formData.barberId === b.id && !formData.noPreference;
                           return (
                             <div key={b.id} onClick={() => setFormData({ ...formData, barberId: b.id, noPreference: false, time: "" })}
-                              className={`p-5 sm:p-6 border rounded-sm cursor-pointer text-center h-52 flex flex-col items-center justify-between ${sel ? "border-white bg-white/[0.03]" : "border-white/[0.06] hover:border-white/20"}`}>
-                              <div className={`w-14 h-14 rounded-full flex items-center justify-center border font-bold text-sm ${sel ? "border-white bg-white text-black" : "border-white/10 bg-white/5 text-white/70"}`}>
-                                {b.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                              className={`p-5 sm:p-6 border rounded-sm cursor-pointer text-center min-h-[13rem] flex flex-col items-center justify-between transition-all ${sel ? "border-white bg-white/[0.03] shadow-[0_0_0_1px_rgba(255,255,255,0.08)]" : "border-white/[0.06] hover:border-white/20"}`}>
+                              <div className={`relative w-20 h-20 rounded-full overflow-hidden border-2 shrink-0 ${sel ? "border-white" : "border-white/15"}`}>
+                                {b.avatar ? (
+                                  <Image
+                                    src={b.avatar}
+                                    alt={b.name}
+                                    fill
+                                    className="object-cover"
+                                    sizes="80px"
+                                  />
+                                ) : (
+                                  <div className={`absolute inset-0 flex items-center justify-center font-bold text-sm ${sel ? "bg-white text-black" : "bg-white/5 text-white/70"}`}>
+                                    {getInitials(b.name)}
+                                  </div>
+                                )}
                               </div>
-                              <div>
-                                <h4 className={`font-semibold ${sel ? "text-white/60" : "text-white"}`}>{b.name}</h4>
+                              <div className="w-full">
+                                <h4 className={`font-semibold ${sel ? "text-white" : "text-white"}`}>{b.name}</h4>
                                 <p className="text-[10px] uppercase tracking-widest text-white/60 mt-1">{b.position}</p>
-                                <p className="text-white/40 text-[11px] mt-2">{b.specialty}</p>
+                                <p className="text-white/40 text-[11px] mt-2 line-clamp-2">{b.specialty}</p>
                               </div>
                             </div>
                           );
