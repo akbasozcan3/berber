@@ -166,6 +166,7 @@ export async function PATCH(
 
     if (entity === "settings") {
       for (const [key, value] of Object.entries(body)) {
+        if (key === "notifications_telegram") continue;
         let stored = key === "phone" ? normalizePhoneStorage(String(value)) : String(value);
         if (MULTILINE_SETTING_KEYS.includes(key as (typeof MULTILINE_SETTING_KEYS)[number])) {
           stored = normalizeMultilineSettingValue(stored);
@@ -176,6 +177,13 @@ export async function PATCH(
         } else {
           await db.insert(settings).values({ key, value: stored });
         }
+      }
+
+      const telegramFlag = await db.select().from(settings).where(eq(settings.key, "notifications_telegram")).limit(1);
+      if (telegramFlag[0]) {
+        await db.update(settings).set({ value: "true" }).where(eq(settings.key, "notifications_telegram"));
+      } else {
+        await db.insert(settings).values({ key: "notifications_telegram", value: "true" });
       }
 
       revalidatePath("/", "layout");

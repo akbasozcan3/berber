@@ -15,4 +15,13 @@ export async function runSettingsMigrations() {
   if (isLegacyDefaultLunchBreak(value)) {
     await db.update(settings).set({ value: serializeBreakTimes([]) }).where(eq(settings.key, "break_times"));
   }
+
+  const telegramRow = await db.select().from(settings).where(eq(settings.key, "notifications_telegram")).limit(1);
+  if (!telegramRow[0] || telegramRow[0].value === "false") {
+    if (telegramRow[0]) {
+      await db.update(settings).set({ value: "true" }).where(eq(settings.key, "notifications_telegram"));
+    } else {
+      await db.insert(settings).values({ key: "notifications_telegram", value: "true" });
+    }
+  }
 }

@@ -7,7 +7,6 @@ import Card from "@/components/admin/ui/Card";
 import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Textarea from "@/components/admin/ui/Textarea";
-import Toggle from "@/components/admin/ui/Toggle";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 import WorkingHoursEditor from "@/components/admin/WorkingHoursEditor";
 import BreakTimesEditor from "@/components/admin/BreakTimesEditor";
@@ -66,7 +65,9 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    adminApi.getSettings().then(setSettings);
+    adminApi.getSettings().then((data) => {
+      setSettings({ ...data, notifications_telegram: "true" });
+    });
     loadTelegram();
   }, [loadTelegram]);
 
@@ -76,7 +77,7 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    const payload = { ...settings };
+    const payload: Record<string, string> = { ...settings, notifications_telegram: "true" };
     if (payload.phone) payload.phone = normalizePhoneStorage(payload.phone);
     if (!payload.working_hours?.trim()) {
       payload.working_hours = serializeWorkingHours(parseWorkingHoursJson(""));
@@ -143,9 +144,9 @@ export default function SettingsPage() {
     }
   };
 
-  const telegramEnabled = settings.notifications_telegram !== "false";
-  const recipientName = settings.telegram_recipient_name || status?.recipientName || "Mehmet Abi";
   const botConnected = status?.connected ?? false;
+  const telegramReady = status?.ready ?? false;
+  const recipientName = settings.telegram_recipient_name || status?.recipientName || "Mehmet Abi";
 
   return (
     <div>
@@ -228,13 +229,27 @@ export default function SettingsPage() {
           <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Bildirimler</h3>
 
           <div className="space-y-6">
-            <Toggle
-              label="Telegram Bildirimleri"
-              checked={telegramEnabled}
-              onChange={(v) => set("notifications_telegram", String(v))}
-            />
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-green-500/20 bg-green-500/5 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-[#F8F8F8]">Telegram Bildirimleri</p>
+                <p className="text-xs text-[#71717A] mt-0.5">Her yeni randevu otomatik bildirilir — kapatılamaz.</p>
+              </div>
+              <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-green-400 shrink-0">
+                <span className="w-2 h-2 rounded-full bg-green-400" />
+                Açık
+              </span>
+            </div>
 
             <div className="rounded-2xl border border-white/[0.08] bg-[#0A0A0A] divide-y divide-white/[0.06]">
+              <InfoRow label="Hazır">
+                <span className="inline-flex items-center gap-2 text-sm">
+                  <span className={cn("w-2 h-2 rounded-full", telegramReady ? "bg-green-400" : "bg-yellow-400")} />
+                  <span className={telegramReady ? "text-green-400" : "text-yellow-400"}>
+                    {telegramReady ? "Randevu bildirimi hazır" : "Chat ID veya bot eksik"}
+                  </span>
+                </span>
+              </InfoRow>
+
               <InfoRow label="Bot Durumu">
                 <span className="inline-flex items-center gap-2 text-sm">
                   <span className={cn("w-2 h-2 rounded-full", botConnected ? "bg-green-400" : "bg-red-400")} />
@@ -266,7 +281,7 @@ export default function SettingsPage() {
             <Button
               variant="primary"
               onClick={sendTest}
-              disabled={testing || !telegramEnabled}
+              disabled={testing}
               className="w-full"
             >
               <Send className="w-4 h-4" />

@@ -64,8 +64,7 @@ async function getChatId(): Promise<string> {
 }
 
 async function isEnabled(): Promise<boolean> {
-  const flag = await getSetting("notifications_telegram");
-  return flag !== "false";
+  return true;
 }
 
 async function verifyBotConnection(): Promise<{ connected: boolean; botUsername?: string }> {
@@ -92,7 +91,7 @@ export async function getTelegramStatus() {
   const fromDb = (await getSetting("telegram_chat_id"))?.trim();
   const chatIdConfigured = Boolean(fromDb || process.env.TELEGRAM_CHAT_ID?.trim());
 
-  const enabled = await isEnabled();
+  const enabled = true;
   const bot = await verifyBotConnection();
   const recipientName =
     (await getSetting("telegram_recipient_name"))?.trim() || "Mehmet Abi";
@@ -106,7 +105,7 @@ export async function getTelegramStatus() {
     botUsername: bot.botUsername ?? null,
     recipientName,
     lastTestAt,
-    ready: bot.connected && tokenConfigured && chatIdConfigured && enabled,
+    ready: bot.connected && tokenConfigured && chatIdConfigured,
   };
 }
 
