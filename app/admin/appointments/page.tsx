@@ -31,6 +31,7 @@ export default function AppointmentsPage() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   const load = useCallback(() => {
     adminApi.getAppointments().then(setAppointments);
@@ -64,19 +65,36 @@ export default function AppointmentsPage() {
   const perPage = 10;
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const paginated = filtered.slice((page - 1) * perPage, page * perPage);
+  const pendingCount = appointments.filter((apt) => apt.status === "pending").length;
 
   const showToast = (text: string, ok: boolean) => {
     setToast({ text, ok });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const updateStatus = async (id: number, status: string, customerName?: string) => {
-    if (status === "cancelled") {
-      const ok = window.confirm(
-        `${customerName || "Bu müşteri"} randevusunu iptal etmek istiyor musunuz?`
-      );
-      if (!ok) return;
+  const cancelAppointment = async (apt: AdminAppointment) => {
+    const confirmed = window.confirm(
+      `${apt.customerName} — ${formatDate(apt.date)} ${apt.time} randevusu iptal edilip listeden silinecek. Devam edilsin mi?`
+    );
+    if (!confirmed) return;
+
+    const notifyWhatsapp = window.confirm(
+      "Müşteriye WhatsApp üzerinden iptal bildirimi göndermek ister misiniz?"
+    );
+    if (notifyWhatsapp) {
+      window.open(buildWhatsappLink(apt), "_blank", "noopener,noreferrer");
     }
+
+    try {
+      await adminApi.updateAppointment(apt.id, "cancelled");
+      showToast("Randevu iptal edildi ve listeden silindi.", true);
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "İptal edilemedi.", false);
+    }
+  };
+
+  const updateStatus = async (id: number, status: string, customerName?: string) => {
     if (status === "confirmed") {
       const ok = window.confirm(
         `${customerName || "Bu müşteri"} randevusunu onaylamak istiyor musunuz? Onay e-postası gönderilecektir.`
@@ -101,7 +119,7 @@ export default function AppointmentsPage() {
           showToast("Randevu onaylandı.", true);
         }
       } else {
-        showToast(status === "cancelled" ? "Randevu iptal edildi." : "Randevu güncellendi.", true);
+        showToast("Randevu güncellendi.", true);
       }
       load();
     } catch (e) {
@@ -109,17 +127,50 @@ export default function AppointmentsPage() {
     }
   };
 
-  const clearAllAppointments = async () => {
+  const confirmAllPending = async () => {
+    if (pendingCount === 0) {
+      showToast("Onaylanacak bekleyen randevu yok.", false);
+      return;
+    }
     const confirmed = window.confirm(
-      "Tüm randevu kayıtları kalıcı olarak silinecek. Müşteri ve bildirim kayıtları korunur. Emin misiniz?"
+      `${pendingCount} bekleyen randevu onaylanacak ve müşterilere onay e-postası gönderilecek. Devam edilsin mi?`
     );
     if (!confirmed) return;
+
+    setBulkLoading(true);
+    try {
+      const result = await adminApi.confirmAllAppointments();
+      const parts = [`${result.confirmed} randevu onaylandı.`];
+      if (result.emailsSent > 0) parts.push(`${result.emailsSent} e-posta gönderildi.`);
+      if (result.emailsFailed > 0) parts.push(`${result.emailsFailed} e-posta gönderilemedi.`);
+      showToast(parts.join(" "), result.emailsFailed === 0);
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Toplu onay başarısız.", false);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const clearAllAppointments = async () => {
+    if (appointments.length === 0) {
+      showToast("Silinecek randevu yok.", false);
+      return;
+    }
+    const confirmed = window.confirm(
+      `Tüm randevular (${appointments.length} kayıt) kalıcı olarak silinecek. Müşteri kayıtları korunur. Emin misiniz?`
+    );
+    if (!confirmed) return;
+
+    setBulkLoading(true);
     try {
       await adminApi.clearAppointments();
       showToast("Tüm randevular silindi.", true);
       load();
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Silinemedi.", false);
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -153,10 +204,20 @@ export default function AppointmentsPage() {
         title="Randevular"
         description={`${appointments.length} toplam randevu`}
         actions={
-          <Button variant="danger" onClick={clearAllAppointments}>
-            <Trash2 className="w-4 h-4" />
-            Tüm Randevuları Sil
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="primary"
+              onClick={confirmAllPending}
+              disabled={bulkLoading || pendingCount === 0}
+            >
+              <Check className="w-4 h-4" />
+              Tümünü Kabul Et{pendingCount > 0 ? ` (${pendingCount})` : ""}
+            </Button>
+            <Button variant="danger" onClick={clearAllAppointments} disabled={bulkLoading || appointments.length === 0}>
+              <Trash2 className="w-4 h-4" />
+              Tümünü Sil
+            </Button>
+          </div>
         }
       />
 
@@ -216,14 +277,14 @@ export default function AppointmentsPage() {
                     <div className="flex items-center gap-1">
                       {apt.status === "pending" && (
                         <>
-                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "confirmed")} title="Onayla"><Check className="w-4 h-4 text-green-400" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "cancelled", apt.customerName)} title="İptal"><X className="w-4 h-4 text-red-400" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "confirmed", apt.customerName)} title="Onayla"><Check className="w-4 h-4 text-green-400" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => cancelAppointment(apt)} title="İptal et ve sil"><X className="w-4 h-4 text-red-400" /></Button>
                         </>
                       )}
                       {apt.status === "confirmed" && (
                         <>
                           <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "completed")} title="Tamamla"><Check className="w-4 h-4 text-blue-400" /></Button>
-                          <Button variant="ghost" size="icon" onClick={() => updateStatus(apt.id, "cancelled", apt.customerName)} title="İptal"><X className="w-4 h-4 text-red-400" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => cancelAppointment(apt)} title="İptal et ve sil"><X className="w-4 h-4 text-red-400" /></Button>
                         </>
                       )}
                       {apt.status === "cancelled" && (

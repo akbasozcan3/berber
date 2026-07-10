@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
@@ -20,6 +20,20 @@ const SERVICE_ICONS: Record<string, typeof Scissors> = {
   "sac-bakimi": Sparkles,
   vip: Crown,
 };
+
+function slotUnavailableLabel(reason?: string): string {
+  if (reason === "Dolu") return "Dolu";
+  if (reason === "Mola saati") return "Mola";
+  if (reason === "Geçmiş saat") return "Geçti";
+  return reason || "Dolu";
+}
+
+function slotUnavailableHint(time: string, reason?: string): string {
+  if (reason === "Dolu") return `${time} — Bu saat şu an dolu`;
+  if (reason === "Mola saati") return `${time} — Mola saati`;
+  if (reason === "Geçmiş saat") return `${time} — Geçmiş saat`;
+  return `${time} — ${reason || "Müsait değil"}`;
+}
 
 export default function Booking({
   initialServices = [],
@@ -225,6 +239,7 @@ export default function Booking({
   const selectedService = services.find((s) => s.id === formData.serviceId);
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
   const availableSlots = slots.filter((s) => s.available);
+  const fullSlots = slots.filter((s) => !s.available);
   const todayIso = toLocalIsoDate();
   const tomorrowIso = nextDays[1]?.isoDate ?? "";
 
@@ -383,12 +398,12 @@ export default function Booking({
                                 Tekrar dene
                               </button>
                             </div>
-                          ) : availableSlots.length === 0 ? (
+                          ) : slots.length === 0 ? (
                             <div className="space-y-3">
                               <p className="text-white/50 text-sm">
                                 {formData.date === todayIso
                                   ? "Bugün için müsait saat kalmadı."
-                                  : "Bu tarihte müsait saat bulunmuyor."}
+                                  : "Bu tarihte randevu saati bulunmuyor."}
                               </p>
                               {formData.date === todayIso && tomorrowIso && (
                                 <button
@@ -401,18 +416,82 @@ export default function Booking({
                               )}
                             </div>
                           ) : (
-                            <div>
-                              <p className="text-[10px] uppercase tracking-widest text-white/40 mb-3">
-                                Müsait saatler ({availableSlots.length})
-                              </p>
+                            <div className="space-y-4">
+                              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+                                <div>
+                                  <p className="text-[10px] uppercase tracking-widest text-white/40">
+                                    Saat Seçimi
+                                  </p>
+                                  <p className="text-xs text-white/45 mt-1">
+                                    {availableSlots.length > 0
+                                      ? `${availableSlots.length} müsait, ${fullSlots.length} dolu saat`
+                                      : "Bu tarihte tüm saatler dolu"}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-4 text-[9px] uppercase tracking-wider text-white/35">
+                                  <span className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-sm border border-white/30 bg-white/10" />
+                                    Müsait
+                                  </span>
+                                  <span className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-sm border border-white/5 bg-white/[0.02]" />
+                                    Dolu
+                                  </span>
+                                </div>
+                              </div>
+
+                              {availableSlots.length === 0 && (
+                                <div className="p-3.5 bg-red-500/[0.06] border border-red-500/20 rounded-sm">
+                                  <p className="text-xs text-red-300/90 leading-relaxed">
+                                    Seçtiğiniz tarihte tüm saatler dolu. Lütfen başka bir gün veya saat seçin.
+                                  </p>
+                                </div>
+                              )}
+
                               <div className="flex flex-wrap gap-2.5">
-                                {availableSlots.map((slot) => (
-                                  <button type="button" key={slot.time}
-                                    onClick={() => { setFormData({ ...formData, time: slot.time }); setErrors((e) => ({ ...e, time: "" })); }}
-                                    className={`py-3 px-6 text-xs font-semibold rounded-sm border transition-all ${formData.time === slot.time ? "bg-white border-white text-black" : "border-white/10 text-white/60 hover:border-white/30"}`}>
-                                    {slot.time}
-                                  </button>
-                                ))}
+                                {slots.map((slot) => {
+                                  if (slot.available) {
+                                    const selected = formData.time === slot.time;
+                                    return (
+                                      <button
+                                        type="button"
+                                        key={slot.time}
+                                        onClick={() => {
+                                          setFormData({ ...formData, time: slot.time });
+                                          setErrors((e) => ({ ...e, time: "" }));
+                                        }}
+                                        className={`min-w-[76px] py-3 px-5 text-xs font-semibold rounded-sm border transition-all ${
+                                          selected
+                                            ? "bg-white border-white text-black shadow-[0_0_12px_rgba(255,255,255,0.12)]"
+                                            : "border-white/20 text-white hover:border-white/40 hover:bg-white/[0.04]"
+                                        }`}
+                                      >
+                                        {slot.time}
+                                      </button>
+                                    );
+                                  }
+
+                                  const label = slotUnavailableLabel(slot.reason);
+                                  return (
+                                    <div
+                                      key={slot.time}
+                                      title={slotUnavailableHint(slot.time, slot.reason)}
+                                      aria-label={slotUnavailableHint(slot.time, slot.reason)}
+                                      className="min-w-[76px] py-2.5 px-4 text-center rounded-sm border border-white/[0.04] bg-white/[0.015] cursor-not-allowed select-none"
+                                    >
+                                      <span className="block text-xs font-semibold text-white/20 line-through decoration-white/15">
+                                        {slot.time}
+                                      </span>
+                                      <span
+                                        className={`block text-[8px] uppercase tracking-wider font-bold mt-1 ${
+                                          label === "Dolu" ? "text-red-400/60" : "text-white/25"
+                                        }`}
+                                      >
+                                        {label}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
                           )}

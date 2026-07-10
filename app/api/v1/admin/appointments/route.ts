@@ -3,7 +3,8 @@ import { requireAuth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { appointments, customers, services, barbers } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { jsonResponse, errorResponse } from "@/lib/api/helpers";
+import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
+import { confirmAllPendingAppointments } from "@/lib/services/appointment-confirm";
 
 export async function GET() {
   try {
@@ -40,6 +41,23 @@ export async function GET() {
     });
 
     return jsonResponse(enriched);
+  } catch {
+    return errorResponse("Unauthorized", 401);
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    await ensureDb();
+    await requireAuth();
+    const body = await parseBody<{ action?: string }>(request);
+
+    if (body.action === "confirm_all") {
+      const result = await confirmAllPendingAppointments();
+      return jsonResponse({ success: true, ...result });
+    }
+
+    return errorResponse("Geçersiz işlem", 400);
   } catch {
     return errorResponse("Unauthorized", 401);
   }

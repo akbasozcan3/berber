@@ -17,9 +17,21 @@ export const adminApi = {
   getDashboard: () => adminFetch<Record<string, number>>("/admin/dashboard"),
   getAppointments: () => adminFetch<AdminAppointment[]>("/admin/appointments"),
   clearAppointments: () => adminFetch<{ success: boolean }>("/admin/appointments", { method: "DELETE" }),
+  confirmAllAppointments: () =>
+    adminFetch<{
+      success: boolean;
+      confirmed: number;
+      emailsSent: number;
+      emailsSkipped: number;
+      emailsFailed: number;
+    }>("/admin/appointments", {
+      method: "PATCH",
+      body: JSON.stringify({ action: "confirm_all" }),
+    }),
   updateAppointment: (id: number, status: string) =>
     adminFetch<{
       success: boolean;
+      deleted?: boolean;
       email?: { sent: boolean; skipped?: boolean; reason?: string; error?: string } | null;
     }>(`/admin/appointments/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
   deleteAppointment: (id: number) =>
