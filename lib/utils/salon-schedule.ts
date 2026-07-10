@@ -1,4 +1,4 @@
-import { parseLocalIsoDate, toLocalIsoDate } from "@/lib/utils/format";
+import { parseLocalIsoDate, toLocalIsoDate, addDaysToIso } from "@/lib/utils/format";
 
 /** ISO weekday: 1=Mon … 6=Sat. Sunday (7) is never a working day. */
 export const BARBER_WORKING_DAYS = "1,2,3,4,5,6";
@@ -27,25 +27,24 @@ export function barberWorksOnDate(date: string, workingDays: string): boolean {
     .includes(isoWeekday);
 }
 
-/** Next bookable day (skips Sundays). */
+/** Next bookable day (skips Sundays) in salon timezone. */
 export function nextBookableIsoDate(from = new Date()): string {
-  const d = new Date(from);
-  d.setHours(12, 0, 0, 0);
-  while (d.getDay() === 0) {
-    d.setDate(d.getDate() + 1);
+  let iso = toLocalIsoDate(from);
+  if (!isSunday(iso)) return iso;
+  while (isSunday(iso)) {
+    iso = addDaysToIso(iso, 1);
   }
-  return toLocalIsoDate(d);
+  return iso;
 }
 
 export function listBookableIsoDates(count: number, from = new Date()): string[] {
   const dates: string[] = [];
-  const cursor = new Date(from);
-  cursor.setHours(12, 0, 0, 0);
+  let iso = toLocalIsoDate(from);
   while (dates.length < count) {
-    if (cursor.getDay() !== 0) {
-      dates.push(toLocalIsoDate(cursor));
+    if (!isSunday(iso)) {
+      dates.push(iso);
     }
-    cursor.setDate(cursor.getDate() + 1);
+    iso = addDaysToIso(iso, 1);
   }
   return dates;
 }

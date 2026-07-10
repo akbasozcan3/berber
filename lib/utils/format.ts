@@ -9,12 +9,74 @@ export function digitsOnly(phone?: string | null): string {
   return (phone ?? "").replace(/\D/g, "");
 }
 
-/** YYYY-MM-DD in local timezone (avoids UTC midnight drift). */
+/** Salon operates in Turkey — Vercel UTC ile uyum için sabit saat dilimi. */
+export const SALON_TIMEZONE = "Europe/Istanbul";
+
+type SalonClock = {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+};
+
+const WEEKDAY_TO_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+export function getSalonClock(date = new Date()): SalonClock {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: SALON_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const pick = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0);
+
+  return {
+    year: pick("year"),
+    month: pick("month"),
+    day: pick("day"),
+    hour: pick("hour") % 24,
+    minute: pick("minute"),
+  };
+}
+
+export function getSalonWeekday(date = new Date()): number {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: SALON_TIMEZONE,
+    weekday: "short",
+  });
+  const label = formatter.format(date).slice(0, 3);
+  return WEEKDAY_TO_INDEX[label] ?? 0;
+}
+
+/** YYYY-MM-DD in salon timezone (Istanbul). */
 export function toLocalIsoDate(date = new Date()): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  const { year, month, day } = getSalonClock(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+export function getSalonNowMinutes(date = new Date()): number {
+  const { hour, minute } = getSalonClock(date);
+  return hour * 60 + minute;
+}
+
+export function addDaysToIso(iso: string, days: number): string {
+  const base = parseLocalIsoDate(iso);
+  base.setDate(base.getDate() + days);
+  return `${base.getFullYear()}-${String(base.getMonth() + 1).padStart(2, "0")}-${String(base.getDate()).padStart(2, "0")}`;
 }
 
 /** Parse YYYY-MM-DD as local calendar date (never UTC midnight). */

@@ -6,7 +6,7 @@ import {
   normalizeMultilineSettingValue,
 } from "@/lib/data/multiline-settings";
 import { parseBreakTimes } from "@/lib/utils/break-times";
-import { normalizePhoneStorage, digitsOnly, parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday } from "@/lib/utils/format";
+import { normalizePhoneStorage, digitsOnly, parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday, getSalonNowMinutes } from "@/lib/utils/format";
 import { isSunday, barberWorksOnDate } from "@/lib/utils/salon-schedule";
 import {
   getActiveRulesForDate,
@@ -129,7 +129,7 @@ export async function getAvailableSlots(
     );
 
   const leadMinutes = Math.max(interval, 30);
-  const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+  const nowMinutes = getSalonNowMinutes();
 
   return allSlots.map((time) => {
     if (isInBreak(time, service.duration, breakTimes)) {
