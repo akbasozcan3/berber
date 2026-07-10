@@ -29,29 +29,36 @@ export async function POST(request: Request) {
       barberId: data.barberId ?? null,
     });
 
-    void createNotification({
-      type: "appointment",
-      title: "Yeni Randevu",
-      message: `${data.customerName} - ${result.service.name} (${data.date} ${data.time})`,
-      meta: { appointmentId: result.appointment.id },
-    }).catch((err) => {
-      console.error("[Notification] Failed to create notification:", err);
-    });
+    const [notificationResult, telegramResult] = await Promise.allSettled([
+      createNotification({
+        type: "appointment",
+        title: "Yeni Randevu",
+        message: `${data.customerName} - ${result.service.name} (${data.date} ${data.time})`,
+        meta: { appointmentId: result.appointment.id },
+      }),
+      sendTelegramNotification(
+        {
+          customerName: data.customerName,
+          phone: data.phone,
+          service: result.service.name,
+          barber: result.barber?.name || "Atanmadı",
+          date: data.date,
+          time: data.time,
+          notes: data.notes,
+        },
+        result.appointment.id
+      ),
+    ]);
 
-    void sendTelegramNotification(
-      {
-        customerName: data.customerName,
-        phone: data.phone,
-        service: result.service.name,
-        barber: result.barber?.name || "Not assigned",
-        date: data.date,
-        time: data.time,
-        notes: data.notes,
-      },
-      result.appointment.id
-    ).catch((err) => {
-      console.error("[Telegram] Failed to send notification:", err);
-    });
+    if (notificationResult.status === "rejected") {
+      console.error("[Notification] Failed to create notification:", notificationResult.reason);
+    }
+
+    if (telegramResult.status === "rejected") {
+      console.error("[Telegram] Failed to send notification:", telegramResult.reason);
+    } else if (!telegramResult.value.success && !telegramResult.value.skipped) {
+      console.error("[Telegram] Appointment notification failed:", telegramResult.value.error);
+    }
 
     return jsonResponse(
       {

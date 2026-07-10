@@ -52,14 +52,14 @@ function getBotToken(): string {
 }
 
 async function getChatId(): Promise<string> {
-  const fromEnv = process.env.TELEGRAM_CHAT_ID?.trim();
-  if (fromEnv) return fromEnv;
-
   const fromDb = (await getSetting("telegram_chat_id"))?.trim();
   if (fromDb) return fromDb;
 
+  const fromEnv = process.env.TELEGRAM_CHAT_ID?.trim();
+  if (fromEnv) return fromEnv;
+
   throw new TelegramConfigError(
-    "TELEGRAM_CHAT_ID is not configured. Set it in .env.local or admin settings."
+    "TELEGRAM_CHAT_ID is not configured. Bot'a /start yazın veya admin ayarlarından Chat ID girin."
   );
 }
 
@@ -89,12 +89,8 @@ async function verifyBotConnection(): Promise<{ connected: boolean; botUsername?
 
 export async function getTelegramStatus() {
   const tokenConfigured = Boolean(process.env.TELEGRAM_BOT_TOKEN?.trim());
-  let chatIdConfigured = Boolean(process.env.TELEGRAM_CHAT_ID?.trim());
-
-  if (!chatIdConfigured) {
-    const fromDb = (await getSetting("telegram_chat_id"))?.trim();
-    chatIdConfigured = Boolean(fromDb);
-  }
+  const fromDb = (await getSetting("telegram_chat_id"))?.trim();
+  const chatIdConfigured = Boolean(fromDb || process.env.TELEGRAM_CHAT_ID?.trim());
 
   const enabled = await isEnabled();
   const bot = await verifyBotConnection();

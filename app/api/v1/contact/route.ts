@@ -24,20 +24,22 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
+    const telegramResult = await sendTelegramContactNotification({
+      name: data.name,
+      email: data.email,
+      message: data.message,
+    });
+
+    if (!telegramResult.success && !telegramResult.skipped) {
+      console.error("[Telegram Contact Notification]", telegramResult.error);
+    }
+
     void createNotification({
       type: "contact",
       title: "Yeni İletişim Mesajı",
       message: `${data.name}: ${data.message.slice(0, 80)}...`,
     }).catch((err) => {
       console.error("[Admin Contact Notification]", err);
-    });
-
-    void sendTelegramContactNotification({
-      name: data.name,
-      email: data.email,
-      message: data.message,
-    }).catch((err) => {
-      console.error("[Telegram Contact Notification]", err);
     });
 
     return jsonResponse({ success: true });

@@ -48,6 +48,12 @@ export async function handleTelegramUpdate(update: TelegramUpdate): Promise<bool
   if (!shouldReplyToMessage(message.text)) return false;
 
   const chatId = String(message.chat.id);
+  const normalized = message.text.trim().toLowerCase();
+
+  if (normalized === "/start" || normalized.startsWith("/start ")) {
+    await setSetting("telegram_chat_id", chatId);
+  }
+
   const firstName = message.from?.first_name?.trim();
   const welcome = await welcomeMessage();
   const greeting = firstName ? `Merhaba ${firstName}!` : welcome.split("\n\n")[0];
