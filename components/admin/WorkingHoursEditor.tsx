@@ -46,7 +46,7 @@ export default function WorkingHoursEditor({
   return (
     <div className="space-y-4">
       <p className="text-sm text-[#71717A]">
-        Üst şeritteki saatler ve iletişim bölümleri buradan güncellenir. Randevu slotları için
+        Üst şeritteki saatler ve iletişim bölümleri buradan güncellenir. <strong className="text-[#A1A1AA]">Pazar günleri her zaman kapalıdır.</strong> Randevu slotları için
         aşağıdaki butonla berber saatlerini de eşitleyebilirsiniz.
       </p>
 
@@ -86,20 +86,24 @@ export default function WorkingHoursEditor({
               label="Açılış"
               type="time"
               value={row.open}
-              disabled={row.closed}
+              disabled={row.day === "Pazar" || row.closed}
               onChange={(e) => updateRow(index, { open: e.target.value })}
             />
             <Input
               label="Kapanış"
               type="time"
               value={row.close}
-              disabled={row.closed}
+              disabled={row.day === "Pazar" || row.closed}
               onChange={(e) => updateRow(index, { close: e.target.value })}
             />
             <Toggle
               label="Kapalı"
-              checked={Boolean(row.closed)}
-              onChange={(closed) => updateRow(index, { closed })}
+              checked={row.day === "Pazar" ? true : Boolean(row.closed)}
+              disabled={row.day === "Pazar"}
+              onChange={(closed) => {
+                if (row.day === "Pazar") return;
+                updateRow(index, { closed });
+              }}
             />
           </div>
         ))}

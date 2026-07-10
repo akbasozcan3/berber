@@ -3,6 +3,7 @@ import { availabilityBlocks, availabilityAuditLog, barbers } from "@/lib/db/sche
 import { eq, and, lte, gte, or, isNull } from "drizzle-orm";
 import { getSetting } from "./booking";
 import { parseLocalIsoDate, toLocalIsoDate } from "@/lib/utils/format";
+import { isSunday, barberWorksOnDate } from "@/lib/utils/salon-schedule";
 
 export type RuleType = "block" | "close_day" | "hours_override" | "early_close" | "late_open" | "permanent";
 export type QuickScope = "today" | "tomorrow" | "this_week" | "next_week" | "this_month" | "next_month" | "this_year" | "permanent";
@@ -191,6 +192,8 @@ export async function getDayStatus(date: string): Promise<"available" | "closed"
   const d = parseLocalIsoDate(date);
   if (Number.isNaN(d.getTime()) || d < today) return "past";
 
+  if (isSunday(date)) return "closed";
+
   const holidays = JSON.parse((await getSetting("holidays")) || "[]") as string[];
   if (holidays.includes(date)) return "holiday";
 
@@ -279,9 +282,7 @@ export function canBarberTakeSlot(params: {
   const { barber, date, slotTime, slotStart, slotEnd, rules, existingAppointments, breakTimes } =
     params;
 
-  const dayOfWeek = parseLocalIsoDate(date).getDay();
-  const days = barber.workingDays.split(",").map(Number);
-  if (!days.includes(dayOfWeek === 0 ? 7 : dayOfWeek)) return false;
+  if (!barberWorksOnDate(date, barber.workingDays)) return false;
 
   const barberRules = rules.filter((r) => !r.barberId || r.barberId === barber.id);
   const hours = getEffectiveHours(date, barber, barberRules);

@@ -25,9 +25,9 @@ export function parseWorkingHoursJson(raw: string | null | undefined): WorkingHo
       }
       return {
         day,
-        open: row.closed ? "" : row.open || "09:00",
-        close: row.closed ? "" : row.close || "22:00",
-        closed: Boolean(row.closed),
+        open: row.closed || day === "Pazar" ? "" : row.open || "09:00",
+        close: row.closed || day === "Pazar" ? "" : row.close || "22:00",
+        closed: day === "Pazar" ? true : Boolean(row.closed),
       };
     });
   } catch {
@@ -39,9 +39,9 @@ export function serializeWorkingHours(rows: WorkingHourRow[]): string {
   return JSON.stringify(
     rows.map((row) => ({
       day: row.day,
-      open: row.closed ? "" : row.open,
-      close: row.closed ? "" : row.close,
-      ...(row.closed ? { closed: true } : {}),
+      open: row.day === "Pazar" || row.closed ? "" : row.open,
+      close: row.day === "Pazar" || row.closed ? "" : row.close,
+      ...(row.day === "Pazar" || row.closed ? { closed: true } : {}),
     }))
   );
 }

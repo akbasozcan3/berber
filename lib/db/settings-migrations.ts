@@ -1,7 +1,9 @@
 import { db } from "@/lib/db";
-import { settings } from "@/lib/db/schema";
+import { settings, barbers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { isLegacyDefaultLunchBreak, serializeBreakTimes } from "@/lib/utils/break-times";
+import { normalizeBarberWorkingDays } from "@/lib/utils/salon-schedule";
+import { parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
 
 let migrated = false;
 
@@ -22,6 +24,22 @@ export async function runSettingsMigrations() {
       await db.update(settings).set({ value: "true" }).where(eq(settings.key, "notifications_telegram"));
     } else {
       await db.insert(settings).values({ key: "notifications_telegram", value: "true" });
+    }
+  }
+
+  const hoursRow = await db.select().from(settings).where(eq(settings.key, "working_hours")).limit(1);
+  if (hoursRow[0]?.value) {
+    const normalized = serializeWorkingHours(parseWorkingHoursJson(hoursRow[0].value));
+    if (normalized !== hoursRow[0].value) {
+      await db.update(settings).set({ value: normalized }).where(eq(settings.key, "working_hours"));
+    }
+  }
+
+  const allBarbers = await db.select().from(barbers);
+  for (const barber of allBarbers) {
+    const normalized = normalizeBarberWorkingDays(barber.workingDays);
+    if (normalized !== barber.workingDays) {
+      await db.update(barbers).set({ workingDays: normalized }).where(eq(barbers.id, barber.id));
     }
   }
 }

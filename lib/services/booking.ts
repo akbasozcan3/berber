@@ -7,6 +7,7 @@ import {
 } from "@/lib/data/multiline-settings";
 import { parseBreakTimes } from "@/lib/utils/break-times";
 import { normalizePhoneStorage, digitsOnly, parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday } from "@/lib/utils/format";
+import { isSunday, barberWorksOnDate } from "@/lib/utils/salon-schedule";
 import {
   getActiveRulesForDate,
   getDayStatus,
@@ -87,6 +88,8 @@ export async function getAvailableSlots(
   maxDate.setDate(maxDate.getDate() + maxFuture);
   if (selectedDate > maxDate) return [];
 
+  if (isSunday(date)) return [];
+
   const dayStatus = await getDayStatus(date);
   if (dayStatus === "closed" || dayStatus === "past" || dayStatus === "holiday") return [];
 
@@ -103,11 +106,7 @@ export async function getAvailableSlots(
     targetBarbers = targetBarbers.filter((b) => b.id === barberId);
   }
 
-  const dayOfWeek = parseLocalIsoDate(date).getDay();
-  targetBarbers = targetBarbers.filter((b) => {
-    const days = b.workingDays.split(",").map(Number);
-    return days.includes(dayOfWeek === 0 ? 7 : dayOfWeek);
-  });
+  targetBarbers = targetBarbers.filter((b) => barberWorksOnDate(date, b.workingDays));
 
   if (targetBarbers.length === 0) return [];
 

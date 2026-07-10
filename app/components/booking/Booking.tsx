@@ -10,6 +10,7 @@ import {
 import { api, type Service, type Barber, type TimeSlot } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { toLocalIsoDate, formatIsoDateTr, getInitials } from "@/lib/utils/format";
+import { listBookableIsoDates, nextBookableIsoDate } from "@/lib/utils/salon-schedule";
 
 const SERVICE_ICONS: Record<string, typeof Scissors> = {
   "sac-kesimi": Scissors,
@@ -81,20 +82,16 @@ export default function Booking({
   }, [initialServices.length, initialBarbers.length]);
 
   const getNextDays = useCallback((count: number) => {
-    const days = [];
     const locale = "tr-TR";
-    for (let i = 0; i < count; i++) {
-      const d = new Date();
-      d.setDate(d.getDate() + i);
-      const isoDate = toLocalIsoDate(d);
-      days.push({
+    return listBookableIsoDates(count).map((isoDate) => {
+      const d = new Date(`${isoDate}T12:00:00`);
+      return {
         dayNum: d.getDate(),
         month: d.toLocaleDateString(locale, { month: "short" }),
         dayName: d.toLocaleDateString(locale, { weekday: "short" }),
         isoDate,
-      });
-    }
-    return days;
+      };
+    });
   }, []);
 
   const bookingHorizon = Math.min(Math.max(settings.maxFutureBooking || 30, 7), 60);
@@ -102,7 +99,7 @@ export default function Booking({
 
   useEffect(() => {
     if (step !== 3 || formData.date) return;
-    setFormData((prev) => ({ ...prev, date: toLocalIsoDate(), time: "" }));
+    setFormData((prev) => ({ ...prev, date: nextBookableIsoDate(), time: "" }));
   }, [step, formData.date]);
 
   useEffect(() => {

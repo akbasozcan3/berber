@@ -19,6 +19,8 @@ import { normalizePhoneStorage } from "@/lib/utils/format";
 import { revalidatePath } from "next/cache";
 import { normalizeInstagramPostUrl } from "@/lib/utils/gallery";
 import { MULTILINE_SETTING_KEYS, normalizeMultilineSettingValue } from "@/lib/data/multiline-settings";
+import { parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
+import { normalizeBarberWorkingDays, BARBER_WORKING_DAYS } from "@/lib/utils/salon-schedule";
 import { z } from "zod";
 
 function revalidateGalleryPages() {
@@ -120,6 +122,9 @@ export async function PATCH(
     if (entity === "barbers" && body.id) {
       const id = Number(body.id);
       const { id: _, ...updates } = body;
+      if (typeof updates.workingDays === "string") {
+        updates.workingDays = normalizeBarberWorkingDays(updates.workingDays);
+      }
       await db.update(barbers).set(updates as Partial<typeof barbers.$inferInsert>).where(eq(barbers.id, id));
       return jsonResponse({ success: true });
     }
@@ -171,6 +176,9 @@ export async function PATCH(
         if (MULTILINE_SETTING_KEYS.includes(key as (typeof MULTILINE_SETTING_KEYS)[number])) {
           stored = normalizeMultilineSettingValue(stored);
         }
+        if (key === "working_hours") {
+          stored = serializeWorkingHours(parseWorkingHoursJson(stored));
+        }
         const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
         if (existing[0]) {
           await db.update(settings).set({ value: stored }).where(eq(settings.key, key));
@@ -219,7 +227,7 @@ export async function POST(
           position: String(body.position || "Berber"),
           avatar: body.avatar ? String(body.avatar) : null,
           specialty: body.specialty ? String(body.specialty) : null,
-          workingDays: String(body.workingDays || "1,2,3,4,5,6"),
+          workingDays: normalizeBarberWorkingDays(String(body.workingDays || BARBER_WORKING_DAYS)),
           workingStart: String(body.workingStart || "09:00"),
           workingEnd: String(body.workingEnd || "22:00"),
           onVacation: false,
