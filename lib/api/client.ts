@@ -186,7 +186,7 @@ export const api = {
   createBooking: (data: {
     customerName: string;
     phone: string;
-    email?: string;
+    email: string;
     serviceId: number;
     barberId?: number | null;
     date: string;

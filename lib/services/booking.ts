@@ -167,7 +167,7 @@ export async function getAvailableSlots(
 export async function createBooking(data: {
   customerName: string;
   phone: string;
-  email?: string;
+  email: string;
   serviceId: number;
   barberId?: number | null;
   date: string;

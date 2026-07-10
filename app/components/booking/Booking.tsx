@@ -61,6 +61,7 @@ export default function Booking({
     barber: string;
     date: string;
     time: string;
+    email: string;
   } | null>(null);
 
   useEffect(() => {
@@ -156,10 +157,13 @@ export default function Booking({
     }
     if (step === 4) {
       if (!formData.name.trim()) tempErrors.name = "Ad Soyad zorunludur.";
-      if (!formData.phone.trim() || formData.phone.length < 10) tempErrors.phone = "Geçerli telefon girin.";
-      if (!formData.email.trim()) tempErrors.email = "Onay e-postası için e-posta adresi girin.";
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-        tempErrors.email = "Geçerli bir e-posta girin.";
+      if (!formData.phone.trim() || formData.phone.replace(/\D/g, "").length < 10) {
+        tempErrors.phone = "Geçerli bir telefon numarası girin.";
+      }
+      const emailTrimmed = formData.email.trim();
+      if (!emailTrimmed) tempErrors.email = "E-posta adresi zorunludur.";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+        tempErrors.email = "Geçerli bir e-posta adresi girin.";
       }
       if (!formData.agreed) tempErrors.agreed = "Devam etmek için onay vermelisiniz.";
     }
@@ -190,15 +194,16 @@ export default function Booking({
 
       const selectedService = services.find((s) => s.id === formData.serviceId);
       const selectedBarber = barbers.find((b) => b.id === formData.barberId);
+      const customerEmail = formData.email.trim().toLowerCase();
       const result = await api.createBooking({
-        customerName: formData.name,
-        phone: formData.phone,
-        email: formData.email.trim() || undefined,
+        customerName: formData.name.trim(),
+        phone: formData.phone.trim(),
+        email: customerEmail,
         serviceId: formData.serviceId,
         barberId: formData.noPreference ? null : formData.barberId,
         date: formData.date,
         time: formData.time,
-        notes: formData.notes,
+        notes: formData.notes.trim() || undefined,
         agreed: formData.agreed,
       });
       setAppointmentResult({
@@ -207,6 +212,7 @@ export default function Booking({
         barber: result.appointment.barber || selectedBarber?.name || "Atandı",
         date: formData.date,
         time: formData.time,
+        email: customerEmail,
       });
       setIsSuccess(true);
     } catch (err) {
@@ -424,48 +430,108 @@ export default function Booking({
                     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-8">
                       <div>
                         <h3 className="text-xl font-serif font-light text-white">Bilgileriniz</h3>
-                        <p className="text-sm text-white/45 mt-2">Randevu onayı e-posta adresinize gönderilir.</p>
+                        <p className="text-sm text-white/45 mt-2 leading-relaxed">
+                          Randevunuzu tamamlamak için iletişim bilgilerinizi girin. Salon onayından sonra e-posta adresinize bilgilendirme gönderilir.
+                        </p>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                      <div className="flex items-start gap-3 p-4 bg-[#D4AF37]/[0.06] border border-[#D4AF37]/20 rounded-sm">
+                        <Mail size={16} className="text-[#D4AF37] shrink-0 mt-0.5" />
+                        <p className="text-xs text-white/60 leading-relaxed">
+                          <span className="text-white/80 font-medium">E-posta zorunludur.</span> Randevunuz onaylandığında onay detayları bu adrese iletilecektir.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                         <div>
-                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><User size={10} className="text-white/60" /> Ad Soyad</label>
-                          <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="Adınız Soyadınız" autoComplete="name" />
+                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                            <User size={10} className="text-white/60" /> Ad Soyad <span className="text-[#D4AF37]">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            className={`w-full bg-transparent border-b py-3 text-white focus:outline-none text-sm transition-colors ${errors.name ? "border-red-400/60 focus:border-red-400" : "border-white/15 focus:border-white"}`}
+                            placeholder="Adınız Soyadınız"
+                            autoComplete="name"
+                            required
+                          />
                           {errors.name && <p className="text-xs text-red-400 mt-1">{errors.name}</p>}
                         </div>
                         <div>
-                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><Phone size={10} className="text-white/60" /> Telefon</label>
-                          <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="05XX XXX XX XX" autoComplete="tel" />
+                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                            <Phone size={10} className="text-white/60" /> Telefon <span className="text-[#D4AF37]">*</span>
+                          </label>
+                          <input
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            className={`w-full bg-transparent border-b py-3 text-white focus:outline-none text-sm transition-colors ${errors.phone ? "border-red-400/60 focus:border-red-400" : "border-white/15 focus:border-white"}`}
+                            placeholder="05XX XXX XX XX"
+                            autoComplete="tel"
+                            required
+                          />
                           {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
                         </div>
                         <div className="md:col-span-2">
-                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><Mail size={10} className="text-white/60" /> E-posta</label>
-                          <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="ornek@email.com" autoComplete="email" inputMode="email" />
-                          <p className="text-[10px] text-white/35 mt-1.5">Salon randevunuzu onayladığında bu adrese bilgilendirme maili gider.</p>
+                          <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5">
+                            <Mail size={10} className="text-white/60" /> E-posta <span className="text-[#D4AF37]">*</span>
+                          </label>
+                          <input
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            className={`w-full bg-transparent border-b py-3 text-white focus:outline-none text-sm transition-colors ${errors.email ? "border-red-400/60 focus:border-red-400" : "border-white/15 focus:border-white"}`}
+                            placeholder="ornek@gmail.com"
+                            autoComplete="email"
+                            inputMode="email"
+                            required
+                          />
                           {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
                         </div>
                       </div>
+
                       <div>
-                        <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Notlar (Opsiyonel)</label>
-                        <input type="text" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                          className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none text-sm" placeholder="Ek istekleriniz..." />
+                        <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">
+                          Notlar <span className="text-white/25 normal-case tracking-normal font-normal">(opsiyonel)</span>
+                        </label>
+                        <textarea
+                          value={formData.notes}
+                          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                          rows={2}
+                          className="w-full bg-white/[0.02] border border-white/[0.08] rounded-sm px-4 py-3 text-white focus:outline-none focus:border-white/25 text-sm resize-none placeholder:text-white/25"
+                          placeholder="Ek istekleriniz veya notlarınız..."
+                        />
                       </div>
-                      <label className="flex items-start gap-3 cursor-pointer">
-                        <input type="checkbox" checked={formData.agreed} onChange={(e) => setFormData({ ...formData, agreed: e.target.checked })}
-                          className="mt-1 accent-white" />
-                        <span className="text-xs text-white/50">Randevu bilgilerimin doğruluğunu onaylıyorum ve e-posta ile bilgilendirme yapılmasını kabul ediyorum.</span>
+
+                      <label className="flex items-start gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={formData.agreed}
+                          onChange={(e) => setFormData({ ...formData, agreed: e.target.checked })}
+                          className="mt-1 accent-white"
+                          required
+                        />
+                        <span className="text-xs text-white/50 group-hover:text-white/60 transition-colors leading-relaxed">
+                          Randevu bilgilerimin doğruluğunu onaylıyorum. Salon tarafından onaylandığında e-posta adresime bilgilendirme gönderilmesini kabul ediyorum.
+                        </span>
                       </label>
-                      {errors.agreed && <p className="text-xs text-red-400">{errors.agreed}</p>}
-                      <div className="p-5 sm:p-6 bg-white/[0.02] border border-white/[0.06] rounded-sm grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                        <div><span className="text-white/40 block">Hizmet:</span><span className="text-white font-semibold">{selectedService?.name} (₺{selectedService?.price})</span></div>
-                        <div><span className="text-white/40 block">Berber:</span><span className="text-white font-semibold">{formData.noPreference ? "Otomatik" : selectedBarber?.name}</span></div>
-                        <div><span className="text-white/40 block">Tarih:</span><span className="text-white font-semibold">{getFormattedDate(formData.date)}</span></div>
-                        <div><span className="text-white/40 block">Saat:</span><span className="text-white/60 font-semibold">{formData.time}</span></div>
-                        {formData.email.trim() && (
-                          <div className="sm:col-span-2"><span className="text-white/40 block">E-posta:</span><span className="text-white/80 font-medium">{formData.email.trim()}</span></div>
-                        )}
+                      {errors.agreed && <p className="text-xs text-red-400 -mt-4">{errors.agreed}</p>}
+
+                      <div className="p-5 sm:p-6 bg-white/[0.02] border border-white/[0.06] rounded-sm">
+                        <p className="text-[9px] font-bold text-white/35 uppercase tracking-widest mb-4">Randevu Özeti</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                          <div><span className="text-white/40 block mb-0.5">Hizmet</span><span className="text-white font-semibold">{selectedService?.name} — ₺{selectedService?.price}</span></div>
+                          <div><span className="text-white/40 block mb-0.5">Berber</span><span className="text-white font-semibold">{formData.noPreference ? "Otomatik atama" : selectedBarber?.name}</span></div>
+                          <div><span className="text-white/40 block mb-0.5">Tarih</span><span className="text-white font-semibold">{getFormattedDate(formData.date)}</span></div>
+                          <div><span className="text-white/40 block mb-0.5">Saat</span><span className="text-[#D4AF37] font-semibold">{formData.time}</span></div>
+                          {formData.email.trim() && (
+                            <div className="sm:col-span-2 pt-2 border-t border-white/[0.06]">
+                              <span className="text-white/40 block mb-0.5">Bildirim E-postası</span>
+                              <span className="text-white/80 font-medium">{formData.email.trim()}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       {errors.submit && <p className="text-sm text-red-400">{errors.submit}</p>}
                     </motion.div>
@@ -485,24 +551,47 @@ export default function Booking({
                   </div>
                 </form>
               ) : (
-                <motion.div key="success" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-12 space-y-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full border border-white/15 text-white/60 bg-white/[0.03]"><Check size={36} strokeWidth={2.5} /></div>
+                <motion.div key="success" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-10 sm:py-12 space-y-8">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-full border border-[#D4AF37]/30 text-[#D4AF37] bg-[#D4AF37]/[0.06]">
+                    <Check size={36} strokeWidth={2.5} />
+                  </div>
                   <div>
+                    <span className="inline-block text-[9px] font-bold uppercase tracking-[0.2em] text-[#D4AF37] bg-[#D4AF37]/10 border border-[#D4AF37]/20 px-3 py-1 rounded-full mb-4">
+                      Onay Bekleniyor
+                    </span>
                     <h3 className="text-3xl font-serif font-light text-white">Randevunuz Alındı!</h3>
-                    <p className="text-white/50 text-sm max-w-md mx-auto mt-3">Sayın <span className="text-white font-semibold">{formData.name}</span>, randevunuz başarıyla oluşturuldu.</p>
+                    <p className="text-white/50 text-sm max-w-lg mx-auto mt-3 leading-relaxed">
+                      Sayın <span className="text-white font-semibold">{formData.name.trim()}</span>, randevu talebiniz başarıyla oluşturuldu.
+                      Salon ekibimiz kısa süre içinde talebinizi inceleyecektir.
+                    </p>
+
+                    <div className="mt-5 flex items-start gap-3 p-4 bg-white/[0.03] border border-white/[0.08] rounded-sm text-left max-w-lg mx-auto">
+                      <Mail size={18} className="text-[#D4AF37] shrink-0 mt-0.5" />
+                      <p className="text-xs text-white/55 leading-relaxed">
+                        Randevunuz <span className="text-white/80 font-medium">onaylandığında</span>,{" "}
+                        <span className="text-white font-medium">{appointmentResult?.email || formData.email.trim()}</span>{" "}
+                        adresinize onay detaylarını içeren bir bilgilendirme e-postası gönderilecektir.
+                        Lütfen gelen kutunuzu ve gerekiyorsa spam klasörünüzü kontrol edin.
+                      </p>
+                    </div>
+
                     {appointmentResult && (
-                      <div className="mt-6 p-5 bg-white/[0.03] border border-white/[0.08] rounded-sm text-left max-w-md mx-auto space-y-2 text-sm">
+                      <div className="mt-6 p-5 sm:p-6 bg-white/[0.03] border border-white/[0.08] rounded-sm text-left max-w-lg mx-auto space-y-3 text-sm">
+                        <p className="text-[9px] font-bold text-white/35 uppercase tracking-widest mb-1">Randevu Detayları</p>
                         <p><span className="text-white/40">Randevu No:</span> <span className="text-white font-semibold">#{appointmentResult.id}</span></p>
                         <p><span className="text-white/40">Hizmet:</span> <span className="text-white">{appointmentResult.service}</span></p>
                         <p><span className="text-white/40">Berber:</span> <span className="text-white">{appointmentResult.barber}</span></p>
                         <p><span className="text-white/40">Tarih:</span> <span className="text-white">{getFormattedDate(appointmentResult.date)}</span></p>
                         <p><span className="text-white/40">Saat:</span> <span className="text-[#D4AF37] font-semibold">{appointmentResult.time}</span></p>
+                        <p><span className="text-white/40">E-posta:</span> <span className="text-white/80">{appointmentResult.email}</span></p>
                       </div>
                     )}
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button type="button" onClick={() => { setIsSuccess(false); setStep(1); setFormData({ serviceId: 0, barberId: 0, noPreference: false, date: "", time: "", name: "", phone: "", email: "", notes: "", agreed: false }); }}
-                      className="border border-white/10 text-white/70 px-8 sm:px-10 py-4 rounded-full text-[10px] font-bold tracking-wide sm:tracking-widest uppercase">Yeni Randevu</button>
+                    <button type="button" onClick={() => { setIsSuccess(false); setStep(1); setAppointmentResult(null); setFormData({ serviceId: 0, barberId: 0, noPreference: false, date: "", time: "", name: "", phone: "", email: "", notes: "", agreed: false }); }}
+                      className="border border-white/10 text-white/70 hover:text-white hover:border-white/25 px-8 sm:px-10 py-4 rounded-full text-[10px] font-bold tracking-wide sm:tracking-widest uppercase transition-colors">
+                      Yeni Randevu
+                    </button>
                   </div>
                 </motion.div>
               )}
