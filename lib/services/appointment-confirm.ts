@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { appointments, customers, services, barbers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { cleanupOrphanCustomer } from "@/lib/services/customers";
 import { getSetting } from "./booking";
 import { sendAppointmentConfirmedEmail, sendAppointmentCancelledEmail, type EmailResult } from "./email";
 import { resolvePublicSiteUrl } from "@/lib/utils/site-url";
@@ -140,7 +141,10 @@ export async function cancelAppointmentWithEmail(
   const brand = await loadEmailBranding();
   const email = await sendAppointmentCancelledEmail(row.customer.email || "", buildCancelledEmailPayload(row, brand));
 
+  const customerId = row.customer.id;
+
   await db.delete(appointments).where(eq(appointments.id, appointmentId));
+  await cleanupOrphanCustomer(customerId);
 
   return { email };
 }

@@ -5,6 +5,7 @@ import { appointments, customers, services, barbers } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 import { confirmAllPendingAppointments } from "@/lib/services/appointment-confirm";
+import { removeOrphanCustomers } from "@/lib/services/customers";
 
 export async function GET() {
   try {
@@ -69,6 +70,7 @@ export async function DELETE() {
     await requireAuth();
 
     await db.delete(appointments);
+    await removeOrphanCustomers();
     return jsonResponse({ success: true, cleared: true });
   } catch {
     return errorResponse("Unauthorized", 401);

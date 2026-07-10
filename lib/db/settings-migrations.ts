@@ -4,52 +4,13 @@ import { eq } from "drizzle-orm";
 import { isLegacyDefaultLunchBreak, serializeBreakTimes } from "@/lib/utils/break-times";
 import { normalizeBarberWorkingDays } from "@/lib/utils/salon-schedule";
 import { parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
+import {
+  mergeDuplicateCustomersByEmail,
+  removeOrphanCustomers,
+  syncCustomerStats,
+} from "@/lib/services/customers";
 
 let migrated = false;
-
-const KEEP_APPOINTMENT_CUSTOMERS = new Set(["batuhan özkurt", "baltu ibo"]);
-
-function normalizeCustomerName(name: string): string {
-  return name.trim().toLocaleLowerCase("tr-TR");
-}
-
-async function pruneExtraAppointmentsOnce() {
-  const flagRow = await db
-    .select()
-    .from(settings)
-    .where(eq(settings.key, "migration_prune_extra_appointments_v1"))
-    .limit(1);
-  if (flagRow[0]?.value === "done") return;
-
-  const allCustomers = await db.select({ id: customers.id, name: customers.name }).from(customers);
-  const keepCustomerIds = allCustomers
-    .filter((customer) => KEEP_APPOINTMENT_CUSTOMERS.has(normalizeCustomerName(customer.name)))
-    .map((customer) => customer.id);
-
-  if (keepCustomerIds.length === 0) return;
-
-  const allAppointments = await db
-    .select({ id: appointments.id, customerId: appointments.customerId })
-    .from(appointments);
-
-  for (const appointment of allAppointments) {
-    if (!keepCustomerIds.includes(appointment.customerId)) {
-      await db.delete(appointments).where(eq(appointments.id, appointment.id));
-    }
-  }
-
-  if (flagRow[0]) {
-    await db
-      .update(settings)
-      .set({ value: "done" })
-      .where(eq(settings.key, "migration_prune_extra_appointments_v1"));
-  } else {
-    await db.insert(settings).values({
-      key: "migration_prune_extra_appointments_v1",
-      value: "done",
-    });
-  }
-}
 
 /** One-time fixes for settings that block booking unintentionally. */
 export async function runSettingsMigrations() {
@@ -97,5 +58,11 @@ export async function runSettingsMigrations() {
   }
 
   await db.delete(appointments).where(eq(appointments.status, "cancelled"));
-  await pruneExtraAppointmentsOnce();
+  await mergeDuplicateCustomersByEmail();
+  await removeOrphanCustomers();
+
+  const remainingCustomers = await db.select({ id: customers.id }).from(customers);
+  for (const customer of remainingCustomers) {
+    await syncCustomerStats(customer.id);
+  }
 }

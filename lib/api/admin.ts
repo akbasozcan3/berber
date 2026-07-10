@@ -154,6 +154,9 @@ export interface AdminCustomer {
   lastVisit: string | null;
   favoriteBarberId: number | null;
   notes: string | null;
+  pendingAppointments?: number;
+  confirmedAppointments?: number;
+  activeAppointments?: number;
 }
 
 export interface AdminReview {

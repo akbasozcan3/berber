@@ -6,7 +6,8 @@ import {
   normalizeMultilineSettingValue,
 } from "@/lib/data/multiline-settings";
 import { parseBreakTimes } from "@/lib/utils/break-times";
-import { normalizePhoneStorage, digitsOnly, parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday, getSalonNowMinutes } from "@/lib/utils/format";
+import { parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday, getSalonNowMinutes } from "@/lib/utils/format";
+import { findOrUpsertCustomer } from "@/lib/services/customers";
 import { isSunday, barberWorksOnDate } from "@/lib/utils/salon-schedule";
 import {
   getActiveRulesForDate,
@@ -224,43 +225,13 @@ export async function createBooking(data: {
     barberId = freeBarber.id;
   }
 
-  const phoneStored = normalizePhoneStorage(data.phone);
-  const phoneDigits = digitsOnly(phoneStored);
+  const customerId = await findOrUpsertCustomer({
+    customerName: data.customerName,
+    phone: data.phone,
+    email,
+  });
 
-  const existingCustomer = await db
-    .select()
-    .from(customers);
-  const matchedCustomer = existingCustomer.find(
-    (c) => digitsOnly(c.phone) === phoneDigits
-  );
-
-  let customerId: number;
   const timestamp = new Date().toISOString();
-
-  if (matchedCustomer) {
-    customerId = matchedCustomer.id;
-    await db
-      .update(customers)
-      .set({
-        name: data.customerName,
-        email: email || matchedCustomer.email,
-        visitCount: matchedCustomer.visitCount + 1,
-      })
-      .where(eq(customers.id, customerId));
-  } else {
-    const [newCustomer] = await db
-      .insert(customers)
-      .values({
-        name: data.customerName,
-        phone: phoneStored || data.phone,
-        email,
-        visitCount: 1,
-        totalSpent: 0,
-        createdAt: timestamp,
-      })
-      .returning();
-    customerId = newCustomer.id;
-  }
 
   const conflict = await db
     .select()
@@ -270,7 +241,7 @@ export async function createBooking(data: {
         eq(appointments.barberId, barberId!),
         eq(appointments.date, data.date),
         eq(appointments.time, data.time),
-        ne(appointments.status, "cancelled")
+        inArray(appointments.status, ["pending", "confirmed"])
       )
     )
     .limit(1);
