@@ -33,7 +33,7 @@ const menuItems = [
   { href: "/admin", label: "Özet", icon: LayoutDashboard },
   { href: "/admin/appointments", label: "Randevular", icon: ClipboardList },
   { href: "/admin/calendar", label: "Takvim", icon: Calendar },
-  { href: "/admin/availability", label: "Müsaitlik / Kapalı Saat", icon: Ban },
+  { href: "/admin/availability", label: "Berber Müsaitliği", icon: Ban },
   { href: "/admin/customers", label: "Müşteriler", icon: Users },
   { href: "/admin/barbers", label: "Berberler", icon: Scissors },
   { href: "/admin/services", label: "Hizmetler", icon: Sparkles },
