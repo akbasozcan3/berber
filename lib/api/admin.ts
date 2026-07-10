@@ -39,6 +39,10 @@ export const adminApi = {
   getBarbers: () => adminFetch<AdminBarber[]>("/admin/barbers"),
   getServices: () => adminFetch<AdminService[]>("/admin/services"),
   getCustomers: () => adminFetch<AdminCustomer[]>("/admin/customers"),
+  deleteCustomer: (id: number) =>
+    adminFetch<{ success: boolean; deletedAppointments: number }>(`/admin/customers/${id}`, {
+      method: "DELETE",
+    }),
   getReviews: () => adminFetch<AdminReview[]>("/admin/reviews"),
   getGallery: () => adminFetch<AdminGallery[]>("/admin/gallery"),
   createGallery: (data: {

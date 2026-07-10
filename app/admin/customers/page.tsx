@@ -1,23 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, CalendarCheck } from "lucide-react";
+import { Mail, CalendarCheck, Trash2 } from "lucide-react";
 import PageHeader from "@/components/admin/ui/PageHeader";
 import Card from "@/components/admin/ui/Card";
 import Avatar from "@/components/admin/ui/Avatar";
 import SearchInput from "@/components/admin/ui/SearchInput";
 import Badge from "@/components/admin/ui/Badge";
+import Button from "@/components/admin/ui/Button";
 import { adminApi, type AdminCustomer } from "@/lib/api/admin";
 import { formatCurrency, formatDate } from "@/lib/admin/utils";
+import { cn } from "@/lib/admin/cn";
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<AdminCustomer[]>([]);
   const [search, setSearch] = useState("");
+  const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     adminApi.getCustomers().then(setCustomers);
   }, []);
+
+  useEffect(() => {
+    void Promise.resolve().then(load);
+  }, [load]);
+
+  const showToast = (text: string, ok: boolean) => {
+    setToast({ text, ok });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const deleteCustomer = async (customer: AdminCustomer) => {
+    const activeCount = customer.activeAppointments ?? 0;
+    const confirmed = window.confirm(
+      `${customer.name} müşterisi ve ${activeCount > 0 ? `${activeCount} aktif randevusu` : "tüm randevu kayıtları"} kalıcı olarak silinecek. Emin misiniz?`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(customer.id);
+    try {
+      const result = await adminApi.deleteCustomer(customer.id);
+      showToast(
+        result.deletedAppointments > 0
+          ? `${customer.name} silindi. ${result.deletedAppointments} randevu kaldırıldı.`
+          : `${customer.name} silindi.`,
+        true
+      );
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Silinemedi.", false);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filtered = customers.filter((customer) => {
     const q = search.toLowerCase();
@@ -42,6 +79,19 @@ export default function CustomersPage() {
           />
         }
       />
+
+      {toast && (
+        <div
+          className={cn(
+            "mb-4 p-3 rounded-xl text-sm border",
+            toast.ok
+              ? "bg-green-500/10 border-green-500/20 text-green-400"
+              : "bg-red-500/10 border-red-500/20 text-red-400"
+          )}
+        >
+          {toast.text}
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <Card className="text-center py-16">
@@ -75,9 +125,20 @@ export default function CustomersPage() {
                       ) : null}
                     </div>
                   </div>
-                  {(customer.activeAppointments ?? 0) > 0 ? (
-                    <Badge status="pending" />
-                  ) : null}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {(customer.activeAppointments ?? 0) > 0 ? (
+                      <Badge status="pending" />
+                    ) : null}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteCustomer(customer)}
+                      disabled={deletingId === customer.id}
+                      title="Müşteriyi sil"
+                    >
+                      <Trash2 className="w-4 h-4 text-[#71717A] hover:text-red-400" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mt-5">

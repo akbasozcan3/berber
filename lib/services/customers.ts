@@ -181,3 +181,27 @@ export async function removeOrphanCustomers(): Promise<void> {
     await cleanupOrphanCustomer(customer.id);
   }
 }
+
+export async function deleteCustomerWithAppointments(customerId: number): Promise<{
+  deletedAppointments: number;
+}> {
+  const existing = await db
+    .select({ id: customers.id, name: customers.name })
+    .from(customers)
+    .where(eq(customers.id, customerId))
+    .limit(1);
+
+  if (!existing[0]) {
+    throw new Error("Müşteri bulunamadı");
+  }
+
+  const customerAppointments = await db
+    .select({ id: appointments.id })
+    .from(appointments)
+    .where(eq(appointments.customerId, customerId));
+
+  await db.delete(appointments).where(eq(appointments.customerId, customerId));
+  await db.delete(customers).where(eq(customers.id, customerId));
+
+  return { deletedAppointments: customerAppointments.length };
+}
