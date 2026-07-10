@@ -12,6 +12,7 @@ import { adminApi, type AvailabilityBlock, type AdminBarber } from "@/lib/api/ad
 import { formatDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/admin/cn";
 import { formatAvailabilityRule, RULE_TYPE_LABELS } from "@/lib/admin/availability-labels";
+import { toLocalIsoDate, formatIsoDateTr } from "@/lib/utils/format";
 
 const REASONS = [
   { value: "Tatil", label: "Tatil" },
@@ -44,7 +45,7 @@ export default function AvailabilityPage() {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = toLocalIsoDate();
     return {
     startDate: today,
     endDate: today,
@@ -106,11 +107,14 @@ export default function AvailabilityPage() {
   };
 
   const quickActions = [
-    { label: "Bugünü Kapat", scope: "today" },
-    { label: "Bu Haftayı Kapat", scope: "this_week" },
-    { label: "Bu Ayı Kapat", scope: "this_month" },
-    { label: "Bu Yılı Kapat", scope: "this_year" },
+    { label: "Bugünü Kapat", scope: "today" as const, description: "Bugün randevu alınamaz" },
+    { label: "Yarını Kapat", scope: "tomorrow" as const, description: "Yarın randevu alınamaz" },
+    { label: "Bu Haftayı Kapat", scope: "this_week" as const, description: "Bu hafta sonuna kadar" },
+    { label: "Bu Ayı Kapat", scope: "this_month" as const, description: "Ay sonuna kadar" },
   ];
+
+  const tomorrowIso = toLocalIsoDate(new Date(Date.now() + 86400000));
+  const tomorrowLabel = formatIsoDateTr(tomorrowIso);
 
   const barberName = (id: number | null) =>
     id ? barbers.find((b) => b.id === id)?.name || `Berber #${id}` : "Tüm salon";
@@ -127,27 +131,44 @@ export default function AvailabilityPage() {
         description="Hangi gün veya saatte müsait olmadığınızı buradan ayarlayın — randevu sayfası anında güncellenir"
       />
 
+      <Card className="mb-6 border-[#D4AF37]/30 bg-gradient-to-r from-[#D4AF37]/[0.08] to-transparent">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#D4AF37] mb-1">En sık kullanılan</p>
+            <h3 className="text-lg font-semibold text-[#F8F8F8]">Yarın müsait değil misiniz?</h3>
+            <p className="text-sm text-[#71717A] mt-1">
+              <span className="text-[#A1A1AA]">{tomorrowLabel}</span> — tek tıkla tüm günü kapatın. Müşteriler o gün randevu alamaz.
+            </p>
+          </div>
+          <Button
+            size="lg"
+            disabled={loading}
+            className="shrink-0 w-full md:w-auto"
+            onClick={() =>
+              confirmAction(
+                `${tomorrowLabel} tamamen kapatılacak. Müşteriler yarın randevu alamaz. Emin misiniz?`,
+                { scope: "tomorrow", ruleType: "close_day", reason: "Müsait değilim" }
+              )
+            }
+          >
+            Yarını Kapat
+          </Button>
+        </div>
+      </Card>
+
       <Card className="mb-6 border-[#D4AF37]/20 bg-[#D4AF37]/[0.04]">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="font-semibold text-[#F8F8F8] mb-1">Belirli saat kapalı</p>
+            <p className="font-semibold text-[#F8F8F8] mb-1">Tüm gün kapalı (tatil, izin)</p>
             <p className="text-xs text-[#71717A]">
-              Örn. 15:00–16:00 müsait değilim → aşağıdaki <strong className="text-[#A1A1AA]">Saat Aralığı Kapat</strong>
+              Yukarıdaki <strong className="text-[#A1A1AA]">Yarını Kapat</strong> veya sağdaki hızlı işlemler.
+              Belirli bir gün için takvimden gün seç → <strong className="text-[#A1A1AA]">Gün(ler)i Tamamen Kapat</strong>.
             </p>
           </div>
           <div>
-            <p className="font-semibold text-[#F8F8F8] mb-1">Tüm gün kapalı</p>
+            <p className="font-semibold text-[#F8F8F8] mb-1">Sadece birkaç saat kapalı</p>
             <p className="text-xs text-[#71717A]">
-              Tatil, bayram → takvimden gün seç, <strong className="text-[#A1A1AA]">Aralığı Kapat</strong> veya hızlı işlem
-            </p>
-          </div>
-          <div>
-            <p className="font-semibold text-[#F8F8F8] mb-1">Günlük takvim</p>
-            <p className="text-xs text-[#71717A]">
-              Randevularla birlikte yönetmek için{" "}
-              <a href="/admin/calendar" className="text-[#D4AF37] hover:underline">
-                Takvim → Müsaitlik
-              </a>
+              Örn. 14:00–16:00 müsait değilim → takvimden gün seç → <strong className="text-[#A1A1AA]">Saat Aralığı Kapat</strong>
             </p>
           </div>
         </div>
@@ -206,12 +227,14 @@ export default function AvailabilityPage() {
         </Card>
 
         <Card>
-          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-4 flex items-center gap-2"><Ban className="w-4 h-4 text-[#D4AF37]" /> Hızlı İşlemler</h3>
+          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-2 flex items-center gap-2"><Ban className="w-4 h-4 text-[#D4AF37]" /> Hızlı İşlemler</h3>
+          <p className="text-xs text-[#71717A] mb-4">Tek tıkla gün veya dönem kapatın</p>
           <div className="space-y-2">
             {quickActions.map((a) => (
-              <Button key={a.scope} variant="outline" className="w-full justify-start" disabled={loading}
-                onClick={() => confirmAction(`${a.label} — bu süre boyunca randevu alınamaz. Emin misiniz?`, { scope: a.scope, ruleType: "close_day", reason: "Kapalı" })}>
-                {a.label}
+              <Button key={a.scope} variant="outline" className="w-full justify-start h-auto py-3 flex-col items-start gap-0.5" disabled={loading}
+                onClick={() => confirmAction(`${a.label} — ${a.description}. Emin misiniz?`, { scope: a.scope, ruleType: "close_day", reason: "Kapalı" })}>
+                <span>{a.label}</span>
+                <span className="text-[10px] font-normal text-[#71717A]">{a.description}</span>
               </Button>
             ))}
             <Button variant="outline" className="w-full justify-start text-green-400 border-green-500/20" disabled={loading}
