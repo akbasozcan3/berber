@@ -8,7 +8,7 @@ import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 const bookingSchema = z.object({
   customerName: z.string().min(2, "Ad soyad en az 2 karakter olmalıdır."),
   phone: z.string().min(10, "Geçerli telefon numarası girin."),
-  email: z.string().email().optional().or(z.literal("")),
+  email: z.string().email("Geçerli bir e-posta adresi girin."),
   serviceId: z.number(),
   barberId: z.number().nullable().optional(),
   date: z.string(),
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     const result = await createBooking({
       ...data,
-      email: data.email || undefined,
+      email: data.email,
       barberId: data.barberId ?? null,
     });
 

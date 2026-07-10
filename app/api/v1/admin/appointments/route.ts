@@ -24,6 +24,7 @@ export async function GET() {
         customerId: apt.customerId,
         customerName: customer?.name || "",
         phone: customer?.phone || "",
+        email: customer?.email || "",
         serviceId: apt.serviceId,
         serviceName: service?.name || "",
         barberId: apt.barberId,

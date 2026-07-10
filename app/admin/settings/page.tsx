@@ -240,6 +240,19 @@ export default function SettingsPage() {
               </span>
             </div>
 
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-[#F8F8F8]">E-posta Onay Bildirimi</p>
+                <p className="text-xs text-[#71717A] mt-0.5">
+                  Randevu onaylandığında müşteriye profesyonel onay e-postası gider (SMTP).
+                </p>
+              </div>
+              <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400 shrink-0">
+                <span className="w-2 h-2 rounded-full bg-blue-400" />
+                Aktif
+              </span>
+            </div>
+
             <div className="rounded-2xl border border-white/[0.08] bg-[#0A0A0A] divide-y divide-white/[0.06]">
               <InfoRow label="Hazır">
                 <span className="inline-flex items-center gap-2 text-sm">

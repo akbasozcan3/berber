@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Scissors, Sparkles, Crown, ChevronRight, ChevronLeft,
-  User, Phone, Check, MessageSquare, Users, Loader2,
+  User, Phone, Mail, Check, MessageSquare, Users, Loader2,
 } from "lucide-react";
 import { api, type Service, type Barber, type TimeSlot } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
@@ -48,6 +48,7 @@ export default function Booking({
     time: "",
     name: "",
     phone: "",
+    email: "",
     notes: "",
     agreed: false,
   });
@@ -156,6 +157,10 @@ export default function Booking({
     if (step === 4) {
       if (!formData.name.trim()) tempErrors.name = "Ad Soyad zorunludur.";
       if (!formData.phone.trim() || formData.phone.length < 10) tempErrors.phone = "Geçerli telefon girin.";
+      if (!formData.email.trim()) tempErrors.email = "Onay e-postası için e-posta adresi girin.";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+        tempErrors.email = "Geçerli bir e-posta girin.";
+      }
       if (!formData.agreed) tempErrors.agreed = "Devam etmek için onay vermelisiniz.";
     }
     setErrors(tempErrors);
@@ -188,6 +193,7 @@ export default function Booking({
       const result = await api.createBooking({
         customerName: formData.name,
         phone: formData.phone,
+        email: formData.email.trim() || undefined,
         serviceId: formData.serviceId,
         barberId: formData.noPreference ? null : formData.barberId,
         date: formData.date,
@@ -432,6 +438,13 @@ export default function Booking({
                         </div>
                       </div>
                       <div>
+                        <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2 mb-1.5"><Mail size={10} className="text-white/60" /> E-posta</label>
+                        <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none focus:border-white text-sm" placeholder="ornek@email.com" />
+                        <p className="text-[10px] text-white/35 mt-1.5">Randevu onaylandığında bu adrese bilgilendirme gönderilir.</p>
+                        {errors.email && <p className="text-xs text-red-400 mt-1">{errors.email}</p>}
+                      </div>
+                      <div>
                         <label className="text-[9px] font-bold text-white/40 uppercase tracking-widest mb-1.5 block">Notlar (Opsiyonel)</label>
                         <input type="text" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                           className="w-full bg-transparent border-b border-white/15 py-3 text-white focus:outline-none text-sm" placeholder="Ek istekleriniz..." />
@@ -482,7 +495,7 @@ export default function Booking({
                     )}
                   </div>
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <button type="button" onClick={() => { setIsSuccess(false); setStep(1); setFormData({ serviceId: 0, barberId: 0, noPreference: false, date: "", time: "", name: "", phone: "", notes: "", agreed: false }); }}
+                    <button type="button" onClick={() => { setIsSuccess(false); setStep(1); setFormData({ serviceId: 0, barberId: 0, noPreference: false, date: "", time: "", name: "", phone: "", email: "", notes: "", agreed: false }); }}
                       className="border border-white/10 text-white/70 px-8 sm:px-10 py-4 rounded-full text-[10px] font-bold tracking-wide sm:tracking-widest uppercase">Yeni Randevu</button>
                   </div>
                 </motion.div>

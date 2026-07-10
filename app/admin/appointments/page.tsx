@@ -77,9 +77,32 @@ export default function AppointmentsPage() {
       );
       if (!ok) return;
     }
+    if (status === "confirmed") {
+      const ok = window.confirm(
+        `${customerName || "Bu müşteri"} randevusunu onaylamak istiyor musunuz? Onay e-postası gönderilecektir.`
+      );
+      if (!ok) return;
+    }
     try {
-      await adminApi.updateAppointment(id, status);
-      showToast(status === "cancelled" ? "Randevu iptal edildi." : "Randevu güncellendi.", true);
+      const result = await adminApi.updateAppointment(id, status);
+      if (status === "confirmed") {
+        if (result.email?.sent) {
+          showToast("Randevu onaylandı. Onay e-postası gönderildi.", true);
+        } else if (result.email?.skipped) {
+          showToast(
+            result.email.reason === "Müşteri e-postası yok"
+              ? "Randevu onaylandı. Müşterinin e-postası kayıtlı değil."
+              : `Randevu onaylandı. E-posta gönderilmedi: ${result.email.reason || "bilinmeyen"}`,
+            true
+          );
+        } else if (result.email?.error) {
+          showToast(`Randevu onaylandı ancak e-posta gönderilemedi: ${result.email.error}`, false);
+        } else {
+          showToast("Randevu onaylandı.", true);
+        }
+      } else {
+        showToast(status === "cancelled" ? "Randevu iptal edildi." : "Randevu güncellendi.", true);
+      }
       load();
     } catch (e) {
       showToast(e instanceof Error ? e.message : "Güncellenemedi.", false);

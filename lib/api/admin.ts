@@ -18,7 +18,10 @@ export const adminApi = {
   getAppointments: () => adminFetch<AdminAppointment[]>("/admin/appointments"),
   clearAppointments: () => adminFetch<{ success: boolean }>("/admin/appointments", { method: "DELETE" }),
   updateAppointment: (id: number, status: string) =>
-    adminFetch(`/admin/appointments/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
+    adminFetch<{
+      success: boolean;
+      email?: { sent: boolean; skipped?: boolean; reason?: string; error?: string } | null;
+    }>(`/admin/appointments/${id}`, { method: "PATCH", body: JSON.stringify({ status }) }),
   deleteAppointment: (id: number) =>
     adminFetch(`/admin/appointments/${id}`, { method: "DELETE" }),
   getBarbers: () => adminFetch<AdminBarber[]>("/admin/barbers"),
@@ -86,6 +89,7 @@ export interface AdminAppointment {
   customerId: number;
   customerName: string;
   phone: string;
+  email?: string;
   serviceId: number;
   serviceName: string;
   barberId: number | null;
