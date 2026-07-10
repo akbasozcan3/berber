@@ -11,6 +11,8 @@ import {
   getEffectiveHours,
   isSlotBlockedByRules,
   parseTime,
+  isInBreak,
+  canBarberTakeSlot,
 } from "./availability";
 
 export async function getSetting(key: string): Promise<string | null> {
@@ -63,16 +65,6 @@ function generateSlots(start: string, end: string, interval: number): string[] {
   return slots;
 }
 
-function isInBreak(time: string, duration: number, breaks: { start: string; end: string }[]): boolean {
-  const start = parseTime(time);
-  const end = start + duration;
-  return breaks.some((b) => {
-    const bStart = parseTime(b.start);
-    const bEnd = parseTime(b.end);
-    return start < bEnd && end > bStart;
-  });
-}
-
 export async function getAvailableSlots(
   date: string,
   serviceId: number,
@@ -116,7 +108,9 @@ export async function getAvailableSlots(
 
   if (targetBarbers.length === 0) return [];
 
-  const hoursList = targetBarbers.map((b) => getEffectiveHours(date, b, rules.filter((r) => !r.barberId || r.barberId === b.id)));
+  const hoursList = targetBarbers.map((b) =>
+    getEffectiveHours(date, b, rules.filter((r) => !r.barberId || r.barberId === b.id))
+  );
   const earliestStart = hoursList.reduce((min, h) => Math.min(min, parseTime(h.open)), Infinity);
   const latestEnd = hoursList.reduce((max, h) => Math.max(max, parseTime(h.close)), 0);
 
@@ -153,23 +147,18 @@ export async function getAvailableSlots(
 
     const anyBarberFree = barberId
       ? !hasConflict
-      : targetBarbers.some((barber) => {
-          const barberRules = rules.filter((r) => !r.barberId || r.barberId === barber.id);
-          const hours = getEffectiveHours(date, barber, barberRules);
-          const open = parseTime(hours.open);
-          const close = parseTime(hours.close);
-          if (slotStart < open || slotEnd > close) return false;
-
-          const barberBlock = isSlotBlockedByRules(slotStart, slotEnd, barberRules, barber.id);
-          if (barberBlock.blocked) return false;
-
-          const barberApts = existingAppointments.filter((a) => a.barberId === barber.id);
-          return !barberApts.some((apt) => {
-            const aptStart = parseTime(apt.time);
-            const aptEnd = aptStart + apt.duration;
-            return slotStart < aptEnd && slotEnd > aptStart;
-          });
-        });
+      : targetBarbers.some((barber) =>
+          canBarberTakeSlot({
+            barber,
+            date,
+            slotTime: time,
+            slotStart,
+            slotEnd,
+            rules,
+            existingAppointments,
+            breakTimes,
+          })
+        );
 
     const isPast =
       date === today.toISOString().split("T")[0] &&
@@ -207,17 +196,23 @@ export async function createBooking(data: {
     const existingApts = await db.select().from(appointments).where(
       and(eq(appointments.date, data.date), ne(appointments.status, "cancelled"))
     );
+    const rules = await getActiveRulesForDate(data.date);
+    const breakTimes = JSON.parse((await getSetting("break_times")) || "[]");
     const slotStart = parseTime(data.time);
     const slotEnd = slotStart + service.duration;
 
-    const freeBarber = availableBarbers.find((barber) => {
-      const barberApts = existingApts.filter((a) => a.barberId === barber.id);
-      return !barberApts.some((apt) => {
-        const aptStart = parseTime(apt.time);
-        const aptEnd = aptStart + apt.duration;
-        return slotStart < aptEnd && slotEnd > aptStart;
-      });
-    });
+    const freeBarber = availableBarbers.find((barber) =>
+      canBarberTakeSlot({
+        barber,
+        date: data.date,
+        slotTime: data.time,
+        slotStart,
+        slotEnd,
+        rules,
+        existingAppointments: existingApts,
+        breakTimes,
+      })
+    );
     if (!freeBarber) throw new Error("Müsait berber bulunamadı.");
     barberId = freeBarber.id;
   }

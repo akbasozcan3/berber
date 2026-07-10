@@ -35,7 +35,7 @@ export default function CalendarPage() {
 
   const viewTabs = [
     { id: "daily", label: "Günlük" },
-    { id: "availability", label: "Müsaitlik" },
+    { id: "availability", label: "Kapalı Saatler" },
   ];
 
   return (

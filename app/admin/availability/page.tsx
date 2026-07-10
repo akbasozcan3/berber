@@ -11,6 +11,7 @@ import Select from "@/components/admin/ui/Select";
 import { adminApi, type AvailabilityBlock, type AdminBarber } from "@/lib/api/admin";
 import { formatDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/admin/cn";
+import { formatAvailabilityRule, RULE_TYPE_LABELS } from "@/lib/admin/availability-labels";
 
 const REASONS = [
   { value: "Tatil", label: "Tatil" },
@@ -54,6 +55,8 @@ export default function AvailabilityPage() {
     customClose: "20:00",
     earlyClose: "16:00",
     lateOpen: "13:00",
+    blockStart: "15:00",
+    blockEnd: "16:00",
   };
   });
 
@@ -111,7 +114,36 @@ export default function AvailabilityPage() {
 
   return (
     <div>
-      <PageHeader title="Müsaitlik Yönetimi" description="Randevu müsaitliğini anında kontrol edin" />
+      <PageHeader
+        title="Müsaitlik Yönetimi"
+        description="Hangi gün veya saatte müsait olmadığınızı buradan ayarlayın — randevu sayfası anında güncellenir"
+      />
+
+      <Card className="mb-6 border-[#D4AF37]/20 bg-[#D4AF37]/[0.04]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div>
+            <p className="font-semibold text-[#F8F8F8] mb-1">Belirli saat kapalı</p>
+            <p className="text-xs text-[#71717A]">
+              Örn. 15:00–16:00 müsait değilim → aşağıdaki <strong className="text-[#A1A1AA]">Saat Aralığı Kapat</strong>
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-[#F8F8F8] mb-1">Tüm gün kapalı</p>
+            <p className="text-xs text-[#71717A]">
+              Tatil, bayram → takvimden gün seç, <strong className="text-[#A1A1AA]">Aralığı Kapat</strong> veya hızlı işlem
+            </p>
+          </div>
+          <div>
+            <p className="font-semibold text-[#F8F8F8] mb-1">Günlük takvim</p>
+            <p className="text-xs text-[#71717A]">
+              Randevularla birlikte yönetmek için{" "}
+              <a href="/admin/calendar" className="text-[#D4AF37] hover:underline">
+                Takvim → Müsaitlik
+              </a>
+            </p>
+          </div>
+        </div>
+      </Card>
 
       {toast && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
@@ -179,19 +211,56 @@ export default function AvailabilityPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
         <Card>
-          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-4">Özel Tarih Aralığı</h3>
+          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-2 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-[#D4AF37]" /> Saat Aralığı Kapat
+          </h3>
+          <p className="text-xs text-[#71717A] mb-4">
+            Sadece belirli saatleri kapatır (ör. öğle molası, özel iş). Takvimden gün seçin.
+            {form.startDate ? (
+              <span className="block mt-1 text-[#D4AF37]">Seçili gün: {formatDate(form.startDate)}</span>
+            ) : null}
+          </p>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <Input label="Başlangıç" type="time" value={form.blockStart} onChange={(e) => setForm({ ...form, blockStart: e.target.value })} />
+            <Input label="Bitiş" type="time" value={form.blockEnd} onChange={(e) => setForm({ ...form, blockEnd: e.target.value })} />
+          </div>
+          <Select label="Sebep" options={REASONS} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className="mb-3" />
+          <Select label="Kapsam" options={[{ value: "", label: "Tüm Salon" }, ...barbers.map((b) => ({ value: String(b.id), label: b.name }))]} value={form.barberId} onChange={(e) => setForm({ ...form, barberId: e.target.value })} className="mb-4" />
+          <Button
+            disabled={loading || !form.startDate || form.blockStart >= form.blockEnd}
+            onClick={() =>
+              postAction({
+                ruleType: "block",
+                date: form.startDate,
+                endDate: form.startDate,
+                startTime: form.blockStart,
+                endTime: form.blockEnd,
+                reason: form.reason,
+                barberId: form.barberId ? Number(form.barberId) : null,
+              })
+            }
+            className="w-full"
+          >
+            Bu Saatleri Kapat
+          </Button>
+        </Card>
+
+        <Card>
+          <h3 className="text-sm font-semibold text-[#F8F8F8] mb-4">Tüm Gün / Tarih Aralığı Kapat</h3>
           <div className="grid grid-cols-2 gap-3 mb-3">
             <Input label="Başlangıç" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
             <Input label="Bitiş" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} />
           </div>
           <Select label="Sebep" options={REASONS} value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} className="mb-3" />
-          <Select label="Berber (opsiyonel)" options={[{ value: "", label: "Tüm Salon" }, ...barbers.map((b) => ({ value: String(b.id), label: b.name }))]} value={form.barberId} onChange={(e) => setForm({ ...form, barberId: e.target.value })} className="mb-4" />
+          <Select label="Kapsam" options={[{ value: "", label: "Tüm Salon" }, ...barbers.map((b) => ({ value: String(b.id), label: b.name }))]} value={form.barberId} onChange={(e) => setForm({ ...form, barberId: e.target.value })} className="mb-4" />
           <Button disabled={loading || !form.startDate} onClick={() => postAction({
             ruleType: "close_day", date: form.startDate, endDate: form.endDate || form.startDate,
             reason: form.reason, barberId: form.barberId ? Number(form.barberId) : null,
-          })} className="w-full">Aralığı Kapat</Button>
+          })} className="w-full">Gün(ler)i Tamamen Kapat</Button>
         </Card>
+      </div>
 
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
         <Card>
           <h3 className="text-sm font-semibold text-[#F8F8F8] mb-2 flex items-center gap-2"><Clock className="w-4 h-4 text-[#D4AF37]" /> Saat Ayarları</h3>
           <p className="text-xs text-[#71717A] mb-4">
@@ -240,12 +309,15 @@ export default function AvailabilityPage() {
           <h3 className="text-sm font-semibold text-[#F8F8F8] mb-4">Aktif Kurallar ({blocks.length})</h3>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {blocks.map((b) => (
-              <div key={b.id} className="flex items-center justify-between p-3 bg-[#0A0A0A] rounded-xl border border-white/[0.06]">
-                <div>
-                  <p className="text-sm text-[#F8F8F8]">{b.date}{b.endDate && b.endDate !== b.date ? ` → ${b.endDate}` : ""}</p>
-                  <p className="text-xs text-[#71717A]">{b.ruleType} · {b.reason} {b.startTime !== "00:00" ? `· ${b.startTime}-${b.endTime}` : ""}</p>
+              <div key={b.id} className="flex items-center justify-between gap-3 p-3 bg-[#0A0A0A] rounded-xl border border-white/[0.06]">
+                <div className="min-w-0">
+                  <p className="text-sm text-[#F8F8F8] truncate">{formatAvailabilityRule(b)}</p>
+                  <p className="text-xs text-[#71717A]">
+                    {RULE_TYPE_LABELS[b.ruleType] || b.ruleType}
+                    {b.barberId ? ` · Berber #${b.barberId}` : " · Tüm salon"}
+                  </p>
                 </div>
-                <Button variant="ghost" size="sm" onClick={async () => { await adminApi.deleteAvailability(b.id); load(); }}>Kaldır</Button>
+                <Button variant="ghost" size="sm" className="shrink-0" onClick={async () => { await adminApi.deleteAvailability(b.id); load(); }}>Kaldır</Button>
               </div>
             ))}
           </div>

@@ -220,18 +220,37 @@ export function parseTime(time: string): number {
   return h * 60 + m;
 }
 
+export function isInBreak(
+  time: string,
+  duration: number,
+  breaks: { start: string; end: string }[]
+): boolean {
+  const start = parseTime(time);
+  const end = start + duration;
+  return breaks.some((b) => {
+    const bStart = parseTime(b.start);
+    const bEnd = parseTime(b.end);
+    return start < bEnd && end > bStart;
+  });
+}
+
 export function getEffectiveHours(
   date: string,
-  barber: { workingStart: string; workingEnd: string },
+  barber: { id?: number; workingStart: string; workingEnd: string },
   rules: (typeof availabilityBlocks.$inferSelect)[]
 ): { open: string; close: string } {
   let open = barber.workingStart;
   let close = barber.workingEnd;
 
-  const barberRules = rules.filter((r) => !r.barberId || r.barberId);
-  const globalRules = rules.filter((r) => !r.barberId);
+  const applicable = rules.filter(
+    (r) => !r.barberId || (barber.id !== undefined && r.barberId === barber.id)
+  );
+  const ordered = [
+    ...applicable.filter((r) => !r.barberId),
+    ...applicable.filter((r) => r.barberId),
+  ];
 
-  for (const rule of [...globalRules, ...barberRules.filter((r) => r.barberId)]) {
+  for (const rule of ordered) {
     if (rule.ruleType === "hours_override" && rule.customOpen && rule.customClose) {
       open = rule.customOpen;
       close = rule.customClose;
@@ -245,6 +264,42 @@ export function getEffectiveHours(
   }
 
   return { open, close };
+}
+
+export function canBarberTakeSlot(params: {
+  barber: { id: number; workingDays: string; workingStart: string; workingEnd: string };
+  date: string;
+  slotTime: string;
+  slotStart: number;
+  slotEnd: number;
+  rules: (typeof availabilityBlocks.$inferSelect)[];
+  existingAppointments: { barberId: number | null; time: string; duration: number }[];
+  breakTimes: { start: string; end: string }[];
+}): boolean {
+  const { barber, date, slotTime, slotStart, slotEnd, rules, existingAppointments, breakTimes } =
+    params;
+
+  const dayOfWeek = new Date(date).getDay();
+  const days = barber.workingDays.split(",").map(Number);
+  if (!days.includes(dayOfWeek === 0 ? 7 : dayOfWeek)) return false;
+
+  const barberRules = rules.filter((r) => !r.barberId || r.barberId === barber.id);
+  const hours = getEffectiveHours(date, barber, barberRules);
+  const open = parseTime(hours.open);
+  const close = parseTime(hours.close);
+  if (slotStart < open || slotEnd > close) return false;
+
+  if (isInBreak(slotTime, slotEnd - slotStart, breakTimes)) return false;
+
+  const block = isSlotBlockedByRules(slotStart, slotEnd, barberRules, barber.id);
+  if (block.blocked) return false;
+
+  const barberApts = existingAppointments.filter((a) => a.barberId === barber.id);
+  return !barberApts.some((apt) => {
+    const aptStart = parseTime(apt.time);
+    const aptEnd = aptStart + apt.duration;
+    return slotStart < aptEnd && slotEnd > aptStart;
+  });
 }
 
 export function isSlotBlockedByRules(
