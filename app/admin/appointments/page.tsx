@@ -91,8 +91,27 @@ export default function AppointmentsPage() {
       "Tüm randevu kayıtları kalıcı olarak silinecek. Müşteri ve bildirim kayıtları korunur. Emin misiniz?"
     );
     if (!confirmed) return;
-    await adminApi.clearAppointments();
-    load();
+    try {
+      await adminApi.clearAppointments();
+      showToast("Tüm randevular silindi.", true);
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Silinemedi.", false);
+    }
+  };
+
+  const deleteAppointment = async (apt: AdminAppointment) => {
+    const confirmed = window.confirm(
+      `${apt.customerName} — ${formatDate(apt.date)} ${apt.time} randevusu kalıcı olarak silinecek. Emin misiniz?`
+    );
+    if (!confirmed) return;
+    try {
+      await adminApi.deleteAppointment(apt.id);
+      showToast("Randevu silindi.", true);
+      load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "Silinemedi.", false);
+    }
   };
 
   const buildWhatsappLink = (apt: AdminAppointment) => {
@@ -195,6 +214,14 @@ export default function AppointmentsPage() {
                           <MessageCircle className="w-4 h-4 text-emerald-400" />
                         </a>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteAppointment(apt)}
+                        title="Randevuyu sil"
+                      >
+                        <Trash2 className="w-4 h-4 text-[#71717A] hover:text-red-400" />
+                      </Button>
                     </div>
                   </td>
                 </motion.tr>

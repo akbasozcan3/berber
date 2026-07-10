@@ -34,13 +34,20 @@ export async function DELETE(
     await ensureDb();
     await requireAuth();
     const { id } = await params;
+    const appointmentId = Number(id);
+    if (!appointmentId) return errorResponse("Geçersiz randevu ID", 400);
 
-    await db
-      .update(appointments)
-      .set({ status: "cancelled", updatedAt: new Date().toISOString() })
-      .where(eq(appointments.id, Number(id)));
+    const existing = await db
+      .select({ id: appointments.id })
+      .from(appointments)
+      .where(eq(appointments.id, appointmentId))
+      .limit(1);
 
-    return jsonResponse({ success: true });
+    if (!existing[0]) return errorResponse("Randevu bulunamadı", 404);
+
+    await db.delete(appointments).where(eq(appointments.id, appointmentId));
+
+    return jsonResponse({ success: true, deleted: true });
   } catch {
     return errorResponse("Unauthorized", 401);
   }
