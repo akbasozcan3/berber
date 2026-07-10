@@ -1,7 +1,8 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { ArrowUp, MessageCircle } from "lucide-react";
+import { ArrowUp } from "lucide-react";
+import WhatsAppIcon from "@/app/components/icons/WhatsAppIcon";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { instagramUrl, formatPhoneDisplay, formatWorkingHoursSummary, toTelHref, toWhatsAppHref } from "@/lib/utils/format";
 import { splitBusinessNameForLogo, siteLogoImageClass } from "@/lib/utils/brand";
@@ -131,7 +132,7 @@ export default function Footer() {
                   className="w-10 h-10 rounded-full border border-[#25D366]/30 bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all duration-300"
                   aria-label="WhatsApp"
                 >
-                  <MessageCircle size={16} />
+                  <WhatsAppIcon className="w-4 h-4" />
                 </a>
               ) : null}
               <a

@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import WhatsAppIcon from "@/app/components/icons/WhatsAppIcon";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { toWhatsAppHref } from "@/lib/utils/format";
 
@@ -21,13 +21,11 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="WhatsApp ile iletişime geç"
-      className="fixed bottom-6 right-6 z-50 group flex items-center gap-3"
+      className="fixed z-[9999] flex items-center gap-2.5 bg-[#25D366] text-white rounded-full shadow-[0_8px_32px_rgba(37,211,102,0.45)] hover:bg-[#20BD5A] hover:shadow-[0_10px_36px_rgba(37,211,102,0.55)] active:scale-[0.97] transition-all duration-300 bottom-[max(1.25rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] px-4 py-3 sm:px-5 sm:py-3.5"
     >
-      <span className="hidden sm:inline-flex items-center px-4 py-2.5 rounded-full bg-[#111111]/90 border border-white/10 text-white text-xs font-semibold tracking-wide shadow-lg opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
-        WhatsApp ile yazın
-      </span>
-      <span className="flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] text-white shadow-[0_8px_30px_rgba(37,211,102,0.35)] hover:bg-[#20BD5A] hover:scale-105 active:scale-95 transition-all duration-300">
-        <MessageCircle className="w-7 h-7" strokeWidth={2} />
+      <WhatsAppIcon className="w-7 h-7 sm:w-8 sm:h-8 shrink-0" />
+      <span className="text-sm sm:text-[15px] font-semibold tracking-wide pr-0.5">
+        WhatsApp
       </span>
     </a>
   );

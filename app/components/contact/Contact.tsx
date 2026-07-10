@@ -9,8 +9,8 @@ import {
   CheckCircle,
   ExternalLink,
   Navigation,
-  MessageCircle,
 } from "lucide-react";
+import WhatsAppIcon from "@/app/components/icons/WhatsAppIcon";
 import { api } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { formatPhoneDisplay, formatWorkingHoursSummary, googleMapsEmbedUrl, instagramUrl, toTelHref, toWhatsAppHref } from "@/lib/utils/format";
@@ -42,7 +42,7 @@ export default function Contact({ showHeading = true }: ContactProps) {
             href: toTelHref(settings.phone),
           },
           {
-            icon: MessageCircle,
+            icon: WhatsAppIcon,
             title: "WhatsApp",
             detail: phoneDisplay,
             action: "WhatsApp ile Yaz",
