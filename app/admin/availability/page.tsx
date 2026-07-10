@@ -43,6 +43,8 @@ export default function AvailabilityPage() {
   });
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [quickBarberId, setQuickBarberId] = useState("");
+  const [quickReason, setQuickReason] = useState("Kişisel İzin");
 
   const [form, setForm] = useState(() => {
     const today = toLocalIsoDate();
@@ -116,6 +118,41 @@ export default function AvailabilityPage() {
   const tomorrowIso = toLocalIsoDate(new Date(Date.now() + 86400000));
   const tomorrowLabel = formatIsoDateTr(tomorrowIso);
 
+  const barberOptions = [
+    { value: "", label: "Tüm salon" },
+    ...barbers.map((b) => ({ value: String(b.id), label: b.name })),
+  ];
+
+  const parseBarberId = (id: string) => (id ? Number(id) : null);
+
+  const scopeLabel = (id: string) =>
+    id ? barbers.find((b) => String(b.id) === id)?.name || "Berber" : "Tüm salon";
+
+  const closeDayPayload = (scope: string) => ({
+    scope,
+    ruleType: "close_day",
+    reason: quickReason,
+    barberId: parseBarberId(quickBarberId),
+  });
+
+  const confirmCloseScope = (scope: string, dayLabel: string) => {
+    const who = scopeLabel(quickBarberId);
+    const effect = quickBarberId
+      ? " Diğer berberler müsait kalır."
+      : " Tüm salon kapanır, o gün kimse randevu alamaz.";
+    confirmAction(`${dayLabel} — ${who} için kapatılacak.${effect} Emin misiniz?`, closeDayPayload(scope));
+  };
+
+  const tomorrowClosedBarbers = blocks.filter((b) => {
+    const end = b.endDate || b.date;
+    return (
+      b.ruleType === "close_day" &&
+      tomorrowIso >= b.date &&
+      tomorrowIso <= end &&
+      (b.startTime === "00:00" || !b.startTime)
+    );
+  });
+
   const barberName = (id: number | null) =>
     id ? barbers.find((b) => b.id === id)?.name || `Berber #${id}` : "Tüm salon";
 
@@ -132,28 +169,98 @@ export default function AvailabilityPage() {
       />
 
       <Card className="mb-6 border-[#D4AF37]/30 bg-gradient-to-r from-[#D4AF37]/[0.08] to-transparent">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#D4AF37] mb-1">En sık kullanılan</p>
-            <h3 className="text-lg font-semibold text-[#F8F8F8]">Yarın müsait değil misiniz?</h3>
-            <p className="text-sm text-[#71717A] mt-1">
-              <span className="text-[#A1A1AA]">{tomorrowLabel}</span> — tek tıkla tüm günü kapatın. Müşteriler o gün randevu alamaz.
-            </p>
+        <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#D4AF37] mb-2">En sık kullanılan</p>
+        <h3 className="text-lg font-semibold text-[#F8F8F8] mb-1">Yarın kim müsait değil?</h3>
+        <p className="text-sm text-[#71717A] mb-4">
+          <span className="text-[#A1A1AA]">{tomorrowLabel}</span> — sadece seçtiğiniz berber veya tüm salon kapatılır.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+          <Select
+            label="Kim?"
+            options={barberOptions}
+            value={quickBarberId}
+            onChange={(e) => setQuickBarberId(e.target.value)}
+          />
+          <Select
+            label="Sebep"
+            options={REASONS}
+            value={quickReason}
+            onChange={(e) => setQuickReason(e.target.value)}
+          />
+          <div className="flex items-end">
+            <Button
+              size="lg"
+              disabled={loading}
+              className="w-full"
+              onClick={() => confirmCloseScope("tomorrow", tomorrowLabel)}
+            >
+              Yarını Kapat
+            </Button>
           </div>
-          <Button
-            size="lg"
-            disabled={loading}
-            className="shrink-0 w-full md:w-auto"
-            onClick={() =>
-              confirmAction(
-                `${tomorrowLabel} tamamen kapatılacak. Müşteriler yarın randevu alamaz. Emin misiniz?`,
-                { scope: "tomorrow", ruleType: "close_day", reason: "Müsait değilim" }
-              )
-            }
-          >
-            Yarını Kapat
-          </Button>
         </div>
+
+        {barbers.length > 0 ? (
+          <div className="pt-4 border-t border-white/[0.06]">
+            <p className="text-xs text-[#71717A] mb-3">Hızlı seçim — berbere tıklayın:</p>
+            <div className="flex flex-wrap gap-2">
+              {barbers.map((b) => {
+                const isClosed = tomorrowClosedBarbers.some((r) => r.barberId === b.id);
+                const isSelected = quickBarberId === String(b.id);
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    disabled={loading}
+                    onClick={() => {
+                      if (isClosed) return;
+                      setQuickBarberId(String(b.id));
+                      confirmAction(
+                        `${tomorrowLabel} — ${b.name} yarın müsait değil olarak işaretlenecek. Emin misiniz?`,
+                        {
+                          scope: "tomorrow",
+                          ruleType: "close_day",
+                          reason: quickReason,
+                          barberId: b.id,
+                        }
+                      );
+                    }}
+                    className={cn(
+                      "px-4 py-2.5 rounded-xl border text-sm font-medium transition-all",
+                      isClosed
+                        ? "border-red-500/30 bg-red-500/10 text-red-400 cursor-default"
+                        : isSelected
+                          ? "border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]"
+                          : "border-white/[0.08] text-[#A1A1AA] hover:border-white/20 hover:text-white"
+                    )}
+                  >
+                    {b.name}
+                    {isClosed ? " · Yarın kapalı" : ""}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => {
+                  const salonClosed = tomorrowClosedBarbers.some((r) => !r.barberId);
+                  if (salonClosed) return;
+                  setQuickBarberId("");
+                  confirmCloseScope("tomorrow", tomorrowLabel);
+                }}
+                className={cn(
+                  "px-4 py-2.5 rounded-xl border text-sm font-medium transition-all",
+                  tomorrowClosedBarbers.some((r) => !r.barberId)
+                    ? "border-red-500/30 bg-red-500/10 text-red-400 cursor-default"
+                    : "border-white/[0.08] text-[#A1A1AA] hover:border-white/20 hover:text-white"
+                )}
+              >
+                Tüm Salon
+                {tomorrowClosedBarbers.some((r) => !r.barberId) ? " · Yarın kapalı" : ""}
+              </button>
+            </div>
+          </div>
+        ) : null}
       </Card>
 
       <Card className="mb-6 border-[#D4AF37]/20 bg-[#D4AF37]/[0.04]">
@@ -161,8 +268,8 @@ export default function AvailabilityPage() {
           <div>
             <p className="font-semibold text-[#F8F8F8] mb-1">Tüm gün kapalı (tatil, izin)</p>
             <p className="text-xs text-[#71717A]">
-              Yukarıdaki <strong className="text-[#A1A1AA]">Yarını Kapat</strong> veya sağdaki hızlı işlemler.
-              Belirli bir gün için takvimden gün seç → <strong className="text-[#A1A1AA]">Gün(ler)i Tamamen Kapat</strong>.
+              Üstte <strong className="text-[#A1A1AA]">berber seç</strong> → Yarını Kapat.
+              Sadece o berber kapanır; diğerleri randevu almaya devam eder.
             </p>
           </div>
           <div>
@@ -228,13 +335,22 @@ export default function AvailabilityPage() {
 
         <Card>
           <h3 className="text-sm font-semibold text-[#F8F8F8] mb-2 flex items-center gap-2"><Ban className="w-4 h-4 text-[#D4AF37]" /> Hızlı İşlemler</h3>
-          <p className="text-xs text-[#71717A] mb-4">Tek tıkla gün veya dönem kapatın</p>
+          <p className="text-xs text-[#71717A] mb-3">Önce kimin için olduğunu seçin</p>
+          <Select
+            label="Kim?"
+            options={barberOptions}
+            value={quickBarberId}
+            onChange={(e) => setQuickBarberId(e.target.value)}
+            className="mb-4"
+          />
           <div className="space-y-2">
             {quickActions.map((a) => (
               <Button key={a.scope} variant="outline" className="w-full justify-start h-auto py-3 flex-col items-start gap-0.5" disabled={loading}
-                onClick={() => confirmAction(`${a.label} — ${a.description}. Emin misiniz?`, { scope: a.scope, ruleType: "close_day", reason: "Kapalı" })}>
+                onClick={() => confirmCloseScope(a.scope, a.label)}>
                 <span>{a.label}</span>
-                <span className="text-[10px] font-normal text-[#71717A]">{a.description}</span>
+                <span className="text-[10px] font-normal text-[#71717A]">
+                  {scopeLabel(quickBarberId)} · {a.description}
+                </span>
               </Button>
             ))}
             <Button variant="outline" className="w-full justify-start text-green-400 border-green-500/20" disabled={loading}
