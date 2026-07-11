@@ -275,7 +275,7 @@ export default function SettingsPage() {
                   </p>
                   <p className="text-[11px] text-[#52525B] mt-2">
                     {emailStatus?.configured
-                      ? `Hazır · ${emailStatus.user || emailStatus.from || "SMTP"}`
+                      ? `Hazır · ${emailStatus.user || emailStatus.from || "SMTP"} · spam azaltma aktif`
                       : "SMTP_USER / SMTP_PASS Vercel ortam değişkenlerinde eksik"}
                   </p>
                 </div>

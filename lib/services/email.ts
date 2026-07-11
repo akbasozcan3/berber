@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
+import { randomUUID } from "crypto";
 import { getSetting } from "./booking";
 import {
   buildAppointmentConfirmedHtml,
@@ -45,7 +46,7 @@ function getSmtpConfig(): SmtpConfig | null {
 
   const isGmail = host.includes("gmail.com") || user.toLowerCase().endsWith("@gmail.com");
 
-  // Gmail: From adresi hesapla aynı olmalı, aksi halde auth / spam sorunları çıkar.
+  // Gmail: From, kimlik doğrulanan hesapla birebir aynı olmalı (spam / reject önlemi).
   if (isGmail) {
     from = user;
   }
@@ -54,7 +55,6 @@ function getSmtpConfig(): SmtpConfig | null {
 }
 
 function createTransporter(config: SmtpConfig): Transporter {
-  // Serverless'ta singleton bağlantı soğur; her gönderimde taze transport kullan.
   if (config.isGmail) {
     return nodemailer.createTransport({
       service: "gmail",
@@ -91,6 +91,19 @@ function normalizeRecipient(to: string): string {
   return to.trim().toLowerCase();
 }
 
+function sanitizeDisplayName(name: string): string {
+  return name.replace(/[\r\n"<>]/g, "").trim().slice(0, 64) || "Salon";
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function messageIdFor(fromEmail: string): string {
+  const domain = fromEmail.split("@")[1] || "mail.local";
+  return `<${randomUUID()}@${domain}>`;
+}
+
 function formatSmtpError(err: unknown): string {
   if (!(err instanceof Error)) return "E-posta gönderilemedi";
   const message = err.message || "E-posta gönderilemedi";
@@ -125,22 +138,51 @@ async function deliverMail(options: {
   }
 
   const mailer = createTransporter(config);
-  const businessName = (await getSetting("business_name"))?.trim() || "The Barber";
-  const replyTo = (await getSetting("contact_email"))?.trim() || config.from;
+  const businessName = sanitizeDisplayName(
+    (await getSetting("business_name"))?.trim() || "The Barber"
+  );
+  const contactEmail = (await getSetting("contact_email"))?.trim().toLowerCase() || "";
+  const replyTo =
+    contactEmail && isValidEmail(contactEmail) ? contactEmail : config.from;
+  const siteUrl = (await getSetting("site_url"))?.trim().replace(/\/$/, "") || "";
+  const unsubscribeMailto = `mailto:${replyTo}?subject=${encodeURIComponent("Bildirim tercihi")}`;
 
   try {
     const info = await mailer.sendMail({
-      from: `"${businessName}" <${config.from}>`,
+      from: {
+        name: businessName,
+        address: config.from,
+      },
+      // Envelope From = auth kullanıcısı → SPF/DKIM uyumu, spam riski düşer
+      envelope: {
+        from: config.user,
+        to: recipient,
+      },
+      sender: config.from,
       replyTo,
       to: recipient,
       subject: options.subject,
       text: options.text,
       html: options.html,
+      messageId: messageIdFor(config.from),
+      date: new Date(),
+      encoding: "utf-8",
+      priority: "normal",
+      headers: {
+        "Auto-Submitted": "auto-generated",
+        "X-Auto-Response-Suppress": "All",
+        "X-Entity-Ref-ID": randomUUID(),
+        "List-Unsubscribe": `<${unsubscribeMailto}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        ...(siteUrl ? { "X-Business-URL": siteUrl } : {}),
+      },
     });
+
     console.info("[Email] Sent OK", {
       to: recipient,
       messageId: info.messageId,
       response: info.response,
+      accepted: info.accepted,
     });
     return { sent: true };
   } catch (err) {
@@ -183,15 +225,18 @@ export async function sendTestEmail(to?: string): Promise<EmailResult> {
   }
 
   const recipient = normalizeRecipient(to || config.user);
-  const businessName = (await getSetting("business_name"))?.trim() || "The Barber";
+  const businessName = sanitizeDisplayName(
+    (await getSetting("business_name"))?.trim() || "The Barber"
+  );
 
   return deliverMail({
     to: recipient,
-    subject: `SMTP Test — ${businessName}`,
-    text: `Bu bir test e-postasıdır. SMTP ayarlarınız çalışıyor.\n\n${businessName}`,
-    html: `<div style="font-family:Arial,sans-serif;padding:24px;color:#111">
-      <h2 style="margin:0 0 12px">${businessName}</h2>
-      <p style="margin:0;color:#555">Bu bir test e-postasıdır. SMTP ayarlarınız çalışıyor.</p>
+    subject: `${businessName} e-posta testi`,
+    text: `Merhaba,\n\nBu mesaj ${businessName} SMTP ayarlarının çalıştığını doğrulamak için gönderildi.\n\n${businessName}`,
+    html: `<div style="font-family:Arial,Helvetica,sans-serif;padding:24px;color:#111827;line-height:1.6;max-width:520px">
+      <p style="margin:0 0 12px">Merhaba,</p>
+      <p style="margin:0 0 12px;color:#4B5563">Bu mesaj <strong>${businessName}</strong> SMTP ayarlarının çalıştığını doğrulamak için gönderildi.</p>
+      <p style="margin:0;color:#9CA3AF;font-size:12px">${businessName}</p>
     </div>`,
   });
 }
