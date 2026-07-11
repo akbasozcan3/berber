@@ -46,6 +46,7 @@ export interface TimeSlot {
 
 export interface BookingResult {
   success: boolean;
+  email?: { sent: boolean; skipped?: boolean; reason?: string; error?: string } | null;
   appointment: {
     id: number;
     date: string;

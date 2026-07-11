@@ -51,8 +51,12 @@ export async function PATCH(
     }
 
     return jsonResponse({ success: true, email: null });
-  } catch {
-    return errorResponse("Unauthorized", 401);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Randevu bulunamadı") {
+      return errorResponse(error.message, 404);
+    }
+    console.error("[Admin Appointments PATCH]", error);
+    return errorResponse(error instanceof Error ? error.message : "Unauthorized", 401);
   }
 }
 

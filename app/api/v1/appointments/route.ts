@@ -3,6 +3,7 @@ import { ensureDb } from "@/lib/db/ensure";
 import { createBooking } from "@/lib/services/booking";
 import { sendTelegramNotification } from "@/lib/telegram";
 import { createNotification } from "@/lib/services/notifications";
+import { sendBookingReceivedEmail } from "@/lib/services/appointment-confirm";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 
 const bookingSchema = z.object({
@@ -29,7 +30,8 @@ export async function POST(request: Request) {
       barberId: data.barberId ?? null,
     });
 
-    const [notificationResult, telegramResult] = await Promise.allSettled([
+    // Vercel serverless: await etmeden dönme — e-posta/Telegram kesilir.
+    const [notificationResult, telegramResult, emailResult] = await Promise.allSettled([
       createNotification({
         type: "appointment",
         title: "Yeni Randevu",
@@ -48,6 +50,16 @@ export async function POST(request: Request) {
         },
         result.appointment.id
       ),
+      sendBookingReceivedEmail({
+        customerEmail: data.email,
+        customerName: data.customerName,
+        serviceName: result.service.name,
+        barberName: result.barber?.name || "Atandı",
+        date: data.date,
+        time: data.time,
+        duration: result.appointment.duration,
+        price: result.appointment.price,
+      }),
     ]);
 
     if (notificationResult.status === "rejected") {
@@ -60,9 +72,22 @@ export async function POST(request: Request) {
       console.error("[Telegram] Appointment notification failed:", telegramResult.value.error);
     }
 
+    let emailPayload: { sent: boolean; skipped?: boolean; reason?: string; error?: string } | null =
+      null;
+    if (emailResult.status === "fulfilled") {
+      emailPayload = emailResult.value;
+      if (!emailResult.value.sent) {
+        console.error("[Email] Booking received mail failed:", emailResult.value);
+      }
+    } else {
+      console.error("[Email] Booking received mail rejected:", emailResult.reason);
+      emailPayload = { sent: false, error: "E-posta gönderilemedi" };
+    }
+
     return jsonResponse(
       {
         success: true,
+        email: emailPayload,
         appointment: {
           id: result.appointment.id,
           date: result.appointment.date,

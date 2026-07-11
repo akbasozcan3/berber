@@ -3,7 +3,12 @@ import { appointments, customers, services, barbers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { cleanupOrphanCustomer } from "@/lib/services/customers";
 import { getSetting } from "./booking";
-import { sendAppointmentConfirmedEmail, sendAppointmentCancelledEmail, type EmailResult } from "./email";
+import {
+  sendAppointmentConfirmedEmail,
+  sendAppointmentCancelledEmail,
+  sendAppointmentReceivedEmail,
+  type EmailResult,
+} from "./email";
 import { resolvePublicSiteUrl } from "@/lib/utils/site-url";
 
 type AppointmentRow = {
@@ -13,7 +18,7 @@ type AppointmentRow = {
   barber: typeof barbers.$inferSelect | null;
 };
 
-async function loadEmailBranding() {
+export async function loadEmailBranding() {
   const [businessName, address, phone, siteUrlSetting, logoUrl] = await Promise.all([
     getSetting("business_name"),
     getSetting("address"),
@@ -29,6 +34,27 @@ async function loadEmailBranding() {
     siteUrl: resolvePublicSiteUrl(siteUrlSetting),
     logoUrl: logoUrl || undefined,
   };
+}
+
+export async function sendBookingReceivedEmail(params: {
+  customerEmail: string;
+  customerName: string;
+  serviceName: string;
+  barberName: string;
+  date: string;
+  time: string;
+  duration: number;
+  price: number;
+}): Promise<EmailResult> {
+  const brand = await loadEmailBranding();
+  return sendAppointmentReceivedEmail(params.customerEmail, {
+    ...params,
+    businessName: brand.businessName,
+    logoUrl: brand.logoUrl,
+    address: brand.address,
+    phone: brand.phone,
+    siteUrl: brand.siteUrl,
+  });
 }
 
 export async function fetchAppointmentRow(appointmentId: number): Promise<AppointmentRow | null> {

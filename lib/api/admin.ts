@@ -43,6 +43,15 @@ export const adminApi = {
     adminFetch<{ success: boolean; deletedAppointments: number }>(`/admin/customers/${id}`, {
       method: "DELETE",
     }),
+  getEmailStatus: () =>
+    adminFetch<{
+      status: { configured: boolean; enabled: boolean; host?: string; user?: string; from?: string };
+    }>("/admin/email"),
+  sendTestEmail: (to?: string) =>
+    adminFetch<{ success: boolean; result?: { sent: boolean }; error?: string }>("/admin/email", {
+      method: "POST",
+      body: JSON.stringify({ to }),
+    }),
   getReviews: () => adminFetch<AdminReview[]>("/admin/reviews"),
   getGallery: () => adminFetch<AdminGallery[]>("/admin/gallery"),
   createGallery: (data: {
