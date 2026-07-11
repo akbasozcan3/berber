@@ -6,7 +6,6 @@ import { getSetting } from "./booking";
 import {
   sendAppointmentConfirmedEmail,
   sendAppointmentCancelledEmail,
-  sendAppointmentReceivedEmail,
   type EmailResult,
 } from "./email";
 import { resolvePublicSiteUrl } from "@/lib/utils/site-url";
@@ -34,27 +33,6 @@ export async function loadEmailBranding() {
     siteUrl: resolvePublicSiteUrl(siteUrlSetting),
     logoUrl: logoUrl || undefined,
   };
-}
-
-export async function sendBookingReceivedEmail(params: {
-  customerEmail: string;
-  customerName: string;
-  serviceName: string;
-  barberName: string;
-  date: string;
-  time: string;
-  duration: number;
-  price: number;
-}): Promise<EmailResult> {
-  const brand = await loadEmailBranding();
-  return sendAppointmentReceivedEmail(params.customerEmail, {
-    ...params,
-    businessName: brand.businessName,
-    logoUrl: brand.logoUrl,
-    address: brand.address,
-    phone: brand.phone,
-    siteUrl: brand.siteUrl,
-  });
 }
 
 export async function fetchAppointmentRow(appointmentId: number): Promise<AppointmentRow | null> {

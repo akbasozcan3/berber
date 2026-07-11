@@ -13,12 +13,6 @@ import {
   buildAppointmentCancelledText,
   type AppointmentCancelledEmailData,
 } from "@/lib/email/appointment-cancelled";
-import {
-  buildAppointmentReceivedHtml,
-  buildAppointmentReceivedSubject,
-  buildAppointmentReceivedText,
-  type AppointmentReceivedEmailData,
-} from "@/lib/email/appointment-received";
 
 export interface EmailResult {
   sent: boolean;
@@ -167,18 +161,6 @@ export async function sendAppointmentConfirmedEmail(
     subject: buildAppointmentConfirmedSubject(data),
     text: buildAppointmentConfirmedText(data),
     html: buildAppointmentConfirmedHtml(data),
-  });
-}
-
-export async function sendAppointmentReceivedEmail(
-  to: string,
-  data: AppointmentReceivedEmailData
-): Promise<EmailResult> {
-  return deliverMail({
-    to,
-    subject: buildAppointmentReceivedSubject(data),
-    text: buildAppointmentReceivedText(data),
-    html: buildAppointmentReceivedHtml(data),
   });
 }
 

@@ -76,7 +76,6 @@ export default function Booking({
     date: string;
     time: string;
     email: string;
-    emailSent?: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -228,7 +227,6 @@ export default function Booking({
         date: formData.date,
         time: formData.time,
         email: customerEmail,
-        emailSent: Boolean(result.email?.sent),
       });
       setIsSuccess(true);
     } catch (err) {
@@ -683,20 +681,10 @@ export default function Booking({
                     <div className="mt-5 flex items-start gap-3 p-4 bg-white/[0.03] border border-white/[0.08] rounded-sm text-left max-w-lg mx-auto">
                       <Mail size={18} className="text-[#D4AF37] shrink-0 mt-0.5" />
                       <p className="text-xs text-white/55 leading-relaxed">
-                        {appointmentResult?.emailSent ? (
-                          <>
-                            <span className="text-white/80 font-medium">Talep alındı</span> e-postası{" "}
-                            <span className="text-white font-medium">{appointmentResult.email}</span>{" "}
-                            adresine gönderildi. Salon onayladığında ayrıca onay e-postası da gidecektir.
-                            Spam klasörünü kontrol etmeyi unutmayın.
-                          </>
-                        ) : (
-                          <>
-                            Randevunuz <span className="text-white/80 font-medium">onaylandığında</span>,{" "}
-                            <span className="text-white font-medium">{appointmentResult?.email || formData.email.trim()}</span>{" "}
-                            adresinize onay e-postası gönderilecektir. Lütfen gelen kutunuzu ve spam klasörünüzü kontrol edin.
-                          </>
-                        )}
+                        Randevunuz salon tarafından <span className="text-white/80 font-medium">onaylandığında</span>,{" "}
+                        <span className="text-white font-medium">{appointmentResult?.email || formData.email.trim()}</span>{" "}
+                        adresinize onay e-postası gönderilecektir. Şu an mail gitmez; yalnızca onay sonrası bilgilendirilirsiniz.
+                        Spam klasörünü de kontrol etmeyi unutmayın.
                       </p>
                     </div>
 

@@ -271,7 +271,7 @@ export default function SettingsPage() {
                 <div>
                   <p className="text-sm font-medium text-[#F8F8F8]">E-posta Bildirimleri (SMTP)</p>
                   <p className="text-xs text-[#71717A] mt-0.5">
-                    Randevu talebi alındığında ve onaylandığında müşteriye e-posta gider.
+                    Müşteriye e-posta yalnızca randevu admin panelinden onaylandığında gider.
                   </p>
                   <p className="text-[11px] text-[#52525B] mt-2">
                     {emailStatus?.configured
