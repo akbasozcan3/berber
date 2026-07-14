@@ -20,6 +20,7 @@ function loadLocalEnv() {
   }
 }
 
+
 function resolveConnectionString(): string {
   if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) loadLocalEnv();
 
