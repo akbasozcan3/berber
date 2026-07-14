@@ -7,7 +7,11 @@ let seeding: Promise<void> | null = null;
 /** Verifies DB connectivity. Full seed runs at build (db:setup), not on every request. */
 export async function ensureDb() {
   // Build aşamasında DB bağlantısını anında iptal et (Vercel Build Timeout engelleme)
-  if (process.env.NEXT_PHASE === "phase-production-build" || process.env.IS_BUILD_PHASE === "true") {
+  if (
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.IS_BUILD_PHASE === "true" ||
+    process.env.CI === "true"
+  ) {
     throw new Error("Next.js Build Phase: Database connection bypassed.");
   }
 
