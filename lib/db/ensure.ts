@@ -6,9 +6,13 @@ let seeding: Promise<void> | null = null;
 
 /** Verifies DB connectivity. Full seed runs at build (db:setup), not on every request. */
 export async function ensureDb() {
+  // Build aşamasında DB bağlantısını anında iptal et (Vercel Build Timeout engelleme)
+  if (process.env.NEXT_PHASE === "phase-production-build" || process.env.IS_BUILD_PHASE === "true") {
+    throw new Error("Next.js Build Phase: Database connection bypassed.");
+  }
+
   await initDatabase();
   await runSettingsMigrations();
-  if (process.env.NEXT_PHASE === "phase-production-build") return;
 
   // Serverless: never seed per request — exhausts Postgres connection limits.
   if (process.env.VERCEL && process.env.RUN_DB_SEED !== "true") return;
