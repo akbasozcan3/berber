@@ -31,16 +31,16 @@ let initPromise: Promise<void> | null = null;
 function resolveConnectionString(): string {
   if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) loadLocalEnv();
 
-  // Prefer pooled URL on Vercel/serverless (avoids prisma_migration connection limits).
+  // DATABASE_URL önce kontrol edilir — Supabase bağlantısı için.
   const connectionString =
+    process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.POSTGRES_PRISMA_URL ||
-    process.env.DATABASE_URL ||
     process.env.POSTGRES_CONNECTION_STRING;
 
   if (!connectionString) {
     throw new Error(
-      "PostgreSQL bağlantısı bulunamadı. Ortama `POSTGRES_URL` veya `DATABASE_URL` ekleyin."
+      "PostgreSQL bağlantısı bulunamadı. Ortama `DATABASE_URL` ekleyin."
     );
   }
 
