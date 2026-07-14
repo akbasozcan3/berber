@@ -1,90 +1,156 @@
-import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "./schema";
 import fs from "fs";
 import path from "path";
 
 function loadLocalEnv() {
   const envPath = path.join(process.cwd(), ".env.local");
+
   if (!fs.existsSync(envPath)) return;
+
   const content = fs.readFileSync(envPath, "utf8");
+
   for (const rawLine of content.split(/\r?\n/)) {
     const line = rawLine.trim();
+
     if (!line || line.startsWith("#")) continue;
+
     const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
+
     if (!match) continue;
+
     const key = match[1];
+
     let value = match[2].trim();
-    value = value.replace(/^"(.*)"$/, "$1").replace(/^'(.*)'$/, "$1");
-    if (!process.env[key]) process.env[key] = value;
+
+    value = value
+      .replace(/^"(.*)"$/, "$1")
+      .replace(/^'(.*)'$/, "$1");
+
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
   }
 }
 
-const globalForDb = globalThis as typeof globalThis & {
-  __pgPool?: Pool;
-  __drizzleDb?: NodePgDatabase<typeof schema>;
-};
+loadLocalEnv();
 
-let initialized = false;
-let initPromise: Promise<void> | null = null;
 
-function resolveConnectionString(): string {
-  if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) loadLocalEnv();
-
-  // Supabase: POSTGRES_URL = Transaction Pooler (port 6543, IPv4 compatible)
-  // DATABASE_URL = Direct connection (IPv6 only — NOT usable on Vercel)
-  const connectionString =
-    process.env.POSTGRES_URL ||
-    process.env.POSTGRES_PRISMA_URL ||
+function resolveConnectionString() {
+  const url =
     process.env.DATABASE_URL ||
-    process.env.POSTGRES_CONNECTION_STRING;
+    process.env.POSTGRES_URL;
 
-  if (!connectionString) {
+  if (!url) {
     throw new Error(
-      "PostgreSQL bağlantısı bulunamadı. Vercel'e `POSTGRES_URL` ekleyin."
+      "DATABASE_URL bulunamadı. .env.local dosyanı kontrol et."
     );
   }
 
-  return connectionString;
+  return url;
 }
 
-function getPool() {
-  if (!globalForDb.__pgPool) {
+
+const globalForDb = globalThis as unknown as {
+  postgresClient?: ReturnType<typeof postgres>;
+  drizzleDb?: PostgresJsDatabase<typeof schema>;
+};
+
+
+function getClient() {
+
+  if (!globalForDb.postgresClient) {
+
     const isServerless = Boolean(process.env.VERCEL);
-    globalForDb.__pgPool = new Pool({
-      connectionString: resolveConnectionString(),
-      max: isServerless ? 1 : 5,
-      idleTimeoutMillis: isServerless ? 5000 : 30000,
-      connectionTimeoutMillis: 10000,
-      allowExitOnIdle: isServerless,
-      ssl: { rejectUnauthorized: false }, // Supabase pooler SSL
-    });
+
+    globalForDb.postgresClient = postgres(
+      resolveConnectionString(),
+      {
+        max: isServerless ? 1 : 5,
+
+        idle_timeout: isServerless
+          ? 10
+          : 30,
+
+        connect_timeout: 15,
+
+        prepare: false,
+
+        ssl: "require",
+      }
+    );
   }
-  return globalForDb.__pgPool;
+
+  return globalForDb.postgresClient;
 }
+
+
 
 export function getDb() {
-  if (!globalForDb.__drizzleDb) {
-    globalForDb.__drizzleDb = drizzle(getPool(), { schema });
+
+  if (!globalForDb.drizzleDb) {
+
+    globalForDb.drizzleDb = drizzle(
+      getClient(),
+      {
+        schema,
+      }
+    );
+
   }
-  return globalForDb.__drizzleDb;
+
+  return globalForDb.drizzleDb;
 }
 
-export const db = new Proxy({} as NodePgDatabase<typeof schema>, {
-  get(_target, prop) {
-    return Reflect.get(getDb(), prop);
-  },
-});
+
+
+export const db = new Proxy(
+  {} as PostgresJsDatabase<typeof schema>,
+  {
+    get(_target, prop) {
+
+      return Reflect.get(
+        getDb(),
+        prop
+      );
+
+    },
+  }
+);
+
+
+
+let initialized = false;
+
+let initPromise: Promise<void> | null = null;
+
+
 
 export async function initDatabase() {
-  if (initialized) return;
-  if (initPromise) return initPromise;
+
+  if (initialized)
+    return;
+
+
+  if (initPromise)
+    return initPromise;
+
 
   initPromise = (async () => {
-    const database = getPool();
-    await database.query("select 1");
+
+    const client = getClient();
+
+
+    await client`
+      SELECT 1
+    `;
+
+
     initialized = true;
+
   })();
+
 
   return initPromise;
 }
