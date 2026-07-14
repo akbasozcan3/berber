@@ -29,18 +29,19 @@ let initialized = false;
 let initPromise: Promise<void> | null = null;
 
 function resolveConnectionString(): string {
-  if (!process.env.DATABASE_URL && !process.env.POSTGRES_URL) loadLocalEnv();
+  if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) loadLocalEnv();
 
-  // DATABASE_URL önce kontrol edilir — Supabase bağlantısı için.
+  // Supabase: POSTGRES_URL = Transaction Pooler (port 6543, IPv4 compatible)
+  // DATABASE_URL = Direct connection (IPv6 only — NOT usable on Vercel)
   const connectionString =
-    process.env.DATABASE_URL ||
     process.env.POSTGRES_URL ||
     process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL ||
     process.env.POSTGRES_CONNECTION_STRING;
 
   if (!connectionString) {
     throw new Error(
-      "PostgreSQL bağlantısı bulunamadı. Ortama `DATABASE_URL` ekleyin."
+      "PostgreSQL bağlantısı bulunamadı. Vercel'e `POSTGRES_URL` ekleyin."
     );
   }
 
@@ -56,6 +57,7 @@ function getPool() {
       idleTimeoutMillis: isServerless ? 5000 : 30000,
       connectionTimeoutMillis: 10000,
       allowExitOnIdle: isServerless,
+      ssl: { rejectUnauthorized: false }, // Supabase pooler SSL
     });
   }
   return globalForDb.__pgPool;
