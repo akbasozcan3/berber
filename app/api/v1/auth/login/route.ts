@@ -1,10 +1,8 @@
-import { ensureDb } from "@/lib/db/ensure";
 import { login, setAuthCookie } from "@/lib/auth";
 import { jsonResponse, errorResponse, parseBody } from "@/lib/api/helpers";
 
 export async function POST(request: Request) {
   try {
-    await ensureDb();
     const { email, password } = await parseBody<{ email: string; password: string }>(request);
     const result = await login(email, password);
     await setAuthCookie(result.token);
