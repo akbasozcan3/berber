@@ -4,6 +4,7 @@ import "./globals.css";
 import SiteChrome from "./components/SiteChrome";
 import { getPublicSettingsServer } from "@/lib/data/public-settings";
 import { buildRootMetadata } from "@/lib/data/seo";
+import { buildBarberShopSchema } from "@/lib/seo/schema";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -39,6 +40,13 @@ export default async function RootLayout({
             <link rel="apple-touch-icon" href="/api/favicon?size=180" sizes="180x180" />
           </>
         ) : null}
+        {/* Schema.org JSON-LD — admin ayarlarından üretilir, hardcode değer yok */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildBarberShopSchema(initialSettings)),
+          }}
+        />
       </head>
       <body className="min-h-screen text-white flex flex-col font-sans selection:bg-[#D4AF37] selection:text-black">
         <SiteChrome initialSettings={initialSettings}>{children}</SiteChrome>

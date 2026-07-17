@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getPublicSettingsSnapshot();
-  return buildPageMetadata(settings, settings.contactPageTitle, settings.contactPageSubtitle);
+  return buildPageMetadata(settings, settings.contactPageTitle, settings.contactPageSubtitle, "/iletisim");
 }
 
 export default async function IletisimPage() {

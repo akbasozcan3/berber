@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getPublicSettingsSnapshot();
-  return buildPageMetadata(settings, settings.aboutPageTitle, settings.aboutPageSubtitle);
+  return buildPageMetadata(settings, settings.aboutPageTitle, settings.aboutPageSubtitle, "/hakkimizda");
 }
 
 export default async function HakkimizdaPage() {

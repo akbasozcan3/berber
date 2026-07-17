@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getPublicSettingsSnapshot();
-  return buildPageMetadata(settings, settings.bookingPageTitle, settings.seoDefaultDescription);
+  return buildPageMetadata(settings, settings.bookingPageTitle, settings.seoDefaultDescription, "/randevu");
 }
 
 export default async function RandevuPage() {

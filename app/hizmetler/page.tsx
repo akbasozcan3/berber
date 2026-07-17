@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getPublicSettingsSnapshot();
-  return buildPageMetadata(settings, settings.servicesPageTitle, settings.servicesPageSubtitle);
+  return buildPageMetadata(settings, settings.servicesPageTitle, settings.servicesPageSubtitle, "/hizmetler");
 }
 
 export default async function HizmetlerPage() {

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getPublicSettingsSnapshot();
-  return buildPageMetadata(settings, settings.galleryPageTitle, settings.galleryPageSubtitle);
+  return buildPageMetadata(settings, settings.galleryPageTitle, settings.galleryPageSubtitle, "/galeri");
 }
 
 export default async function GaleriPage() {

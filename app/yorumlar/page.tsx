@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata() {
   const settings = await getPublicSettingsSnapshot();
-  return buildPageMetadata(settings, settings.reviewsPageTitle, settings.reviewsPageSubtitle);
+  return buildPageMetadata(settings, settings.reviewsPageTitle, settings.reviewsPageSubtitle, "/yorumlar");
 }
 
 export default async function YorumlarPage() {
