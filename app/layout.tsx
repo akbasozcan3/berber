@@ -4,7 +4,7 @@ import "./globals.css";
 import SiteChrome from "./components/SiteChrome";
 import { getPublicSettingsServer } from "@/lib/data/public-settings";
 import { buildRootMetadata } from "@/lib/data/seo";
-import { buildBarberShopSchema } from "@/lib/seo/schema";
+import { buildBarberShopSchema, buildFaqSchema } from "@/lib/seo/schema";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -45,6 +45,13 @@ export default async function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(buildBarberShopSchema(initialSettings)),
+          }}
+        />
+        {/* FAQPage JSON-LD — Google zengin sonuç (rich result) için */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(buildFaqSchema(initialSettings)),
           }}
         />
       </head>

@@ -55,11 +55,11 @@ export const publicSettingsDefaults: PublicSettings = {
   maxFutureBooking: 30,
   maxBookingsPerSlot: 1,
   siteUrl: "https://www.thebarberyasin.com",
-  seoHomeTitle: "",
+  seoHomeTitle: "Taşdelen Berber | Çekmeköy Erkek Kuaförü | New Life — İstanbul",
   seoDefaultDescription:
-    "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı, cilt bakımı ve erkek bakım hizmetleri.",
+    "Taşdelen ve Çekmeköy'ün en iyi berberi. Saç kesimi, sakal tıraşı, cilt bakımı ve online randevu. İstanbul Çekmeköy Taşdelen'de profesyonel erkek kuaförü hizmetleri.",
   seoKeywords:
-    "erkek kuaförü, barber, kuaför, saç kesimi, sakal tıraşı, Çekmeköy, Taşdelen, İstanbul",
+    "taşdelen berber, çekmeköy berber, çekmeköy erkek kuaförü, taşdelen erkek kuaförü, istanbul berber, çekmeköy saç kesimi, taşdelen saç kesimi, çekmeköy sakal tıraşı, taşdelen sakal tıraşı, erkek kuaförü çekmeköy, berber taşdelen, en iyi berber çekmeköy, en iyi berber taşdelen, çekmeköy kuaför, taşdelen kuaför, istanbul erkek kuaförü, saç kesimi istanbul, online randevu berber, randevulu berber istanbul, çekmeköy online randevu, new life erkek kuaförü, new life berber taşdelen, sakal tasarımı çekmeköy, cilt bakımı erkek istanbul, vip berber istanbul, erkek bakım çekmeköy, profesyonel berber taşdelen, uygun fiyatlı berber çekmeköy, çekmeköy kuaför fiyatları, sakal şekillendirme istanbul, fade kesim istanbul, geleneksel tıraş istanbul, hot towel tıraş istanbul, erkek saç bakımı çekmeköy, sakal bıyık tasarımı taşdelen, berber randevu istanbul, çekmeköy anadolu yakası berber, istanbul anadolu yakası erkek kuaförü",
   bookingPageTitle: "Online Randevu",
   bookingPageSubtitle:
     "Zamanınız değerlidir. Sıra beklemeden, dilediğiniz gün ve saatte yerinizi rezerve edin.",

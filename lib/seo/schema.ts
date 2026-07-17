@@ -121,3 +121,62 @@ export function buildBreadcrumbSchema(
     ],
   };
 }
+
+/**
+ * FAQPage JSON-LD şeması.
+ * Admin'den gelen işetme adı, adres ve telefon bilgilerini kullanarak
+ * sık sorulan sorular üretir. Google'da zengin sonuç (rich result)
+ * olarak görünebilir.
+ */
+export function buildFaqSchema(settings: PublicSettings): object {
+  const siteUrl = resolvePublicSiteUrl(settings.siteUrl);
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `${settings.businessName} nerede?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${settings.businessName}, ${settings.address} adresinde hizmet vermektedir.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `${settings.businessName} telefon numarası nedir?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Bize ${settings.phone} numaralı telefondan ulaşabilirsiniz.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `${settings.businessName} online randevu alınabilir mi?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Evet, ${siteUrl}/randevu adresinden 7/24 online randevu alabilirsiniz. Sıra beklemeden, dilediğiniz gün ve saate rezervasyon yapabilirsiniz.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Çalışma saatleri nedir?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: settings.workingHours
+            .filter((r) => !r.closed && r.open && r.close)
+            .map((r) => `${r.day}: ${r.open} - ${r.close}`)
+            .join(", "),
+        },
+      },
+      {
+        "@type": "Question",
+        name: `${settings.locationShort} bölgesinde tanınmış bir berber var mı?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `${settings.businessName}, ${settings.locationShort} bölgesinin en köklü erkek kuaförü olarak saç kesimi, sakal tasarımı ve cilt bakımı hizmetleri sunmaktadır.`,
+        },
+      },
+    ],
+  };
+}
