@@ -187,10 +187,7 @@ export async function getActiveRulesForDate(date: string) {
 }
 
 export async function getDayStatus(date: string): Promise<"available" | "closed" | "limited" | "holiday" | "past"> {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const d = parseLocalIsoDate(date);
-  if (Number.isNaN(d.getTime()) || d < today) return "past";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < toLocalIsoDate()) return "past";
 
   if (isSunday(date)) return "closed";
 

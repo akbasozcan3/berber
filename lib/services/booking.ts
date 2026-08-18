@@ -6,7 +6,7 @@ import {
   normalizeMultilineSettingValue,
 } from "@/lib/data/multiline-settings";
 import { parseBreakTimes } from "@/lib/utils/break-times";
-import { parseLocalIsoDate, toLocalIsoDate, isLocalIsoToday, getSalonNowMinutes } from "@/lib/utils/format";
+import { toLocalIsoDate, addDaysToIso, isSalonSlotPassed } from "@/lib/utils/format";
 import { findOrUpsertCustomer } from "@/lib/services/customers";
 import { isSunday, barberWorksOnDate } from "@/lib/utils/salon-schedule";
 import {
@@ -70,15 +70,11 @@ export async function getAvailableSlots(
   const breakTimes = parseBreakTimes(await getSetting("break_times"));
   const maxFuture = Number((await getSetting("max_future_booking")) || 30);
 
-  const selectedDate = parseLocalIsoDate(date);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const todayIso = toLocalIsoDate();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < todayIso) return [];
 
-  if (Number.isNaN(selectedDate.getTime()) || selectedDate < today) return [];
-
-  const maxDate = new Date(today);
-  maxDate.setDate(maxDate.getDate() + maxFuture);
-  if (selectedDate > maxDate) return [];
+  const maxDate = addDaysToIso(todayIso, maxFuture);
+  if (date > maxDate) return [];
 
   if (isSunday(date)) return [];
 
@@ -146,9 +142,6 @@ export async function getAvailableSlots(
       )
     );
 
-  const leadMinutes = 30;
-  const nowMinutes = getSalonNowMinutes();
-
   return allSlots.map((time) => {
     if (isInBreak(time, service.duration, breakTimes)) {
       return { time, available: false, reason: "Mola saati" };
@@ -157,13 +150,13 @@ export async function getAvailableSlots(
     const slotStart = parseTime(time);
     const slotEnd = slotStart + service.duration;
 
+    if (isSalonSlotPassed(date, time)) {
+      return { time, available: false, reason: "Geçmiş saat" };
+    }
+
     const blocked = isSlotBlockedByRules(slotStart, slotEnd, rules, barberId);
     if (blocked.blocked) {
       return { time, available: false, reason: blocked.reason || "Müsait değil" };
-    }
-
-    if (isLocalIsoToday(date) && slotStart < nowMinutes + leadMinutes) {
-      return { time, available: false, reason: "Geçmiş saat" };
     }
 
     const anyBarberFree = targetBarbers.some((barber) =>

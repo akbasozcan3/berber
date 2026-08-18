@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { api, type Service, type Barber, type TimeSlot } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
-import { toLocalIsoDate, formatIsoDateTr, getInitials } from "@/lib/utils/format";
+import { toLocalIsoDate, formatIsoDateTr, getInitials, isSalonSlotPassed } from "@/lib/utils/format";
 import { listBookableIsoDates, nextBookableIsoDate } from "@/lib/utils/salon-schedule";
 import { normalizeAppointmentInterval, slotFitsInterval } from "@/lib/utils/appointment-interval";
 import { isWithinBookingWindow } from "@/lib/data/booking-hours";
@@ -56,6 +56,8 @@ export default function Booking({
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [slotsError, setSlotsError] = useState("");
   const [slotsRetry, setSlotsRetry] = useState(0);
+  const silentSlotRefresh = useRef(false);
+  const [, setNowTick] = useState(0);
   const [formData, setFormData] = useState({
     serviceId: 0,
     barberId: 0,
@@ -124,12 +126,16 @@ export default function Booking({
     if (!formData.date || !formData.serviceId) return;
 
     let cancelled = false;
-    void Promise.resolve().then(() => {
-      if (!cancelled) {
-        setLoadingSlots(true);
-        setSlotsError("");
-      }
-    });
+    const silent = silentSlotRefresh.current;
+    silentSlotRefresh.current = false;
+    if (!silent) {
+      void Promise.resolve().then(() => {
+        if (!cancelled) {
+          setLoadingSlots(true);
+          setSlotsError("");
+        }
+      });
+    }
 
     api
       .getSlots(
@@ -148,8 +154,10 @@ export default function Booking({
       })
       .catch(() => {
         if (cancelled) return;
-        setSlots([]);
-        setSlotsError("Müsait saatler yüklenemedi. Lütfen tekrar deneyin.");
+        if (!silent) {
+          setSlots([]);
+          setSlotsError("Müsait saatler yüklenemedi. Lütfen tekrar deneyin.");
+        }
       })
       .finally(() => {
         if (!cancelled) setLoadingSlots(false);
@@ -159,6 +167,21 @@ export default function Booking({
       cancelled = true;
     };
   }, [formData.date, formData.serviceId, formData.barberId, formData.noPreference, slotsRetry]);
+
+  useEffect(() => {
+    if (step !== 3 || !formData.date) return;
+    const tick = () => {
+      if (formData.date !== toLocalIsoDate()) return;
+      silentSlotRefresh.current = true;
+      setSlotsRetry((n) => n + 1);
+    };
+    const refreshId = window.setInterval(tick, 60_000);
+    const uiId = window.setInterval(() => setNowTick((n) => n + 1), 30_000);
+    return () => {
+      window.clearInterval(refreshId);
+      window.clearInterval(uiId);
+    };
+  }, [step, formData.date]);
 
   const validateStep = () => {
     const tempErrors: Record<string, string> = {};
@@ -241,11 +264,17 @@ export default function Booking({
   const selectedService = services.find((s) => s.id === formData.serviceId);
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
   const slotInterval = normalizeAppointmentInterval(settings.appointmentInterval);
-  const visibleSlots = slots.filter(
-    (s) =>
-      slotFitsInterval(s.time, slotInterval) &&
-      isWithinBookingWindow(s.time, settings.bookingHoursStart, settings.bookingHoursEnd, slotInterval)
-  );
+  const visibleSlots = slots
+    .filter(
+      (s) =>
+        slotFitsInterval(s.time, slotInterval) &&
+        isWithinBookingWindow(s.time, settings.bookingHoursStart, settings.bookingHoursEnd, slotInterval)
+    )
+    .map((s) =>
+      formData.date && isSalonSlotPassed(formData.date, s.time)
+        ? { ...s, available: false, reason: "Geçmiş saat" }
+        : s
+    );
   const availableSlots = visibleSlots.filter((s) => s.available);
   const bookedSlots = visibleSlots.filter((s) => !s.available && s.reason === "Dolu");
   const passedSlots = visibleSlots.filter((s) => !s.available && s.reason === "Geçmiş saat");

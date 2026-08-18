@@ -39,6 +39,7 @@ export function getSalonClock(date = new Date()): SalonClock {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
+    hourCycle: "h23",
   });
   const parts = formatter.formatToParts(date);
   const pick = (type: Intl.DateTimeFormatPartTypes) =>
@@ -71,6 +72,16 @@ export function toLocalIsoDate(date = new Date()): string {
 export function getSalonNowMinutes(date = new Date()): number {
   const { hour, minute } = getSalonClock(date);
   return hour * 60 + minute;
+}
+
+/** Slot start has already been reached in Istanbul. Future days are never passed. */
+export function isSalonSlotPassed(dateIso: string, time: string, now = new Date()): boolean {
+  const todayIso = toLocalIsoDate(now);
+  if (!dateIso || dateIso < todayIso) return true;
+  if (dateIso > todayIso) return false;
+  const [h, m] = String(time || "0:0").split(":").map(Number);
+  const slotStart = (Number.isFinite(h) ? h : 0) * 60 + (Number.isFinite(m) ? m : 0);
+  return slotStart <= getSalonNowMinutes(now);
 }
 
 export function addDaysToIso(iso: string, days: number): string {
