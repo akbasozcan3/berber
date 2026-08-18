@@ -6,9 +6,9 @@ import Button from "@/components/admin/ui/Button";
 import Select from "@/components/admin/ui/Select";
 import Card from "@/components/admin/ui/Card";
 import TimeSelect from "@/components/admin/ui/TimeSelect";
-import { AppointmentIntervalSetting } from "@/components/admin/AppointmentIntervalField";
 import { adminApi, type AvailabilityBlock, type AdminBarber } from "@/lib/api/admin";
 import { RULE_TYPE_LABELS } from "@/lib/admin/availability-labels";
+import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
 
 const REASONS = [
   { value: "Yoğunum", label: "Yoğunum" },
@@ -37,6 +37,9 @@ export default function AvailabilityManager({ date, blocks, onUpdate }: Props) {
 
   useEffect(() => {
     void adminApi.getBarbers().then(setBarbers);
+    void adminApi.getSettings().then((settings) => {
+      setSlotInterval(normalizeAppointmentInterval(settings.appointment_interval));
+    });
   }, []);
 
   const dayName = new Date(date).toLocaleDateString("tr-TR", { weekday: "long" });
@@ -85,12 +88,12 @@ export default function AvailabilityManager({ date, blocks, onUpdate }: Props) {
 
       <p className="text-xs text-[#71717A] mb-4">
         {dayName}, {new Date(date).toLocaleDateString("tr-TR")} — Belirli saatleri kapatın. Müşteri randevu
-        sayfasında bu saatler otomatik görünmez.
+        sayfasında bu saatler otomatik görünmez. İlk/son saat ve buçuklar için{" "}
+        <a href="/admin/saatler" className="text-[#D4AF37] hover:underline">
+          Randevu Saatleri
+        </a>
+        .
       </p>
-
-      <div className="mb-4 p-3 rounded-xl border border-white/[0.06] bg-[#0A0A0A]">
-        <AppointmentIntervalSetting onChange={setSlotInterval} />
-      </div>
 
       {isSunday && (
         <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">

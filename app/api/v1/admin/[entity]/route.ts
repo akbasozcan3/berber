@@ -21,6 +21,7 @@ import { normalizeInstagramPostUrl } from "@/lib/utils/gallery";
 import { MULTILINE_SETTING_KEYS, normalizeMultilineSettingValue } from "@/lib/data/multiline-settings";
 import { parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
 import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
+import { normalizeClock } from "@/lib/data/booking-hours";
 import { normalizeBarberWorkingDays, BARBER_WORKING_DAYS } from "@/lib/utils/salon-schedule";
 import { z } from "zod";
 
@@ -183,6 +184,12 @@ export async function PATCH(
         }
         if (key === "appointment_interval") {
           stored = String(normalizeAppointmentInterval(stored));
+        }
+        if (key === "booking_hours_start") {
+          stored = normalizeClock(stored, "10:00");
+        }
+        if (key === "booking_hours_end") {
+          stored = normalizeClock(stored, "21:00");
         }
         const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
         if (existing[0]) {

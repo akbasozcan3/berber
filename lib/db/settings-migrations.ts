@@ -95,6 +95,16 @@ export async function runSettingsMigrations() {
     }
   }
 
+  for (const [key, value] of [
+    ["booking_hours_start", "10:00"],
+    ["booking_hours_end", "21:00"],
+  ] as const) {
+    const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+    if (!existing[0]) {
+      await db.insert(settings).values({ key, value });
+    }
+  }
+
   const allBarbers = await db.select().from(barbers);
   for (const barber of allBarbers) {
     const normalized = normalizeBarberWorkingDays(barber.workingDays);

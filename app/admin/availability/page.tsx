@@ -9,7 +9,6 @@ import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
 import BarberDaySchedule from "@/components/admin/BarberDaySchedule";
-import { AppointmentIntervalSetting } from "@/components/admin/AppointmentIntervalField";
 import TimeSelect from "@/components/admin/ui/TimeSelect";
 import { adminApi, type AvailabilityBlock, type AdminBarber } from "@/lib/api/admin";
 import { formatDate } from "@/lib/admin/utils";
@@ -17,6 +16,7 @@ import { cn } from "@/lib/admin/cn";
 import { formatAvailabilityRule, RULE_TYPE_LABELS } from "@/lib/admin/availability-labels";
 import { blocksActiveOnDate } from "@/lib/admin/barber-day-status";
 import { toLocalIsoDate } from "@/lib/utils/format";
+import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
 
 const REASONS = [
   { value: "İş çıktı", label: "İş çıktı" },
@@ -68,16 +68,18 @@ export default function AvailabilityPage() {
   });
 
   const load = useCallback(async () => {
-    const [b, bar, a, m] = await Promise.all([
+    const [b, bar, a, m, settings] = await Promise.all([
       adminApi.getAvailability(),
       adminApi.getBarbers(),
       fetch("/api/v1/admin/availability?audit=true", { credentials: "include" }).then((r) => r.json()),
       fetch(`/api/v1/admin/availability?month=${currentMonth}`, { credentials: "include" }).then((r) => r.json()),
+      adminApi.getSettings(),
     ]);
     setBlocks(b);
     setBarbers(bar);
     setAudit(a);
     setMonthStatuses(m);
+    setSlotInterval(normalizeAppointmentInterval(settings.appointment_interval));
   }, [currentMonth]);
 
   useEffect(() => { void Promise.resolve().then(load); }, [load]);
@@ -199,10 +201,6 @@ export default function AvailabilityPage() {
           <CheckCircle size={18} /> {toast.text}
         </motion.div>
       )}
-
-      <Card className="mb-6">
-        <AppointmentIntervalSetting onChange={setSlotInterval} />
-      </Card>
 
       <BarberDaySchedule
         date={scheduleDate}

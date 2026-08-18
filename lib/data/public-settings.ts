@@ -5,6 +5,7 @@ import { publicSettingsDefaults } from "./public-settings-defaults";
 import { parseWorkingHoursJson } from "./working-hours";
 import { normalizeMultilineSettingValue } from "./multiline-settings";
 import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
+import { DEFAULT_BOOKING_END, DEFAULT_BOOKING_START, normalizeClock } from "@/lib/data/booking-hours";
 
 function ml(value: string | undefined, fallback: string): string {
   return normalizeMultilineSettingValue(value || fallback);
@@ -53,6 +54,14 @@ export function mapSettingsToPublic(all: Record<string, string>): PublicSettings
     navCtaLabel: all.nav_cta_label || publicSettingsDefaults.navCtaLabel,
     appointmentInterval: normalizeAppointmentInterval(
       all.appointment_interval || publicSettingsDefaults.appointmentInterval
+    ),
+    bookingHoursStart: normalizeClock(
+      all.booking_hours_start,
+      publicSettingsDefaults.bookingHoursStart || DEFAULT_BOOKING_START
+    ),
+    bookingHoursEnd: normalizeClock(
+      all.booking_hours_end,
+      publicSettingsDefaults.bookingHoursEnd || DEFAULT_BOOKING_END
     ),
     maxFutureBooking: Number(all.max_future_booking || publicSettingsDefaults.maxFutureBooking),
     maxBookingsPerSlot: Number(all.max_bookings_per_slot || publicSettingsDefaults.maxBookingsPerSlot),

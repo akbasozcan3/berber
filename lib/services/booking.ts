@@ -19,6 +19,7 @@ import {
   canBarberTakeSlot,
 } from "./availability";
 import { generateAppointmentSlots, normalizeAppointmentInterval, slotFitsInterval } from "@/lib/utils/appointment-interval";
+import { normalizeClock } from "@/lib/data/booking-hours";
 
 export async function getSetting(key: string): Promise<string | null> {
   const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
@@ -107,12 +108,33 @@ export async function getAvailableSlots(
   const earliestStart = hoursList.reduce((min, h) => Math.min(min, parseTime(h.open)), Infinity);
   const latestEnd = hoursList.reduce((max, h) => Math.max(max, parseTime(h.close)), 0);
 
-  const allSlots = generateAppointmentSlots(
-    formatTime(earliestStart),
-    formatTime(latestEnd),
+  const windowStartRaw = await getSetting("booking_hours_start");
+  const windowLastRaw = await getSetting("booking_hours_end");
+  let rangeStart = earliestStart;
+  let rangeEnd = latestEnd;
+
+  if (windowStartRaw) {
+    rangeStart = Math.max(rangeStart, parseTime(normalizeClock(windowStartRaw, "10:00")));
+  }
+
+  const lastStartBound = windowLastRaw
+    ? parseTime(normalizeClock(windowLastRaw, "21:00"))
+    : null;
+
+  if (lastStartBound !== null) {
+    rangeEnd = Math.min(rangeEnd, lastStartBound + Math.max(interval, service.duration));
+  }
+
+  let allSlots = generateAppointmentSlots(
+    formatTime(rangeStart),
+    formatTime(rangeEnd),
     interval,
     service.duration
-  ).filter((time) => slotFitsInterval(time, interval));
+  ).filter((time) => slotFitsInterval(time, interval) && parseTime(time) >= rangeStart);
+
+  if (lastStartBound !== null) {
+    allSlots = allSlots.filter((time) => parseTime(time) <= lastStartBound);
+  }
 
   const existingAppointments = await db
     .select()
@@ -124,7 +146,7 @@ export async function getAvailableSlots(
       )
     );
 
-  const leadMinutes = Math.max(interval, 30);
+  const leadMinutes = 30;
   const nowMinutes = getSalonNowMinutes();
 
   return allSlots.map((time) => {

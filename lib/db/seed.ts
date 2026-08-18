@@ -371,6 +371,8 @@ export async function seedDatabase() {
     break_times: "[]",
     holidays: JSON.stringify([]),
     appointment_interval: "60",
+    booking_hours_start: "10:00",
+    booking_hours_end: "21:00",
     max_future_booking: "30",
     max_bookings_per_slot: "1",
     notifications_telegram: "true",

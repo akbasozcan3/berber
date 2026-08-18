@@ -52,6 +52,8 @@ export const publicSettingsDefaults: PublicSettings = {
   footerCopyright: "",
   navCtaLabel: "Randevu Al",
   appointmentInterval: 60,
+  bookingHoursStart: "10:00",
+  bookingHoursEnd: "21:00",
   maxFutureBooking: 30,
   maxBookingsPerSlot: 1,
   siteUrl: "https://www.thebarberyasin.com",

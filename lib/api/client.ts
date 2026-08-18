@@ -121,6 +121,8 @@ export interface PublicSettings {
   footerCopyright: string;
   navCtaLabel: string;
   appointmentInterval: number;
+  bookingHoursStart: string;
+  bookingHoursEnd: string;
   maxFutureBooking: number;
   maxBookingsPerSlot: number;
   siteUrl: string;

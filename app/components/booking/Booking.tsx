@@ -12,6 +12,7 @@ import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { toLocalIsoDate, formatIsoDateTr, getInitials } from "@/lib/utils/format";
 import { listBookableIsoDates, nextBookableIsoDate } from "@/lib/utils/salon-schedule";
 import { normalizeAppointmentInterval, slotFitsInterval } from "@/lib/utils/appointment-interval";
+import { isWithinBookingWindow } from "@/lib/data/booking-hours";
 
 const SERVICE_ICONS: Record<string, typeof Scissors> = {
   "sac-kesimi": Scissors,
@@ -240,7 +241,11 @@ export default function Booking({
   const selectedService = services.find((s) => s.id === formData.serviceId);
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
   const slotInterval = normalizeAppointmentInterval(settings.appointmentInterval);
-  const visibleSlots = slots.filter((s) => slotFitsInterval(s.time, slotInterval));
+  const visibleSlots = slots.filter(
+    (s) =>
+      slotFitsInterval(s.time, slotInterval) &&
+      isWithinBookingWindow(s.time, settings.bookingHoursStart, settings.bookingHoursEnd, slotInterval)
+  );
   const availableSlots = visibleSlots.filter((s) => s.available);
   const bookedSlots = visibleSlots.filter((s) => !s.available && s.reason === "Dolu");
   const passedSlots = visibleSlots.filter((s) => !s.available && s.reason === "Geçmiş saat");
