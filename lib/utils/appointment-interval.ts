@@ -90,3 +90,9 @@ export function generateAppointmentSlots(
 
   return slots;
 }
+
+export function slotFitsInterval(time: string, interval: unknown): boolean {
+  const step = normalizeAppointmentInterval(interval);
+  if (step <= 0) return true;
+  return parseMinutes(time) % step === 0;
+}

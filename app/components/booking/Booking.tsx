@@ -11,6 +11,7 @@ import { api, type Service, type Barber, type TimeSlot } from "@/lib/api/client"
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 import { toLocalIsoDate, formatIsoDateTr, getInitials } from "@/lib/utils/format";
 import { listBookableIsoDates, nextBookableIsoDate } from "@/lib/utils/salon-schedule";
+import { normalizeAppointmentInterval, slotFitsInterval } from "@/lib/utils/appointment-interval";
 
 const SERVICE_ICONS: Record<string, typeof Scissors> = {
   "sac-kesimi": Scissors,
@@ -238,9 +239,11 @@ export default function Booking({
 
   const selectedService = services.find((s) => s.id === formData.serviceId);
   const selectedBarber = barbers.find((b) => b.id === formData.barberId);
-  const availableSlots = slots.filter((s) => s.available);
-  const bookedSlots = slots.filter((s) => !s.available && s.reason === "Dolu");
-  const passedSlots = slots.filter((s) => !s.available && s.reason === "Geçmiş saat");
+  const slotInterval = normalizeAppointmentInterval(settings.appointmentInterval);
+  const visibleSlots = slots.filter((s) => slotFitsInterval(s.time, slotInterval));
+  const availableSlots = visibleSlots.filter((s) => s.available);
+  const bookedSlots = visibleSlots.filter((s) => !s.available && s.reason === "Dolu");
+  const passedSlots = visibleSlots.filter((s) => !s.available && s.reason === "Geçmiş saat");
   const todayIso = toLocalIsoDate();
   const tomorrowIso = nextDays[1]?.isoDate ?? "";
 
@@ -407,7 +410,7 @@ export default function Booking({
                                 Tekrar dene
                               </button>
                             </div>
-                          ) : slots.length === 0 ? (
+                          ) : visibleSlots.length === 0 ? (
                             <div className="space-y-3">
                               <p className="text-white/50 text-sm">
                                 {formData.date === todayIso
@@ -483,7 +486,7 @@ export default function Booking({
                               )}
 
                               <div className="flex flex-wrap gap-2.5">
-                                {slots.map((slot) => {
+                                {visibleSlots.map((slot) => {
                                   if (slot.available) {
                                     const selected = formData.time === slot.time;
                                     return (

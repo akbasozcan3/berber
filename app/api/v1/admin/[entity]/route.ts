@@ -203,6 +203,7 @@ export async function PATCH(
       ["/", "/iletisim", "/randevu", "/hakkimizda", "/hizmetler", "/galeri", "/yorumlar"].forEach(
         (path) => revalidatePath(path)
       );
+      revalidatePath("/api/v1/slots");
 
       return jsonResponse({ success: true });
     }

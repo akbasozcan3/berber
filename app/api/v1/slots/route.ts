@@ -2,6 +2,9 @@ import { ensureDb } from "@/lib/db/ensure";
 import { getAvailableSlots } from "@/lib/services/booking";
 import { jsonResponse, errorResponse } from "@/lib/api/helpers";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   try {
     await ensureDb();
@@ -20,7 +23,9 @@ export async function GET(request: Request) {
       barberId ? Number(barberId) : null
     );
 
-    return jsonResponse(slots);
+    const response = jsonResponse(slots);
+    response.headers.set("Cache-Control", "no-store, max-age=0");
+    return response;
   } catch {
     return errorResponse("Müsait saatler yüklenemedi.", 500);
   }

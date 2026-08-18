@@ -18,7 +18,7 @@ import {
   isInBreak,
   canBarberTakeSlot,
 } from "./availability";
-import { generateAppointmentSlots, normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
+import { generateAppointmentSlots, normalizeAppointmentInterval, slotFitsInterval } from "@/lib/utils/appointment-interval";
 
 export async function getSetting(key: string): Promise<string | null> {
   const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
@@ -112,7 +112,7 @@ export async function getAvailableSlots(
     formatTime(latestEnd),
     interval,
     service.duration
-  );
+  ).filter((time) => slotFitsInterval(time, interval));
 
   const existingAppointments = await db
     .select()

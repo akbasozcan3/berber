@@ -72,6 +72,29 @@ export async function runSettingsMigrations() {
     }
   }
 
+  const hourlyV2 = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.key, "migrated_hourly_slots_v2"))
+    .limit(1);
+  if (!hourlyV2[0]) {
+    const intervalRow = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, "appointment_interval"))
+      .limit(1);
+    if (intervalRow[0]) {
+      await db.update(settings).set({ value: "60" }).where(eq(settings.key, "appointment_interval"));
+    } else {
+      await db.insert(settings).values({ key: "appointment_interval", value: "60" });
+    }
+    try {
+      await db.insert(settings).values({ key: "migrated_hourly_slots_v2", value: "1" });
+    } catch {
+      // Concurrent first request already wrote the flag.
+    }
+  }
+
   const allBarbers = await db.select().from(barbers);
   for (const barber of allBarbers) {
     const normalized = normalizeBarberWorkingDays(barber.workingDays);
