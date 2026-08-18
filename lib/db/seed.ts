@@ -370,7 +370,7 @@ export async function seedDatabase() {
     ]),
     break_times: "[]",
     holidays: JSON.stringify([]),
-    appointment_interval: "30",
+    appointment_interval: "60",
     max_future_booking: "30",
     max_bookings_per_slot: "1",
     notifications_telegram: "true",

@@ -20,6 +20,7 @@ import { revalidatePath } from "next/cache";
 import { normalizeInstagramPostUrl } from "@/lib/utils/gallery";
 import { MULTILINE_SETTING_KEYS, normalizeMultilineSettingValue } from "@/lib/data/multiline-settings";
 import { parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
+import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
 import { normalizeBarberWorkingDays, BARBER_WORKING_DAYS } from "@/lib/utils/salon-schedule";
 import { z } from "zod";
 
@@ -172,12 +173,16 @@ export async function PATCH(
     if (entity === "settings") {
       for (const [key, value] of Object.entries(body)) {
         if (key === "notifications_telegram") continue;
+        if (key.startsWith("migrated_")) continue;
         let stored = key === "phone" ? normalizePhoneStorage(String(value)) : String(value);
         if (MULTILINE_SETTING_KEYS.includes(key as (typeof MULTILINE_SETTING_KEYS)[number])) {
           stored = normalizeMultilineSettingValue(stored);
         }
         if (key === "working_hours") {
           stored = serializeWorkingHours(parseWorkingHoursJson(stored));
+        }
+        if (key === "appointment_interval") {
+          stored = String(normalizeAppointmentInterval(stored));
         }
         const existing = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
         if (existing[0]) {

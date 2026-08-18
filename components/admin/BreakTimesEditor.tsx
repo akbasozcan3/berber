@@ -1,15 +1,16 @@
 "use client";
 
 import Toggle from "@/components/admin/ui/Toggle";
-import Input from "@/components/admin/ui/Input";
+import TimeSelect from "@/components/admin/ui/TimeSelect";
 import { parseBreakTimes, serializeBreakTimes } from "@/lib/utils/break-times";
 
 interface Props {
   value: string;
   onChange: (json: string) => void;
+  interval?: unknown;
 }
 
-export default function BreakTimesEditor({ value, onChange }: Props) {
+export default function BreakTimesEditor({ value, onChange, interval = 60 }: Props) {
   const periods = parseBreakTimes(value);
   const enabled = periods.length > 0;
   const period = periods[0] || { start: "13:00", end: "14:00" };
@@ -33,17 +34,17 @@ export default function BreakTimesEditor({ value, onChange }: Props) {
       />
       {enabled && (
         <div className="grid grid-cols-2 gap-3 pl-1">
-          <Input
+          <TimeSelect
             label="Başlangıç"
-            type="time"
             value={period.start}
-            onChange={(e) => update(true, e.target.value, period.end)}
+            interval={interval}
+            onChange={(start) => update(true, start, period.end)}
           />
-          <Input
+          <TimeSelect
             label="Bitiş"
-            type="time"
             value={period.end}
-            onChange={(e) => update(true, period.start, e.target.value)}
+            interval={interval}
+            onChange={(end) => update(true, period.start, end)}
           />
         </div>
       )}

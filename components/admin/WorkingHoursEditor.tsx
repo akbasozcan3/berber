@@ -1,8 +1,8 @@
 "use client";
 
 import Toggle from "@/components/admin/ui/Toggle";
-import Input from "@/components/admin/ui/Input";
 import Button from "@/components/admin/ui/Button";
+import TimeSelect from "@/components/admin/ui/TimeSelect";
 import {
   parseWorkingHoursJson,
   serializeWorkingHours,
@@ -20,11 +20,13 @@ export default function WorkingHoursEditor({
   onChange,
   onSyncBarbers,
   syncingBarbers = false,
+  interval = 60,
 }: {
   value: string;
   onChange: (json: string) => void;
   onSyncBarbers?: () => void | Promise<void>;
   syncingBarbers?: boolean;
+  interval?: unknown;
 }) {
   const rows = parseWorkingHoursJson(value);
 
@@ -51,17 +53,17 @@ export default function WorkingHoursEditor({
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 rounded-2xl border border-white/[0.06] bg-[#0A0A0A]">
-        <Input
+        <TimeSelect
           label="Hafta içi açılış"
-          type="time"
           value={weekdayOpen}
-          onChange={(e) => applyWeekdayHours(e.target.value, weekdayClose)}
+          interval={interval}
+          onChange={(open) => applyWeekdayHours(open, weekdayClose)}
         />
-        <Input
+        <TimeSelect
           label="Hafta içi kapanış"
-          type="time"
           value={weekdayClose}
-          onChange={(e) => applyWeekdayHours(weekdayOpen, e.target.value)}
+          interval={interval}
+          onChange={(close) => applyWeekdayHours(weekdayOpen, close)}
         />
         <div className="flex items-end">
           <Button
@@ -82,19 +84,19 @@ export default function WorkingHoursEditor({
             className="grid grid-cols-1 sm:grid-cols-[120px_1fr_1fr_auto] gap-3 items-center p-3 rounded-xl border border-white/[0.06] bg-[#0A0A0A]"
           >
             <span className="text-sm font-medium text-[#F8F8F8]">{row.day}</span>
-            <Input
+            <TimeSelect
               label="Açılış"
-              type="time"
               value={row.open}
+              interval={interval}
               disabled={row.day === "Pazar" || row.closed}
-              onChange={(e) => updateRow(index, { open: e.target.value })}
+              onChange={(open) => updateRow(index, { open })}
             />
-            <Input
+            <TimeSelect
               label="Kapanış"
-              type="time"
               value={row.close}
+              interval={interval}
               disabled={row.day === "Pazar" || row.closed}
-              onChange={(e) => updateRow(index, { close: e.target.value })}
+              onChange={(close) => updateRow(index, { close })}
             />
             <Toggle
               label="Kapalı"

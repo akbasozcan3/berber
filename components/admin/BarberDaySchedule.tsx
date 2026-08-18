@@ -6,6 +6,7 @@ import Card from "@/components/admin/ui/Card";
 import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
+import TimeSelect from "@/components/admin/ui/TimeSelect";
 import Avatar from "@/components/admin/ui/Avatar";
 import { cn } from "@/lib/admin/cn";
 import type { AdminBarber, AvailabilityBlock } from "@/lib/api/admin";
@@ -45,6 +46,7 @@ interface Props {
   onOpenBarberDay: (barberId: number | null) => void;
   onBlockHours: (barberId: number, start: string, end: string, reason: string) => void;
   onDeleteRule: (id: number) => void;
+  interval?: unknown;
 }
 
 export default function BarberDaySchedule({
@@ -57,6 +59,7 @@ export default function BarberDaySchedule({
   onOpenBarberDay,
   onBlockHours,
   onDeleteRule,
+  interval = 60,
 }: Props) {
   const [reason, setReason] = useState("İş çıktı");
   const [expandedBarber, setExpandedBarber] = useState<number | null>(null);
@@ -287,8 +290,18 @@ export default function BarberDaySchedule({
 
                 {isExpanded && canToggle && (
                   <div className="mt-3 pt-3 border-t border-white/[0.06] grid grid-cols-2 gap-2">
-                    <Input label="Başlangıç" type="time" value={blockStart} onChange={(e) => setBlockStart(e.target.value)} />
-                    <Input label="Bitiş" type="time" value={blockEnd} onChange={(e) => setBlockEnd(e.target.value)} />
+                    <TimeSelect
+                      label="Başlangıç"
+                      value={blockStart}
+                      interval={interval}
+                      onChange={setBlockStart}
+                    />
+                    <TimeSelect
+                      label="Bitiş"
+                      value={blockEnd}
+                      interval={interval}
+                      onChange={setBlockEnd}
+                    />
                     <div className="col-span-2">
                       <Button
                         size="sm"

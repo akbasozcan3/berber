@@ -18,6 +18,7 @@ import {
   isInBreak,
   canBarberTakeSlot,
 } from "./availability";
+import { generateAppointmentSlots, normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
 
 export async function getSetting(key: string): Promise<string | null> {
   const result = await db.select().from(settings).where(eq(settings.key, key)).limit(1);
@@ -38,6 +39,7 @@ export async function getSettings(): Promise<Record<string, string>> {
   const result: Record<string, string> = {};
 
   for (const row of rows) {
+    if (row.key.startsWith("migrated_")) continue;
     let value = row.value;
     if (isMultilineSettingKey(row.key)) {
       const fixed = normalizeMultilineSettingValue(value);
@@ -58,24 +60,12 @@ function formatTime(minutes: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-function generateSlots(start: string, end: string, interval: number, serviceDuration: number): string[] {
-  const slots: string[] = [];
-  let current = parseTime(start);
-  const endMin = parseTime(end);
-  const minSpan = Math.max(interval, serviceDuration);
-  while (current + minSpan <= endMin) {
-    slots.push(formatTime(current));
-    current += interval;
-  }
-  return slots;
-}
-
 export async function getAvailableSlots(
   date: string,
   serviceId: number,
   barberId?: number | null
 ): Promise<{ time: string; available: boolean; reason?: string }[]> {
-  const interval = Number((await getSetting("appointment_interval")) || 30);
+  const interval = normalizeAppointmentInterval(await getSetting("appointment_interval"));
   const breakTimes = parseBreakTimes(await getSetting("break_times"));
   const maxFuture = Number((await getSetting("max_future_booking")) || 30);
 
@@ -117,7 +107,12 @@ export async function getAvailableSlots(
   const earliestStart = hoursList.reduce((min, h) => Math.min(min, parseTime(h.open)), Infinity);
   const latestEnd = hoursList.reduce((max, h) => Math.max(max, parseTime(h.close)), 0);
 
-  const allSlots = generateSlots(formatTime(earliestStart), formatTime(latestEnd), interval, service.duration);
+  const allSlots = generateAppointmentSlots(
+    formatTime(earliestStart),
+    formatTime(latestEnd),
+    interval,
+    service.duration
+  );
 
   const existingAppointments = await db
     .select()

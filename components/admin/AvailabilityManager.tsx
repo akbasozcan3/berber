@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Ban, Clock, User } from "lucide-react";
 import Button from "@/components/admin/ui/Button";
-import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
 import Card from "@/components/admin/ui/Card";
+import TimeSelect from "@/components/admin/ui/TimeSelect";
+import { AppointmentIntervalSetting } from "@/components/admin/AppointmentIntervalField";
 import { adminApi, type AvailabilityBlock, type AdminBarber } from "@/lib/api/admin";
 import { RULE_TYPE_LABELS } from "@/lib/admin/availability-labels";
 
@@ -26,6 +27,7 @@ interface Props {
 
 export default function AvailabilityManager({ date, blocks, onUpdate }: Props) {
   const [barbers, setBarbers] = useState<AdminBarber[]>([]);
+  const [slotInterval, setSlotInterval] = useState(60);
   const [startTime, setStartTime] = useState("15:00");
   const [endTime, setEndTime] = useState("16:00");
   const [reason, setReason] = useState("Müsait değilim");
@@ -86,6 +88,10 @@ export default function AvailabilityManager({ date, blocks, onUpdate }: Props) {
         sayfasında bu saatler otomatik görünmez.
       </p>
 
+      <div className="mb-4 p-3 rounded-xl border border-white/[0.06] bg-[#0A0A0A]">
+        <AppointmentIntervalSetting onChange={setSlotInterval} />
+      </div>
+
       {isSunday && (
         <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-sm text-red-400">
           Pazar günleri salon kapalıdır.
@@ -93,8 +99,18 @@ export default function AvailabilityManager({ date, blocks, onUpdate }: Props) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-        <Input label="Başlangıç" type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-        <Input label="Bitiş" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+        <TimeSelect
+          label="Başlangıç"
+          value={startTime}
+          interval={slotInterval}
+          onChange={setStartTime}
+        />
+        <TimeSelect
+          label="Bitiş"
+          value={endTime}
+          interval={slotInterval}
+          onChange={setEndTime}
+        />
         <Select
           label="Sebep"
           options={REASONS}

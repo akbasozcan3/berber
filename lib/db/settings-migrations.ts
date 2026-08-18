@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { isLegacyDefaultLunchBreak, serializeBreakTimes } from "@/lib/utils/break-times";
 import { normalizeBarberWorkingDays } from "@/lib/utils/salon-schedule";
 import { parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
+import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
 import {
   mergeDuplicateCustomersByEmail,
   removeOrphanCustomers,
@@ -37,6 +38,37 @@ export async function runSettingsMigrations() {
     const normalized = serializeWorkingHours(parseWorkingHoursJson(hoursRow[0].value));
     if (normalized !== hoursRow[0].value) {
       await db.update(settings).set({ value: normalized }).where(eq(settings.key, "working_hours"));
+    }
+  }
+
+  const hourlyFlag = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.key, "migrated_hourly_slots_v1"))
+    .limit(1);
+  if (!hourlyFlag[0]) {
+    const intervalRow = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, "appointment_interval"))
+      .limit(1);
+    const current = intervalRow[0]?.value;
+    if (!current || current === "30") {
+      if (intervalRow[0]) {
+        await db.update(settings).set({ value: "60" }).where(eq(settings.key, "appointment_interval"));
+      } else {
+        await db.insert(settings).values({ key: "appointment_interval", value: "60" });
+      }
+    } else if (intervalRow[0]) {
+      const normalized = String(normalizeAppointmentInterval(current));
+      if (normalized !== current) {
+        await db.update(settings).set({ value: normalized }).where(eq(settings.key, "appointment_interval"));
+      }
+    }
+    try {
+      await db.insert(settings).values({ key: "migrated_hourly_slots_v1", value: "1" });
+    } catch {
+      // Concurrent first request already wrote the flag.
     }
   }
 

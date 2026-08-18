@@ -9,6 +9,8 @@ import Button from "@/components/admin/ui/Button";
 import Input from "@/components/admin/ui/Input";
 import Select from "@/components/admin/ui/Select";
 import BarberDaySchedule from "@/components/admin/BarberDaySchedule";
+import { AppointmentIntervalSetting } from "@/components/admin/AppointmentIntervalField";
+import TimeSelect from "@/components/admin/ui/TimeSelect";
 import { adminApi, type AvailabilityBlock, type AdminBarber } from "@/lib/api/admin";
 import { formatDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/admin/cn";
@@ -47,6 +49,7 @@ export default function AvailabilityPage() {
   const [loading, setLoading] = useState(false);
   const [scheduleDate, setScheduleDate] = useState(() => toLocalIsoDate());
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [slotInterval, setSlotInterval] = useState(60);
 
   const [form, setForm] = useState(() => {
     const today = toLocalIsoDate();
@@ -197,6 +200,10 @@ export default function AvailabilityPage() {
         </motion.div>
       )}
 
+      <Card className="mb-6">
+        <AppointmentIntervalSetting onChange={setSlotInterval} />
+      </Card>
+
       <BarberDaySchedule
         date={scheduleDate}
         onDateChange={(d) => {
@@ -210,6 +217,7 @@ export default function AvailabilityPage() {
         onOpenBarberDay={openBarberDay}
         onBlockHours={blockBarberHours}
         onDeleteRule={deleteRule}
+        interval={slotInterval}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
@@ -365,8 +373,18 @@ export default function AvailabilityPage() {
             </h3>
             <p className="text-xs text-[#71717A] mb-4">Seçili gün: {formatDate(form.startDate)}</p>
             <div className="grid grid-cols-2 gap-3 mb-3">
-              <Input label="Açılış" type="time" value={form.customOpen} onChange={(e) => setForm({ ...form, customOpen: e.target.value })} />
-              <Input label="Kapanış" type="time" value={form.customClose} onChange={(e) => setForm({ ...form, customClose: e.target.value })} />
+              <TimeSelect
+                label="Açılış"
+                value={form.customOpen}
+                interval={slotInterval}
+                onChange={(customOpen) => setForm({ ...form, customOpen })}
+              />
+              <TimeSelect
+                label="Kapanış"
+                value={form.customClose}
+                interval={slotInterval}
+                onChange={(customClose) => setForm({ ...form, customClose })}
+              />
             </div>
             <Button
               variant="outline"

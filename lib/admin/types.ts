@@ -82,7 +82,7 @@ export interface BusinessSettings {
   workingHours: { day: string; open: string; close: string; closed?: boolean }[];
   breakTimes: { start: string; end: string }[];
   holidays: string[];
-  appointmentInterval: 15 | 30 | 45 | 60;
+  appointmentInterval: 15 | 30 | 60;
   maxFutureBooking: number;
   notifications: {
     telegram: boolean;

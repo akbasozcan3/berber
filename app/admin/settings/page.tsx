@@ -10,6 +10,7 @@ import Textarea from "@/components/admin/ui/Textarea";
 import ImageUpload from "@/components/admin/ui/ImageUpload";
 import WorkingHoursEditor from "@/components/admin/WorkingHoursEditor";
 import BreakTimesEditor from "@/components/admin/BreakTimesEditor";
+import AppointmentIntervalField from "@/components/admin/AppointmentIntervalField";
 import { adminApi } from "@/lib/api/admin";
 import { getPrimaryWorkingHours, parseWorkingHoursJson, serializeWorkingHours } from "@/lib/data/working-hours";
 import { normalizePhoneStorage } from "@/lib/utils/format";
@@ -407,18 +408,23 @@ export default function SettingsPage() {
             onChange={(json) => set("working_hours", json)}
             onSyncBarbers={syncBarberHours}
             syncingBarbers={syncingBarbers}
+            interval={settings.appointment_interval}
           />
         </Card>
 
         <Card>
           <h3 className="text-base font-semibold text-[#F8F8F8] mb-6">Randevu Ayarları</h3>
           <div className="space-y-4">
-            <Input label="Randevu Aralığı (dk)" type="number" value={settings.appointment_interval || "30"} onChange={(e) => set("appointment_interval", e.target.value)} />
+            <AppointmentIntervalField
+              value={settings.appointment_interval}
+              onChange={(next) => set("appointment_interval", next)}
+            />
             <Input label="Max İleri Tarih (gün)" type="number" value={settings.max_future_booking || "30"} onChange={(e) => set("max_future_booking", e.target.value)} />
             <Input label="Slot Başına Max Randevu" type="number" value={settings.max_bookings_per_slot || "1"} onChange={(e) => set("max_bookings_per_slot", e.target.value)} />
             <BreakTimesEditor
               value={settings.break_times || "[]"}
               onChange={(json) => set("break_times", json)}
+              interval={settings.appointment_interval}
             />
           </div>
         </Card>

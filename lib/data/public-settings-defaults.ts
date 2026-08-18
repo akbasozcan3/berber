@@ -51,7 +51,7 @@ export const publicSettingsDefaults: PublicSettings = {
     "İstanbul Çekmeköy Taşdelen'de profesyonel saç kesimi, sakal tasarımı ve kişisel erkek bakımı hizmetleri.",
   footerCopyright: "",
   navCtaLabel: "Randevu Al",
-  appointmentInterval: 30,
+  appointmentInterval: 60,
   maxFutureBooking: 30,
   maxBookingsPerSlot: 1,
   siteUrl: "https://www.thebarberyasin.com",
