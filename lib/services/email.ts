@@ -2,6 +2,7 @@ import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 import { randomUUID } from "crypto";
 import { getSetting } from "./booking";
+import { resolvePublicBusinessName } from "@/lib/utils/brand";
 import {
   buildAppointmentConfirmedHtml,
   buildAppointmentConfirmedSubject,
@@ -139,7 +140,7 @@ async function deliverMail(options: {
 
   const mailer = createTransporter(config);
   const businessName = sanitizeDisplayName(
-    (await getSetting("business_name"))?.trim() || "The Barber"
+    resolvePublicBusinessName(await getSetting("business_name"))
   );
   const contactEmail = (await getSetting("contact_email"))?.trim().toLowerCase() || "";
   const replyTo =
@@ -226,7 +227,7 @@ export async function sendTestEmail(to?: string): Promise<EmailResult> {
 
   const recipient = normalizeRecipient(to || config.user);
   const businessName = sanitizeDisplayName(
-    (await getSetting("business_name"))?.trim() || "The Barber"
+    resolvePublicBusinessName(await getSetting("business_name"))
   );
 
   return deliverMail({

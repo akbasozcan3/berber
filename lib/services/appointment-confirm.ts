@@ -9,6 +9,7 @@ import {
   type EmailResult,
 } from "./email";
 import { resolvePublicSiteUrl } from "@/lib/utils/site-url";
+import { resolvePublicBusinessName } from "@/lib/utils/brand";
 
 type AppointmentRow = {
   appointment: typeof appointments.$inferSelect;
@@ -27,7 +28,7 @@ export async function loadEmailBranding() {
   ]);
 
   return {
-    businessName: businessName?.trim() || "The Barber",
+    businessName: resolvePublicBusinessName(businessName),
     address: address || undefined,
     phone: phone || undefined,
     siteUrl: resolvePublicSiteUrl(siteUrlSetting),

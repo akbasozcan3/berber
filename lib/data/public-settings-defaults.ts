@@ -1,7 +1,7 @@
 import type { PublicSettings } from "@/lib/api/client";
 
 export const publicSettingsDefaults: PublicSettings = {
-  businessName: "New Life Erkek Kuaförü",
+  businessName: "The Barber",
   logoUrl: "",
   faviconUrl: "",
   address: "Taşdelen Mah. Dekor Sok. No:26B, 34788 Çekmeköy / İstanbul",

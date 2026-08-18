@@ -326,7 +326,7 @@ export async function seedDatabase() {
   ];
 
   const settingsData: Record<string, string> = {
-    business_name: "New Life Erkek Kuaförü",
+    business_name: "The Barber",
     logo_url: "",
     favicon_url: "",
     address: "Taşdelen Mah. Dekor Sok. No:26B, 34788 Çekmeköy / İstanbul",

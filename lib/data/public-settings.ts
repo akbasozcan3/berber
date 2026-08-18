@@ -6,6 +6,7 @@ import { parseWorkingHoursJson } from "./working-hours";
 import { normalizeMultilineSettingValue } from "./multiline-settings";
 import { normalizeAppointmentInterval } from "@/lib/utils/appointment-interval";
 import { DEFAULT_BOOKING_END, DEFAULT_BOOKING_START, normalizeClock } from "@/lib/data/booking-hours";
+import { resolvePublicBusinessName } from "@/lib/utils/brand";
 
 function ml(value: string | undefined, fallback: string): string {
   return normalizeMultilineSettingValue(value || fallback);
@@ -13,7 +14,7 @@ function ml(value: string | undefined, fallback: string): string {
 
 export function mapSettingsToPublic(all: Record<string, string>): PublicSettings {
   return {
-    businessName: all.business_name || publicSettingsDefaults.businessName,
+    businessName: resolvePublicBusinessName(all.business_name || publicSettingsDefaults.businessName),
     logoUrl: all.logo_url || "",
     faviconUrl: all.favicon_url || "",
     address: all.address || publicSettingsDefaults.address,

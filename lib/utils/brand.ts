@@ -1,4 +1,4 @@
-export function businessInitials(name?: string | null, fallback = "SA"): string {
+export function businessInitials(name?: string | null, fallback = "TB"): string {
   const parts = (name || "").trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return fallback;
   return parts
@@ -8,9 +8,20 @@ export function businessInitials(name?: string | null, fallback = "SA"): string 
     .slice(0, 2);
 }
 
-export function splitBusinessNameForLogo(name?: string | null): { primary: string; secondary: string } {
+const LEGACY_DEFAULT_NAME = /^new\s*life/i;
+
+/** Seed leftover. Live site is The Barber — never show New Life in the chrome. */
+export function resolvePublicBusinessName(name?: string | null): string {
   const safe = (name || "").trim();
-  if (!safe) return { primary: "SALON", secondary: "KUAFÖR" };
+  if (!safe || LEGACY_DEFAULT_NAME.test(safe)) return "The Barber";
+  return safe;
+}
+
+export function splitBusinessNameForLogo(name?: string | null): { primary: string; secondary: string } {
+  const safe = resolvePublicBusinessName(name);
+  if (/^the\s+barber$/i.test(safe)) {
+    return { primary: "THE BARBER", secondary: "" };
+  }
   const parts = safe.split(/\s+/).filter(Boolean);
   if (parts.length === 1) return { primary: parts[0].toUpperCase(), secondary: "" };
   return {

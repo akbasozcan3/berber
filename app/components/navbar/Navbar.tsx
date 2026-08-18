@@ -14,7 +14,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const settings = usePublicSettings();
+  const [logoFailed, setLogoFailed] = useState(false);
   const logoUrl = settings.brandLogoUrl;
+  const showLogo = Boolean(logoUrl) && !logoFailed;
   const navLinks = [
     { name: settings.navServicesLabel, href: "/hizmetler" },
     { name: settings.navGalleryLabel, href: "/galeri" },
@@ -26,6 +28,10 @@ export default function Navbar() {
   const hoursDisplay = formatWorkingHoursSummary(settings.workingHours);
   const topbarHoursDisplay = formatWorkingHoursTopbar(settings.workingHours);
   const logoText = splitBusinessNameForLogo(settings.businessName);
+
+  useEffect(() => {
+    setLogoFailed(false);
+  }, [logoUrl]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -47,14 +53,15 @@ export default function Navbar() {
   const closeMobile = () => setMobileOpen(false);
   const isActive = (href: string) => pathname === href;
 
-  const brandLogo = logoUrl ? (
+  const brandLogo = showLogo ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={logoUrl}
-      alt={settings.businessName || "Salon"}
+      alt={settings.businessName || "The Barber"}
       className={navbarLogoImageClass}
       fetchPriority="high"
       decoding="async"
+      onError={() => setLogoFailed(true)}
     />
   ) : (
     <>
@@ -69,13 +76,14 @@ export default function Navbar() {
     </>
   );
 
-  const mobileBrandLogo = logoUrl ? (
+  const mobileBrandLogo = showLogo ? (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={logoUrl}
-      alt={settings.businessName || "Salon"}
+      alt={settings.businessName || "The Barber"}
       className={mobileLogoImageClass}
       decoding="async"
+      onError={() => setLogoFailed(true)}
     />
   ) : (
     brandLogo

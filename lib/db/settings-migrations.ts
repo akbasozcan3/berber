@@ -113,6 +113,32 @@ export async function runSettingsMigrations() {
     }
   }
 
+  const brandFlag = await db
+    .select()
+    .from(settings)
+    .where(eq(settings.key, "migrated_brand_the_barber_v1"))
+    .limit(1);
+  if (!brandFlag[0]) {
+    const nameRow = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, "business_name"))
+      .limit(1);
+    const current = (nameRow[0]?.value || "").trim();
+    if (!current || /^new\s*life/i.test(current)) {
+      if (nameRow[0]) {
+        await db.update(settings).set({ value: "The Barber" }).where(eq(settings.key, "business_name"));
+      } else {
+        await db.insert(settings).values({ key: "business_name", value: "The Barber" });
+      }
+    }
+    try {
+      await db.insert(settings).values({ key: "migrated_brand_the_barber_v1", value: "1" });
+    } catch {
+      // Concurrent first request already wrote the flag.
+    }
+  }
+
   const emailRow = await db.select().from(settings).where(eq(settings.key, "notifications_email")).limit(1);
   if (!emailRow[0] || emailRow[0].value === "false") {
     if (emailRow[0]) {
