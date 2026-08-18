@@ -213,6 +213,25 @@ export default function Booking({
   const handleNext = () => { if (validateStep()) setStep((p) => p + 1); };
   const handlePrev = () => setStep((p) => p - 1);
 
+  const skipStepScroll = useRef(true);
+  useEffect(() => {
+    if (skipStepScroll.current) {
+      skipStepScroll.current = false;
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const el = document.getElementById("booking-step");
+      if (!el) return;
+      const tall = el.getBoundingClientRect().height > window.innerHeight * 0.75;
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: tall ? "start" : "center",
+        inline: "nearest",
+      });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [step]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateStep()) return;
@@ -321,7 +340,10 @@ export default function Booking({
             </div>
           </div>
 
-          <div className="lg:col-span-8 bg-[#121212]/40 border border-white/[0.06] rounded-md p-5 sm:p-8 md:p-12 relative overflow-hidden">
+          <div
+            id="booking-step"
+            className="lg:col-span-8 bg-[#121212]/40 border border-white/[0.06] rounded-md p-5 sm:p-8 md:p-12 relative overflow-hidden scroll-mt-28 md:scroll-mt-32"
+          >
             <AnimatePresence mode="wait">
               {!isSuccess ? (
                 <form key="booking" onSubmit={handleSubmit} className="space-y-10">
