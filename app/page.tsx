@@ -8,15 +8,13 @@ import StatsStrip from "./components/home/StatsStrip";
 import BookingCTA from "./components/home/BookingCTA";
 import GalleryPreview from "./components/home/GalleryPreview";
 import { getGalleryImages, getPopularServices } from "@/lib/data/public-server";
-import { getPageMetadata } from "@/lib/data/seo";
 import type { GalleryImage, Service } from "@/lib/api/client";
 import { mapGalleryRow, filterVisibleGalleryItems } from "@/lib/utils/gallery";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata() {
-  return getPageMetadata("Ana Sayfa");
-}
+// Ana sayfa metadata'sı bilerek tanımlanmaz: app/layout.tsx içindeki buildRootMetadata
+// admin panelindeki "Ana Sayfa SEO Başlık" (seoHomeTitle), açıklama, canonical ve OG alanlarını üretir.
 
 const TeamPreview = nextDynamic(() => import("./components/home/TeamPreview"));
 const HowItWorks = nextDynamic(() => import("./components/home/HowItWorks"));
