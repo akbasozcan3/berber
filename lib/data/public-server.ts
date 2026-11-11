@@ -1,6 +1,6 @@
 import { ensureDb } from "@/lib/db/ensure";
 import { db } from "@/lib/db";
-import { reviews, services, galleryImages, barbers } from "@/lib/db/schema";
+import { reviews, services, galleryImages, barbers, heroSlides } from "@/lib/db/schema";
 import { and, eq, desc } from "drizzle-orm";
 import { getPublicSettingsServer } from "@/lib/data/public-settings";
 
@@ -62,6 +62,19 @@ export async function getAvailableBarbers() {
       .from(barbers)
       .where(and(eq(barbers.available, true), eq(barbers.onVacation, false)))
       .orderBy(barbers.sortOrder);
+  } catch {
+    return [];
+  }
+}
+
+export async function getHeroSlides() {
+  try {
+    await ensureDb();
+    return db
+      .select()
+      .from(heroSlides)
+      .where(eq(heroSlides.enabled, true))
+      .orderBy(heroSlides.sortOrder);
   } catch {
     return [];
   }

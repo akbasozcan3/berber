@@ -1,25 +1,27 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ArrowLeft, CalendarCheck } from "lucide-react";
-import { api, type HeroSlide } from "@/lib/api/client";
+import type { HeroSlide } from "@/lib/api/client";
 import { usePublicSettings } from "@/lib/context/PublicSettingsContext";
 
 const FALLBACK: HeroSlide[] = [
   { id: 1, title: "Saçınız Sizin\nİmzanızdır", subtitle: "Premium Berberlik", description: "Profesyonel kadromuzla kaliteli saç & sakal bakımı.", image: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=85&w=2560&auto=format&fit=crop", badge: "Saç Kesimi", ctaText: "Hemen Randevu Al", ctaLink: "/randevu", sortOrder: 1, enabled: true },
 ];
 
-export default function HeroSlider() {
+interface HeroSliderProps {
+  initialSlides?: HeroSlide[];
+}
+
+export default function HeroSlider({ initialSlides }: HeroSliderProps) {
   const { navServicesLabel, navCtaLabel } = usePublicSettings();
-  const [slides, setSlides] = useState<HeroSlide[]>(FALLBACK);
+  const [slides] = useState<HeroSlide[]>(() =>
+    initialSlides && initialSlides.length > 0 ? initialSlides : FALLBACK
+  );
   const [cur, setCur] = useState(0);
   const [auto, setAuto] = useState(true);
-
-  useEffect(() => {
-    api.getHeroSlides().then((data) => { if (data.length > 0) setSlides(data); }).catch(() => {});
-  }, []);
 
   const next = useCallback(() => setCur((c) => (c + 1) % slides.length), [slides.length]);
   const prev = useCallback(() => setCur((c) => (c - 1 + slides.length) % slides.length), [slides.length]);
