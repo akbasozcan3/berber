@@ -154,10 +154,23 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-white/10">
-          <p className="text-white/30 text-xs mb-4 md:mb-0">
-            {settings.footerCopyright ||
-              `© ${new Date().getFullYear()} ${settings.businessName || "Salon"}. Tüm hakları saklıdır.`}
-          </p>
+          <div className="mb-4 md:mb-0 text-center md:text-left">
+            <p className="text-white/30 text-xs">
+              {settings.footerCopyright ||
+                `© ${new Date().getFullYear()} ${settings.businessName || "Salon"}. Tüm hakları saklıdır.`}
+            </p>
+            <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.18em] text-white/25">
+              Web Tasarım ve Yazılım:{' '}
+              <a
+                href="https://www.wesweb.com.tr/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/45 transition-colors hover:text-white"
+              >
+                WESWEB
+              </a>
+            </p>
+          </div>
           <button
             onClick={scrollToTop}
             className="flex items-center gap-2.5 text-white/35 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-[0.25em] group"
